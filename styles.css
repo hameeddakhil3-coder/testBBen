@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap');
+
+:root {
+  color-scheme: light;
+  --brown: #563b2c;
+  --brown-dark: #39271e;
+  --brown-soft: #f3ece6;
+  --cream: #fbf8f4;
+  --text: #28231f;
+  --muted: #81776f;
+  --border: #e7dfd8;
+  --danger: #b42318;
+  --success: #23734d;
+  font-family: "IBM Plex Sans Arabic", Tahoma, Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; background: var(--cream); color: var(--text); }
+button, input { font: inherit; }
+button { cursor: pointer; }
+.page-shell { min-height: 100vh; display: grid; grid-template-columns: minmax(280px, .88fr) minmax(360px, 1.12fr); }
+.brand-panel { position: relative; overflow: hidden; min-height: 100vh; padding: 44px clamp(28px, 5vw, 76px); display: flex; flex-direction: column; justify-content: space-between; color: white; background: linear-gradient(145deg, #6b4b37, var(--brown-dark)); }
+.brand-mark { display: inline-flex; align-items: center; gap: 3px; width: fit-content; direction: ltr; font-family: Arial, sans-serif; font-size: 29px; font-weight: 800; letter-spacing: -1.8px; }
+.brand-mark span { color: #d9b995; }
+.brand-copy { position: relative; z-index: 1; max-width: 430px; margin-block: auto; padding-block: 70px; }
+.eyebrow { margin: 0 0 12px; color: #a27b5c; font-weight: 700; font-size: 13px; }
+.brand-panel .eyebrow { color: #e2c6aa; }
+.brand-copy h1 { margin: 0 0 18px; font-size: clamp(31px, 4vw, 49px); line-height: 1.35; }
+.brand-copy h1 span { color: #e1c09d; direction: ltr; display: inline-block; }
+.brand-copy > p:last-child { max-width: 360px; margin: 0; color: #e4d8ce; line-height: 2; font-size: 16px; }
+.brand-footer { position: relative; z-index: 1; color: #d5c5b8; font-size: 12px; }
+.brand-decoration { position: absolute; border: 1px solid rgba(255,255,255,.09); border-radius: 50%; pointer-events: none; }
+.decoration-one { width: 440px; height: 440px; left: -180px; top: 14%; }
+.decoration-two { width: 300px; height: 300px; left: -110px; top: 24%; }
+.form-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 36px clamp(22px, 5vw, 76px) 22px; }
+.form-wrap { width: 100%; max-width: 440px; }
+.mobile-brand { display: none; color: var(--brown); margin-bottom: 34px; }
+.form-heading { margin-bottom: 25px; }
+.form-heading h2 { margin: 0 0 9px; font-size: 29px; letter-spacing: -.5px; }
+.form-heading > p:last-child { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
+.mode-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; padding: 5px; margin-bottom: 25px; border-radius: 12px; background: #f0eae4; }
+.mode-button { border: 0; border-radius: 9px; padding: 11px 8px; color: #786d64; background: transparent; font-size: 14px; font-weight: 600; }
+.mode-button.active { color: var(--brown); background: white; box-shadow: 0 1px 4px #3826190d; }
+.field { margin-bottom: 17px; }
+.field label, .role-field legend { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
+.field input { width: 100%; min-height: 49px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; outline: none; background: white; color: var(--text); transition: border-color .15s, box-shadow .15s; }
+.field input::placeholder { color: #b1a8a0; }
+.field input:focus { border-color: #9c795e; box-shadow: 0 0 0 3px #9c795e1c; }
+.field input[aria-invalid="true"] { border-color: var(--danger); }
+.field-error { display: block; min-height: 0; color: var(--danger); font-size: 12px; margin-top: 5px; }
+.role-field { border: 0; padding: 0; margin: 5px 0 17px; min-width: 0; }
+.role-field legend { padding: 0; }
+.role-option { display: flex; align-items: center; gap: 11px; padding: 12px; margin-top: 8px; border: 1px solid var(--border); border-radius: 11px; background: white; cursor: pointer; }
+.role-option:has(input:checked) { border-color: #927055; background: #faf6f1; box-shadow: 0 0 0 1px #927055 inset; }
+.role-option > input { accent-color: var(--brown); }
+.role-icon { display: grid; place-items: center; width: 39px; height: 39px; border-radius: 10px; background: var(--brown-soft); font-size: 19px; }
+.role-option strong, .role-option small { display: block; }
+.role-option strong { font-size: 13px; }
+.role-option small { color: var(--muted); font-size: 12px; margin-top: 3px; }
+.submit-button { width: 100%; min-height: 51px; display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 7px; border: 0; border-radius: 10px; color: white; background: var(--brown); font-weight: 700; transition: background .15s, transform .15s; }
+.submit-button:hover { background: #422d21; }
+.submit-button:active { transform: translateY(1px); }
+.submit-button:focus-visible, button:focus-visible { outline: 3px solid #b58f70; outline-offset: 3px; }
+.form-message { min-height: 0; margin: 0; font-size: 13px; line-height: 1.8; }
+.form-message:not(:empty) { margin: 8px 0; padding: 9px 11px; border-radius: 8px; background: #f3ece6; color: var(--brown); }
+.form-message.error { color: var(--danger); background: #fff0ee; }
+.form-message.success { color: var(--success); background: #eaf7ef; }
+.switch-copy { text-align: center; margin: 22px 0; font-size: 13px; color: var(--muted); }
+.switch-copy button { border: 0; padding: 0 3px; color: var(--brown); background: transparent; font-weight: 700; }
+.security-note { margin: 0; text-align: center; color: #958980; font-size: 11px; line-height: 1.8; }
+.security-note span { margin-left: 4px; }
+.form-footer { margin-top: 34px; color: #a39a92; font-size: 11px; text-align: center; }
+.hidden { display: none !important; }
+@media (max-width: 760px) {
+  .page-shell { display: block; }
+  .brand-panel { display: none; }
+  .form-panel { min-height: 100vh; justify-content: flex-start; padding: 26px 22px 20px; }
+  .mobile-brand { display: inline-flex; }
+  .form-wrap { max-width: 460px; margin: auto 0; }
+  .form-heading h2 { font-size: 26px; }
+  .form-footer { margin-top: 26px; }
+}
+@media (max-width: 380px) {
+  .form-panel { padding-inline: 16px; }
+  .form-heading h2 { font-size: 24px; }
+}
