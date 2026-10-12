@@ -5,7 +5,6 @@
   "workers_dev": true,
   "assets": {
     "directory": "./public",
-    "binding": "ASSETS",
     "html_handling": "auto-trailing-slash"
   }
 }
