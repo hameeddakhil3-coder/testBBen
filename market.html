@@ -15,6 +15,7 @@
     <a class="market-brand" href="market.html" aria-label="BBen السوق">B<span>Ben</span></a>
     <div class="market-search"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="ابحث عن منتج أو متجر..." aria-label="ابحث عن منتج أو متجر"><button id="clear-search" type="button" aria-label="مسح البحث" hidden>×</button></div>
     <div class="market-header-actions">
+      <button class="header-action" id="orders-button" type="button"><span aria-hidden="true">📦</span><span>طلباتي</span></button>
       <button class="header-action" id="cart-button" type="button"><span aria-hidden="true">🛒</span><span>السلة</span><b id="cart-count">0</b></button>
       <button class="header-action account-action" id="account-button" type="button"><span aria-hidden="true">♙</span><span id="account-label">تسجيل الدخول</span></button>
     </div>
@@ -48,6 +49,12 @@
     <button id="checkout-button" class="primary-market-button" type="button" disabled>إتمام الطلب · الدفع عند الاستلام</button>
     <button id="continue-shopping" class="secondary-market-button" type="button">متابعة التسوق</button>
   </dialog>
+  <dialog id="order-history-dialog" class="cart-dialog order-history-dialog">
+    <div class="cart-dialog-head"><div><p class="section-eyebrow">متابعة مشترياتك</p><h2>طلباتي</h2></div><button id="close-orders-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button></div>
+    <p class="cart-note">تظهر هنا الطلبات المسجلة بحسابك وحالتها الحالية. حدّث القائمة لمراجعة آخر المستجدات.</p>
+    <button id="refresh-orders-button" class="secondary-market-button refresh-orders-button" type="button">تحديث الطلبات ↻</button>
+    <div id="order-history-list" class="order-history-list"><p class="market-message">جارٍ تحميل الطلبات...</p></div>
+  </dialog>
   <dialog id="checkout-dialog" class="cart-dialog checkout-dialog">
     <div class="cart-dialog-head"><div><p class="section-eyebrow">الخطوة الأخيرة</p><h2>بيانات التوصيل</h2></div><button id="close-checkout-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button></div>
     <form id="checkout-form" class="checkout-form">
@@ -69,6 +76,7 @@
       <p id="checkout-success-number"></p>
       <p id="checkout-success-total" class="checkout-success-total"></p>
       <p class="cart-note">احتفظ برقم الطلب للمتابعة مع المتجر. الدفع الإلكتروني غير مفعّل حالياً.</p>
+      <button id="view-orders-after-checkout" class="secondary-market-button" type="button">عرض طلباتي</button>
       <button id="finish-checkout" class="primary-market-button" type="button">العودة إلى السوق</button>
     </div>
   </dialog>
