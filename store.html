@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#563b2c">
+  <title>BBen | متجر</title>
+  <link rel="stylesheet" href="market.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="supabase-client.js"></script>
+  <script src="market.js" defer></script>
+</head>
+<body>
+  <header class="market-header">
+    <a class="market-brand" href="market.html" aria-label="العودة إلى سوق BBen">B<span>Ben</span></a>
+    <div class="market-search"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="ابحث عن منتج أو متجر..." aria-label="ابحث عن منتج أو متجر"><button id="clear-search" type="button" aria-label="مسح البحث" hidden>×</button></div>
+    <div class="market-header-actions">
+      <button class="header-action" id="orders-button" type="button"><span aria-hidden="true">📦</span><span>طلباتي</span></button>
+      <button class="header-action" id="cart-button" type="button"><span aria-hidden="true">🛒</span><span>السلة</span><b id="cart-count">0</b></button>
+      <button class="header-action account-action" id="account-button" type="button"><span aria-hidden="true">♙</span><span id="account-label">تسجيل الدخول</span></button>
+    </div>
+  </header>
+  <main class="market-main">
+    <section class="store-public-hero" id="store-public-hero">
+      <div class="store-public-identity">
+        <div class="store-public-logo" id="public-store-logo">🏪</div>
+        <div><p class="hero-eyebrow">متجر على BBen</p><h1 id="public-store-name">جارٍ تحميل المتجر...</h1><p id="public-store-location" class="store-public-location"></p></div>
+      </div>
+      <p id="public-store-description" class="store-public-description">جارٍ تحميل معلومات المتجر ومنتجاته.</p>
+      <div class="store-public-meta"><span id="public-store-products-count">جارٍ تحميل المنتجات...</span><a id="public-store-phone" class="store-public-phone" hidden></a><a class="store-back-link" href="market.html">العودة إلى السوق ←</a></div>
+      <button id="browse-button" class="hero-button" type="button">تصفح المنتجات <span aria-hidden="true">←</span></button>
+    </section>
+    <section class="market-categories">
+      <div class="section-heading"><div><p class="section-eyebrow">اختر ما يناسبك</p><h2>تصنيفات المتجر</h2></div><button class="text-action" id="show-all-categories" type="button">عرض الكل ←</button></div>
+      <div id="category-list" class="category-list"><button class="category-chip active" data-category="">الكل</button></div>
+    </section>
+    <section class="market-products" id="products-section">
+      <div class="section-heading product-heading"><div><p class="section-eyebrow">تسوق مباشرة</p><h2>منتجات هذا المتجر</h2><p class="section-description" id="results-summary">جارٍ تحميل المنتجات...</p></div><label class="sort-control">ترتيب حسب <select id="sort-select"><option value="newest">الأحدث</option><option value="price-asc">السعر: الأقل أولاً</option><option value="price-desc">السعر: الأعلى أولاً</option><option value="name">الاسم</option></select></label></div>
+      <div id="market-message" class="market-message" role="status" aria-live="polite">جارٍ تحميل المنتجات...</div>
+      <div id="product-grid" class="market-product-grid"></div>
+    </section>
+    <section class="market-benefits"><div><span>🔒</span><strong>تجربة آمنة</strong><small>حسابات محمية</small></div><div><span>🏪</span><strong>متاجر متنوعة</strong><small>اكتشف منتجات مختلفة</small></div><div><span>📦</span><strong>معلومات واضحة</strong><small>السعر والكمية متاحان</small></div></section>
+    <footer class="market-footer"><a class="market-brand" href="market.html">B<span>Ben</span></a><p>تجربة تسوّق أقرب إليك</p><span>© BBen 2026</span></footer>
+  </main>
+  <dialog id="product-dialog" class="product-dialog">
+    <button id="close-product-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button>
+    <div id="dialog-product-content"></div>
+  </dialog>
+  <dialog id="cart-dialog" class="cart-dialog">
+    <div class="cart-dialog-head"><div><p class="section-eyebrow">قائمة مشترياتك</p><h2>سلة التسوق</h2></div><button id="close-cart-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button></div>
+    <div id="cart-content"></div>
+    <div class="cart-total" id="cart-total"></div>
+    <p class="cart-note">راجع المنتجات والكميات قبل تأكيد الطلب. الدفع الإلكتروني غير مفعّل حالياً.</p>
+    <button id="checkout-button" class="primary-market-button" type="button" disabled>إتمام الطلب · الدفع عند الاستلام</button>
+    <button id="continue-shopping" class="secondary-market-button" type="button">متابعة التسوق</button>
+  </dialog>
+  <dialog id="order-history-dialog" class="cart-dialog order-history-dialog">
+    <div class="cart-dialog-head"><div><p class="section-eyebrow">متابعة مشترياتك</p><h2>طلباتي</h2></div><button id="close-orders-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button></div>
+    <p class="cart-note">تظهر هنا الطلبات المسجلة بحسابك وحالتها الحالية. حدّث القائمة لمراجعة آخر المستجدات.</p>
+    <button id="refresh-orders-button" class="secondary-market-button refresh-orders-button" type="button">تحديث الطلبات ↻</button>
+    <div id="order-history-list" class="order-history-list"><p class="market-message">جارٍ تحميل الطلبات...</p></div>
+  </dialog>
+  <dialog id="checkout-dialog" class="cart-dialog checkout-dialog">
+    <div class="cart-dialog-head"><div><p class="section-eyebrow">الخطوة الأخيرة</p><h2>بيانات التوصيل</h2></div><button id="close-checkout-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button></div>
+    <form id="checkout-form" class="checkout-form">
+      <label for="checkout-name">اسم المستلم</label>
+      <input id="checkout-name" name="customerName" required minlength="2" autocomplete="name" placeholder="الاسم الكامل">
+      <label for="checkout-phone">رقم الهاتف</label>
+      <input id="checkout-phone" name="customerPhone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="07xxxxxxxxx">
+      <label for="checkout-address">عنوان التوصيل بالتفصيل</label>
+      <textarea id="checkout-address" name="shippingAddress" required minlength="6" autocomplete="street-address" rows="3" placeholder="المحافظة، المنطقة، أقرب نقطة دالة"></textarea>
+      <label for="checkout-notes">ملاحظات للسائق (اختياري)</label>
+      <textarea id="checkout-notes" name="notes" rows="2" placeholder="تفاصيل إضافية للتوصيل"></textarea>
+      <p class="cart-note">سيُسجّل الطلب بحالة «قيد الانتظار». لا يتم تحصيل أي مبلغ إلكتروني في هذه المرحلة.</p>
+      <p id="checkout-error" class="checkout-error" role="alert" aria-live="polite"></p>
+      <button id="confirm-order-button" class="primary-market-button" type="submit">تأكيد الطلب</button>
+    </form>
+    <div id="checkout-success" class="checkout-success" hidden>
+      <div class="checkout-success-icon">✓</div>
+      <h2>تم تسجيل طلبك بنجاح</h2>
+      <p id="checkout-success-number"></p>
+      <p id="checkout-success-total" class="checkout-success-total"></p>
+      <p class="cart-note">احتفظ برقم الطلب للمتابعة مع المتجر. الدفع الإلكتروني غير مفعّل حالياً.</p>
+      <button id="view-orders-after-checkout" class="secondary-market-button" type="button">عرض طلباتي</button>
+      <button id="finish-checkout" class="primary-market-button" type="button">العودة إلى السوق</button>
+    </div>
+  </dialog>
+  <div class="market-toast" id="market-toast" role="status" aria-live="polite"></div>
+</body>
+</html>
