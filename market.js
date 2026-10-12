@@ -234,9 +234,9 @@ async function submitCheckout(event) {
       p_notes: String(form.get("notes") || "").trim() || null
     });
     if (error) throw error;
-    if (!data || !data.id) throw new Error("لم تصلنا بيانات تأكيد الطلب. تحقق من الطلبات قبل إعادة المحاولة.");
-    $("#checkout-success-number").textContent = "رقم الطلب: #BB-" + (data.order_number ?? String(data.id).slice(0, 8).toUpperCase());
-    $("#checkout-success-total").textContent = "الإجمالي: " + money(data.total);
+    if (!data || !Array.isArray(data.orders) || !data.orders.length) throw new Error("لم تصلنا بيانات تأكيد الطلب. تحقق من الطلبات قبل إعادة المحاولة.");
+    $("#checkout-success-number").textContent = "رقم الطلب: " + data.orders.map((order) => "#BB-" + order.order_number).join("، ");
+    $("#checkout-success-total").textContent = "الإجمالي الكلي: " + money(data.total);
     $("#checkout-form").hidden = true;
     $("#checkout-success").hidden = false;
     await initMarket();
