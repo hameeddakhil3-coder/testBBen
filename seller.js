@@ -277,23 +277,38 @@ function renderRecentOrders() {
 function updateOrderSummary() {
   const count = merchantOrders.length;
   const pending = merchantOrders.filter((order) => order.status === "pending").length;
-  const completedSales = merchantOrders.filter((order) => order.status === "delivered").reduce((sum, order) => {
+  const completedOrders = merchantOrders.filter((order) => order.status === "delivered");
+  const completedSales = completedOrders.reduce((sum, order) => {
     return sum + order.order_items.reduce((lineSum, item) => lineSum + Number(item.line_total ?? (Number(item.unit_price) * Number(item.quantity))), 0);
   }, 0);
-  const cards = document.querySelectorAll(".stats-grid .stat-card");
-  if (cards[0]) {
-    cards[0].querySelector(".stat-value").textContent = orderMoney(completedSales);
-    cards[0].querySelector(".stat-foot").textContent = "إجمالي الطلبات المكتملة";
-  }
-  if (cards[1]) {
-    cards[1].querySelector(".stat-value").textContent = count + " طلب";
-    cards[1].querySelector(".stat-foot").textContent = "الطلبات المسجلة لمتجرك";
-  }
-  if (cards[3]) {
-    cards[3].querySelector(".stat-value").textContent = pending + " طلب";
-    cards[3].querySelector(".stat-foot").textContent = pending ? "تحتاج إلى متابعة" : "لا توجد طلبات معلّقة";
-    const progress = cards[3].querySelector(".pending-progress span");
-    if (progress) progress.style.width = (count ? Math.round((pending / count) * 100) : 0) + "%";
+  const average = completedOrders.length ? completedSales / completedOrders.length : 0;
+  const salesValue = document.querySelector("#total-sales-value");
+  const salesNote = document.querySelector("#sales-summary-note");
+  const ordersValue = document.querySelector("#orders-count-value");
+  const ordersNote = document.querySelector("#orders-summary-note");
+  const pendingValue = document.querySelector("#pending-orders-value");
+  const pendingNote = document.querySelector("#pending-summary-note");
+  if (salesValue) salesValue.textContent = orderMoney(completedSales);
+  if (salesNote) salesNote.textContent = completedSales ? "المبيعات من الطلبات المكتملة" : "لا توجد مبيعات مكتملة حالياً";
+  if (ordersValue) ordersValue.textContent = count + " طلب";
+  if (ordersNote) ordersNote.textContent = count ? "الطلبات المسجلة لمتجرك" : "لا توجد طلبات حالياً";
+  if (pendingValue) pendingValue.textContent = pending + " طلب";
+  if (pendingNote) pendingNote.textContent = pending ? "تحتاج إلى متابعة" : "لا توجد طلبات معلّقة";
+  const progress = document.querySelector(".pending-progress span");
+  if (progress) progress.style.width = (count ? Math.round((pending / count) * 100) : 0) + "%";
+
+  const analyticsSales = document.querySelector("#analytics-sales-total");
+  const analyticsOrders = document.querySelector("#analytics-orders-count");
+  const analyticsAverage = document.querySelector("#analytics-average-order");
+  const analyticsEmpty = document.querySelector("#analytics-empty-note");
+  if (analyticsSales) analyticsSales.textContent = orderMoney(completedSales);
+  if (analyticsOrders) analyticsOrders.textContent = String(count);
+  if (analyticsAverage) analyticsAverage.textContent = orderMoney(average);
+  if (analyticsEmpty) {
+    analyticsEmpty.textContent = completedOrders.length
+      ? "المبيعات محسوبة من الطلبات المكتملة فقط."
+      : "لا توجد مبيعات مكتملة حالياً. ستظهر الأرقام بعد إكمال الطلبات.";
+    analyticsEmpty.classList.toggle("hidden", completedOrders.length > 0);
   }
   document.querySelectorAll(".pending-count").forEach((badge) => { badge.textContent = String(pending); });
 }
@@ -301,14 +316,19 @@ function updateOrderSummary() {
 function renderMerchantOrders() {
   const host = document.querySelector("#merchant-orders-list");
   host.replaceChildren();
-  if (!merchantOrders.length) {
+  const visibleOrders = orderFilter === "pending"
+    ? merchantOrders.filter((order) => order.status === "pending")
+    : merchantOrders;
+  if (!visibleOrders.length) {
     const empty = document.createElement("div");
     empty.className = "notice-box";
-    empty.textContent = "لا توجد طلبات لهذا المتجر حتى الآن. ستظهر هنا الطلبات الجديدة التي يسجلها الزبائن من السوق.";
+    empty.textContent = orderFilter === "pending"
+      ? "لا توجد طلبات بانتظار المعالجة حالياً."
+      : "لا توجد طلبات لهذا المتجر حالياً. ستظهر هنا الطلبات الجديدة التي يسجلها الزبائن من السوق.";
     host.append(empty);
     renderRecentOrders(); updateOrderSummary(); return;
   }
-  merchantOrders.forEach((order) => {
+  visibleOrders.forEach((order) => {
     const card = document.createElement("article"); card.className = "merchant-order-card";
     const head = document.createElement("div"); head.className = "merchant-order-head";
     const heading = document.createElement("div");
