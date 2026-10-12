@@ -263,7 +263,18 @@ async function initSeller() {
   document.querySelector(".profile-name strong").textContent = profile.full_name || "التاجر";
   document.querySelector(".store-chip strong").textContent = store.name;
   document.querySelector(".store-avatar").innerHTML = store.logo_url ? '<img src="' + store.logo_url + '" alt="">' : "ت";
-  document.querySelector(".profile-avatar").textContent = (profile.full_name || "ت").trim().slice(0,1);
+  const profileAvatar = document.querySelector(".profile-avatar");
+  if (store.logo_url) {
+    profileAvatar.replaceChildren();
+    const logo = document.createElement("img");
+    logo.src = store.logo_url;
+    logo.alt = "شعار المتجر";
+    logo.className = "profile-avatar-image";
+    profileAvatar.append(logo);
+    profileAvatar.setAttribute("aria-label", "الملف الشخصي للتاجر");
+  } else {
+    profileAvatar.textContent = (profile.full_name || "ت").trim().slice(0,1);
+  }
 
   const { data: loadedProducts, error: productsError } = await db.from("products")
     .select("id,name,price,stock_quantity,status,category_id,image_url,categories(name)")
