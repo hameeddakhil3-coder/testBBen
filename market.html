@@ -44,8 +44,33 @@
     <div class="cart-dialog-head"><div><p class="section-eyebrow">قائمة مشترياتك</p><h2>سلة التسوق</h2></div><button id="close-cart-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button></div>
     <div id="cart-content"></div>
     <div class="cart-total" id="cart-total"></div>
-    <p class="cart-note">هذه المرحلة تحفظ المنتجات في السلة. إتمام الطلب والدفع سيُضافان في المرحلة التالية.</p>
-    <button id="continue-shopping" class="primary-market-button" type="button">متابعة التسوق</button>
+    <p class="cart-note">راجع المنتجات والكميات قبل تأكيد الطلب. الدفع الإلكتروني غير مفعّل حالياً.</p>
+    <button id="checkout-button" class="primary-market-button" type="button" disabled>إتمام الطلب · الدفع عند الاستلام</button>
+    <button id="continue-shopping" class="secondary-market-button" type="button">متابعة التسوق</button>
+  </dialog>
+  <dialog id="checkout-dialog" class="cart-dialog checkout-dialog">
+    <div class="cart-dialog-head"><div><p class="section-eyebrow">الخطوة الأخيرة</p><h2>بيانات التوصيل</h2></div><button id="close-checkout-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button></div>
+    <form id="checkout-form" class="checkout-form">
+      <label for="checkout-name">اسم المستلم</label>
+      <input id="checkout-name" name="customerName" required minlength="2" autocomplete="name" placeholder="الاسم الكامل">
+      <label for="checkout-phone">رقم الهاتف</label>
+      <input id="checkout-phone" name="customerPhone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="07xxxxxxxxx">
+      <label for="checkout-address">عنوان التوصيل بالتفصيل</label>
+      <textarea id="checkout-address" name="shippingAddress" required minlength="6" autocomplete="street-address" rows="3" placeholder="المحافظة، المنطقة، أقرب نقطة دالة"></textarea>
+      <label for="checkout-notes">ملاحظات للسائق (اختياري)</label>
+      <textarea id="checkout-notes" name="notes" rows="2" placeholder="تفاصيل إضافية للتوصيل"></textarea>
+      <p class="cart-note">سيُسجّل الطلب بحالة «قيد الانتظار». لا يتم تحصيل أي مبلغ إلكتروني في هذه المرحلة.</p>
+      <p id="checkout-error" class="checkout-error" role="alert" aria-live="polite"></p>
+      <button id="confirm-order-button" class="primary-market-button" type="submit">تأكيد الطلب</button>
+    </form>
+    <div id="checkout-success" class="checkout-success" hidden>
+      <div class="checkout-success-icon">✓</div>
+      <h2>تم تسجيل طلبك بنجاح</h2>
+      <p id="checkout-success-number"></p>
+      <p id="checkout-success-total" class="checkout-success-total"></p>
+      <p class="cart-note">احتفظ برقم الطلب للمتابعة مع المتجر. الدفع الإلكتروني غير مفعّل حالياً.</p>
+      <button id="finish-checkout" class="primary-market-button" type="button">العودة إلى السوق</button>
+    </div>
   </dialog>
   <div class="market-toast" id="market-toast" role="status" aria-live="polite"></div>
 </body>
