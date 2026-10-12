@@ -13,7 +13,10 @@ const views = {
   orders: document.querySelector("#orders-view"),
   analytics: document.querySelector("#analytics-view")
 };
-let demoProducts = [];
+let products = [];
+let currentUser = null;
+let currentStore = null;
+const db = window.bbenSupabase;
 let toastTimer;
 
 function showToast(text) {
@@ -47,8 +50,8 @@ function showView(view) {
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => showView(button.dataset.view)));
 document.querySelectorAll("[data-go]").forEach((button) => button.addEventListener("click", () => showView(button.dataset.go)));
 menuToggle.addEventListener("click", () => sidebar.classList.toggle("open"));
-document.querySelector("#notification-button").addEventListener("click", () => showToast("لا توجد إشعارات جديدة في المعاينة."));
-document.querySelector("#profile-button").addEventListener("click", () => showToast("إعدادات الحساب ستُضاف في مرحلة لاحقة."));
+document.querySelector("#notification-button").addEventListener("click", () => showToast("لا توجد إشعارات جديدة."));
+document.querySelector("#profile-button").addEventListener("click", async () => { if (db) await db.auth.signOut(); window.location.href = "index.html"; });
 document.querySelector("#help-button").addEventListener("click", () => showToast("مركز المساعدة قيد التجهيز."));
 
 const dialog = document.querySelector("#product-dialog");
@@ -73,14 +76,14 @@ document.querySelector("#cancel-dialog").addEventListener("click", () => dialog.
 function renderProductList() {
   const list = document.querySelector("#product-list");
   list.replaceChildren();
-  if (!demoProducts.length) {
+  if (!products.length) {
     const note = document.createElement("p");
     note.className = "dialog-note";
-    note.textContent = "ما أضفت منتجات تجريبية بعد. اضغط «إضافة منتج» لتجربة النموذج.";
+    note.textContent = "لا توجد منتجات محفوظة بعد. اضغط «إضافة منتج» لإضافة أول منتج إلى قاعدة البيانات.";
     list.append(note);
     return;
   }
-  demoProducts.forEach((product) => {
+  products.forEach((product) => {
     const row = document.createElement("div");
     row.className = "product-list-row";
     const icon = document.createElement("span");
@@ -91,7 +94,7 @@ function renderProductList() {
     const name = document.createElement("strong");
     name.textContent = product.name;
     const detail = document.createElement("small");
-    detail.textContent = product.category + " · الكمية: " + product.stock;
+    detail.textContent = (product.categories?.name || "غير مصنف") + " · الكمية: " + product.stock_quantity;
     info.append(name,detail);
     const price = document.createElement("span");
     price.className = "list-price";
@@ -101,7 +104,7 @@ function renderProductList() {
   });
 }
 
-productForm.addEventListener("submit", (event) => {
+productForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const name = productName.value.trim();
   const price = Number(productPrice.value);
@@ -110,16 +113,145 @@ productForm.addEventListener("submit", (event) => {
     dialogError.textContent = "تأكد من اسم المنتج والسعر والكمية.";
     return;
   }
-  demoProducts.unshift({name,price,stock,category:productCategory.value});
-  const count = 4 + demoProducts.length;
+  if (!db || !currentUser || !currentStore) {
+    dialogError.textContent = "تعذر التحقق من حساب التاجر أو متجره. أعد تحميل الصفحة.";
+    return;
+  }
+
+  const submit = productForm.querySelector('button[type="submit"]');
+  submit.disabled = true;
+  dialogError.textContent = "";
+  try {
+    const { data: category } = await db.from("categories").select("id").eq("name", productCategory.value).maybeSingle();
+    const { data, error } = await db.from("products").insert({
+      store_id: currentStore.id,
+      category_id: category?.id || null,
+      name,
+      price,
+      currency: "IQD",
+      stock_quantity: stock,
+      status: "active"
+    }).select("id,name,price,stock_quantity,status,category_id").single();
+    if (error) throw error;
+
+    products.unshift({ ...data, categories: { name: productCategory.value } });
+    updateProductCounts();
+    productForm.reset();
+    dialog.close();
+    renderProductList();
+    showView("products");
+    showToast("تم حفظ المنتج في قاعدة البيانات بنجاح.");
+  } catch (error) {
+    dialogError.textContent = "تعذر حفظ المنتج: " + error.message;
+  } finally {
+    submit.disabled = false;
+  }
+});
+
+function updateProductCounts() {
+  const count = products.length;
   document.querySelector("#product-nav-count").textContent = String(count);
   document.querySelector("#active-products-value").innerHTML = count + ' <small>منتجاً</small>';
-  productForm.reset();
-  dialog.close();
+  const badge = document.querySelector(".demo-badge");
+  if (badge) badge.innerHTML = "<span></span>متصل بقاعدة البيانات";
+}
+
+async function initSeller() {
+  if (!db) {
+    window.location.href = "index.html";
+    return;
+  }
+  const { data: sessionData, error: sessionError } = await db.auth.getSession();
+  currentUser = sessionData?.session?.user;
+  if (sessionError || !currentUser) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  const { data: profile, error: profileError } = await db.from("profiles").select("id,full_name,role").eq("id", currentUser.id).single();
+  if (profileError || profile?.role !== "merchant") {
+    await db.auth.signOut();
+    window.location.href = "index.html";
+    return;
+  }
+
+  const fallbackName = (profile.full_name || "متجري").trim();
+  const slug = "store-" + currentUser.id.replace(/-/g, "").slice(0, 16);
+  let { data: store, error: storeError } = await db.from("stores").select("id,name,slug").eq("owner_id", currentUser.id).maybeSingle();
+  if (storeError) {
+    showToast("تعذر تحميل بيانات المتجر: " + storeError.message);
+    return;
+  }
+  if (!store) {
+    const result = await db.from("stores").insert({
+      owner_id: currentUser.id,
+      name: fallbackName + " - متجري",
+      slug,
+      status: "active"
+    }).select("id,name,slug").single();
+    store = result.data;
+    storeError = result.error;
+  }
+  if (storeError || !store) {
+    showToast("تعذر إنشاء المتجر: " + (storeError?.message || "خطأ غير معروف"));
+    return;
+  }
+  currentStore = store;
+  document.querySelector(".profile-name strong").textContent = profile.full_name || "التاجر";
+  document.querySelector(".store-chip strong").textContent = store.name;
+
+  const { data: loadedProducts, error: productsError } = await db.from("products")
+    .select("id,name,price,stock_quantity,status,category_id,categories(name)")
+    .eq("store_id", currentStore.id).order("created_at", { ascending: false });
+  if (productsError) {
+    showToast("تعذر تحميل المنتجات: " + productsError.message);
+    return;
+  }
+  products = loadedProducts || [];
+  updateProductCounts();
   renderProductList();
-  showView("products");
-  showToast("تمت إضافة المنتج للمعاينة فقط، ولم يُحفظ في قاعدة بيانات.");
-});
+  const grid = document.querySelector("#products-grid");
+  if (grid) {
+    grid.replaceChildren();
+    if (!products.length) {
+      const note = document.createElement("p");
+      note.className = "dialog-note";
+      note.textContent = "لم تضف منتجات بعد. استخدم زر «إضافة منتج» لبدء متجرك.";
+      grid.append(note);
+    } else {
+      products.slice(0, 4).forEach((product) => {
+        const card = document.createElement("article");
+        card.className = "product-card";
+        const art = document.createElement("div");
+        art.className = "product-art";
+        const label = document.createElement("span");
+        label.textContent = "منتج محفوظ";
+        const emoji = document.createElement("b");
+        emoji.textContent = "📦";
+        art.append(label, emoji);
+        const info = document.createElement("div");
+        info.className = "product-info";
+        const category = document.createElement("span");
+        category.className = "product-category";
+        category.textContent = product.categories?.name || "غير مصنف";
+        const title = document.createElement("strong");
+        title.textContent = product.name;
+        const details = document.createElement("div");
+        const price = document.createElement("b");
+        price.textContent = new Intl.NumberFormat("ar-IQ").format(product.price) + " د.ع";
+        const stock = document.createElement("span");
+        stock.className = "stock";
+        stock.textContent = product.stock_quantity + " قطعة";
+        details.append(price, stock);
+        info.append(category, title, details);
+        card.append(art, info);
+        grid.append(card);
+      });
+    }
+  }
+}
+
+initSeller();
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") sidebar.classList.remove("open");
