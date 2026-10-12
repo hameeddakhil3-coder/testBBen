@@ -85,6 +85,7 @@ menuToggle.addEventListener("click", () => sidebar.classList.toggle("open"));
 document.querySelector("#notification-button").addEventListener("click", () => showToast("لا توجد إشعارات جديدة."));
 document.querySelector("#refresh-orders-button").addEventListener("click", loadMerchantOrders);
 document.querySelector("#profile-button").addEventListener("click", () => { window.location.href = "merchant-profile.html"; });
+document.querySelector("#view-public-store").addEventListener("click", () => { if (currentStore?.id) window.location.href = "store.html?id=" + encodeURIComponent(currentStore.id); else showToast("تعذر تحديد متجر حسابك."); });
 document.querySelector("#logout-button").addEventListener("click", async () => { if (db) await db.auth.signOut(); window.location.href = "index.html"; });
 document.querySelector("#help-button").addEventListener("click", () => showToast("مركز المساعدة قيد التجهيز."));
 
