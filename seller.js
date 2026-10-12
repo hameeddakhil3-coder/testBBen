@@ -16,6 +16,7 @@ const views = {
 let products = [];
 let currentUser = null;
 let currentStore = null;
+let merchantOrders = [];
 const db = window.bbenSupabase;
 let toastTimer;
 
@@ -44,6 +45,7 @@ function showView(view) {
   pageTitle.textContent = isOverview ? "صباح الخير، تاجرنا 👋" : titles[view];
   sidebar.classList.remove("open");
   if (view === "products") renderProductList();
+  if (view === "orders" && currentStore) loadMerchantOrders();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -51,6 +53,7 @@ document.querySelectorAll("[data-view]").forEach((button) => button.addEventList
 document.querySelectorAll("[data-go]").forEach((button) => button.addEventListener("click", () => showView(button.dataset.go)));
 menuToggle.addEventListener("click", () => sidebar.classList.toggle("open"));
 document.querySelector("#notification-button").addEventListener("click", () => showToast("لا توجد إشعارات جديدة."));
+document.querySelector("#refresh-orders-button").addEventListener("click", loadMerchantOrders);
 document.querySelector("#profile-button").addEventListener("click", () => { window.location.href = "merchant-profile.html"; });
 document.querySelector("#logout-button").addEventListener("click", async () => { if (db) await db.auth.signOut(); window.location.href = "index.html"; });
 document.querySelector("#help-button").addEventListener("click", () => showToast("مركز المساعدة قيد التجهيز."));
@@ -192,6 +195,183 @@ function updateProductCounts() {
   if (badge) badge.innerHTML = "<span></span>متصل بقاعدة البيانات";
 }
 
+
+const orderStatusLabels = {
+  pending: "قيد الانتظار",
+  processing: "قيد المعالجة",
+  shipped: "قيد التوصيل",
+  delivered: "مكتمل",
+  cancelled: "ملغي"
+};
+const orderMoney = (value) => new Intl.NumberFormat("ar-IQ").format(Number(value) || 0) + " د.ع";
+const orderStatusClass = (status) => ({
+  pending: "status-pending",
+  processing: "status-pending",
+  shipped: "status-shipping",
+  delivered: "status-complete",
+  cancelled: "status-cancelled"
+}[status] || "status-pending");
+
+function renderRecentOrders() {
+  const body = document.querySelector("#orders-table-body");
+  body.replaceChildren();
+  const recent = merchantOrders.slice(0, 4);
+  if (!recent.length) {
+    const row = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = 5;
+    cell.textContent = "لا توجد طلبات لهذا المتجر حتى الآن.";
+    row.append(cell); body.append(row); return;
+  }
+  recent.forEach((order) => {
+    const row = document.createElement("tr");
+    const number = document.createElement("td");
+    const strong = document.createElement("strong");
+    strong.textContent = "#BB-" + order.order_number; number.append(strong);
+    const customer = document.createElement("td"); customer.textContent = order.customer_name || "زبون";
+    const date = document.createElement("td");
+    date.textContent = new Date(order.created_at).toLocaleString("ar-IQ", { dateStyle: "medium", timeStyle: "short" });
+    const amount = order.order_items.reduce((sum, item) => sum + Number(item.line_total ?? (Number(item.unit_price) * Number(item.quantity))), 0);
+    const total = document.createElement("td"); total.textContent = orderMoney(amount);
+    const status = document.createElement("td");
+    const badge = document.createElement("span"); badge.className = "status " + orderStatusClass(order.status);
+    badge.textContent = orderStatusLabels[order.status] || order.status; status.append(badge);
+    row.append(number, customer, date, total, status); body.append(row);
+  });
+}
+
+function updateOrderSummary() {
+  const count = merchantOrders.length;
+  const pending = merchantOrders.filter((order) => order.status === "pending").length;
+  const completedSales = merchantOrders.filter((order) => order.status === "delivered").reduce((sum, order) => {
+    return sum + order.order_items.reduce((lineSum, item) => lineSum + Number(item.line_total ?? (Number(item.unit_price) * Number(item.quantity))), 0);
+  }, 0);
+  const cards = document.querySelectorAll(".stats-grid .stat-card");
+  if (cards[0]) {
+    cards[0].querySelector(".stat-value").textContent = orderMoney(completedSales);
+    cards[0].querySelector(".stat-foot").textContent = "إجمالي الطلبات المكتملة";
+  }
+  if (cards[1]) {
+    cards[1].querySelector(".stat-value").textContent = count + " طلب";
+    cards[1].querySelector(".stat-foot").textContent = "الطلبات المسجلة لمتجرك";
+  }
+  if (cards[3]) {
+    cards[3].querySelector(".stat-value").textContent = pending + " طلب";
+    cards[3].querySelector(".stat-foot").textContent = pending ? "تحتاج إلى متابعة" : "لا توجد طلبات معلّقة";
+    const progress = cards[3].querySelector(".pending-progress span");
+    if (progress) progress.style.width = (count ? Math.round((pending / count) * 100) : 0) + "%";
+  }
+  document.querySelectorAll(".pending-count").forEach((badge) => { badge.textContent = String(pending); });
+}
+
+function renderMerchantOrders() {
+  const host = document.querySelector("#merchant-orders-list");
+  host.replaceChildren();
+  if (!merchantOrders.length) {
+    const empty = document.createElement("div");
+    empty.className = "notice-box";
+    empty.textContent = "لا توجد طلبات لهذا المتجر حتى الآن. ستظهر هنا الطلبات الجديدة التي يسجلها الزبائن من السوق.";
+    host.append(empty);
+    renderRecentOrders(); updateOrderSummary(); return;
+  }
+  merchantOrders.forEach((order) => {
+    const card = document.createElement("article"); card.className = "merchant-order-card";
+    const head = document.createElement("div"); head.className = "merchant-order-head";
+    const heading = document.createElement("div");
+    const number = document.createElement("strong"); number.textContent = "#BB-" + order.order_number;
+    const date = document.createElement("small");
+    date.textContent = new Date(order.created_at).toLocaleString("ar-IQ", { dateStyle: "medium", timeStyle: "short" });
+    heading.append(number, date);
+    const status = document.createElement("span"); status.className = "status " + orderStatusClass(order.status);
+    status.textContent = orderStatusLabels[order.status] || order.status;
+    head.append(heading, status); card.append(head);
+
+    const customer = document.createElement("div"); customer.className = "merchant-order-customer";
+    const customerName = document.createElement("strong"); customerName.textContent = order.customer_name || "لم يذكر الاسم";
+    const phone = document.createElement("a"); phone.textContent = order.customer_phone || "لم يذكر رقم الهاتف";
+    if (order.customer_phone) phone.href = "tel:" + order.customer_phone.replace(/[^+0-9]/g, "");
+    const address = document.createElement("p"); address.textContent = "عنوان التوصيل: " + (order.shipping_address || "غير محدد");
+    customer.append(customerName, phone, address); card.append(customer);
+
+    const items = document.createElement("div"); items.className = "merchant-order-items";
+    order.order_items.forEach((item) => {
+      const line = document.createElement("div"); line.className = "merchant-order-line";
+      const label = document.createElement("span"); label.textContent = item.product_name + " × " + item.quantity;
+      const price = document.createElement("strong");
+      price.textContent = orderMoney(item.line_total ?? (Number(item.unit_price) * Number(item.quantity)));
+      line.append(label, price); items.append(line);
+    });
+    card.append(items);
+    if (order.notes) {
+      const notes = document.createElement("p"); notes.className = "merchant-order-notes";
+      notes.textContent = "ملاحظات الزبون: " + order.notes; card.append(notes);
+    }
+    const total = order.order_items.reduce((sum, item) => sum + Number(item.line_total ?? (Number(item.unit_price) * Number(item.quantity))), 0);
+    const footer = document.createElement("div"); footer.className = "merchant-order-footer";
+    const totalLabel = document.createElement("div");
+    const totalCaption = document.createElement("small"); totalCaption.textContent = "إجمالي منتجات متجرك";
+    const totalValue = document.createElement("strong"); totalValue.textContent = orderMoney(total);
+    totalLabel.append(totalCaption, totalValue);
+    const controls = document.createElement("label"); controls.className = "order-status-control";
+    const controlsLabel = document.createElement("span"); controlsLabel.textContent = "تحديث الحالة";
+    const select = document.createElement("select"); select.setAttribute("aria-label", "تحديث حالة الطلب #" + order.order_number);
+    const transitions = {
+      pending: ["pending", "processing", "cancelled"],
+      processing: ["processing", "shipped", "cancelled"],
+      shipped: ["shipped", "delivered"],
+      delivered: ["delivered"],
+      cancelled: ["cancelled"]
+    };
+    (transitions[order.status] || [order.status]).forEach((value) => {
+      const option = document.createElement("option"); option.value = value; option.textContent = orderStatusLabels[value] || value;
+      select.append(option);
+    });
+    select.value = order.status;
+    select.addEventListener("change", () => updateMerchantOrderStatus(order, select));
+    controls.append(controlsLabel, select); footer.append(totalLabel, controls); card.append(footer);
+    host.append(card);
+  });
+  renderRecentOrders(); updateOrderSummary();
+}
+
+async function loadMerchantOrders() {
+  const host = document.querySelector("#merchant-orders-list");
+  if (!db || !currentStore || !host) return;
+  host.replaceChildren();
+  const loading = document.createElement("div"); loading.className = "notice-box"; loading.textContent = "جارٍ تحميل الطلبات من قاعدة البيانات..."; host.append(loading);
+  const { data, error } = await db.from("orders")
+    .select("id,order_number,status,customer_name,customer_phone,shipping_address,notes,created_at,order_items!inner(id,store_id,product_name,unit_price,quantity,line_total)")
+    .eq("order_items.store_id", currentStore.id)
+    .order("created_at", { ascending: false });
+  if (error) {
+    host.replaceChildren();
+    const notice = document.createElement("div"); notice.className = "notice-box"; notice.textContent = "تعذر تحميل الطلبات: " + error.message; host.append(notice);
+    showToast("تعذر تحميل الطلبات من قاعدة البيانات.");
+    return;
+  }
+  merchantOrders = (data || []).map((order) => ({ ...order, order_items: order.order_items || [] }));
+  renderMerchantOrders();
+}
+
+async function updateMerchantOrderStatus(order, select) {
+  const previous = order.status;
+  const next = select.value;
+  if (next === previous) return;
+  select.disabled = true;
+  try {
+    const { data, error } = await db.from("orders").update({ status: next }).eq("id", order.id).select("id,status").single();
+    if (error) throw error;
+    order.status = data.status;
+    showToast("تم تحديث حالة الطلب #" + order.order_number + " إلى «" + (orderStatusLabels[data.status] || data.status) + "».");
+    renderMerchantOrders();
+  } catch (error) {
+    select.value = previous;
+    showToast("تعذر تحديث حالة الطلب: " + error.message);
+  } finally {
+    select.disabled = false;
+  }
+}
+
 function renderProductCards() {
   const grid = document.querySelector("#products-grid");
   if (!grid) return;
@@ -297,6 +477,7 @@ async function initSeller() {
   updateProductCounts();
   renderProductList();
   renderProductCards();
+  await loadMerchantOrders();
 }
 
 initSeller();
