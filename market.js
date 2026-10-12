@@ -157,6 +157,7 @@ async function loadCart() {
   $("#cart-count").textContent = String(cartItems.reduce((sum,item) => sum + Number(item.quantity || 0),0));
 }
 function renderCart() {
+  $("#checkout-button").disabled = true;
   const host = $("#cart-content"); host.replaceChildren();
   if (!currentUser || currentRole !== "customer") {
     const p = document.createElement("p"); p.className = "market-message"; p.textContent = "سجّل الدخول بحساب مشتري لعرض سلتك المحفوظة."; host.append(p);
@@ -186,6 +187,7 @@ function renderCart() {
   const label = document.createElement("span"); label.textContent = "المجموع التقريبي";
   const value = document.createElement("strong"); value.textContent = money(total);
   $("#cart-total").replaceChildren(label, value);
+  $("#checkout-button").disabled = false;
 }
 async function changeCartQuantity(item, quantity) {
   try {
@@ -201,6 +203,50 @@ async function changeCartQuantity(item, quantity) {
 }
 async function openCart() {
   await loadCart(); renderCart(); $("#cart-dialog").showModal();
+}
+async function openCheckout() {
+  if (!(await ensureCustomer())) return;
+  await loadCart();
+  renderCart();
+  if (!cartItems.length) { toast("أضف منتجاً واحداً على الأقل قبل إتمام الطلب."); return; }
+  $("#cart-dialog").close();
+  $("#checkout-form").reset();
+  $("#checkout-error").textContent = "";
+  $("#checkout-form").hidden = false;
+  $("#checkout-success").hidden = true;
+  if (!$("#checkout-name").value.trim()) $("#checkout-name").value = $("#account-label").textContent === "حسابي" ? "" : $("#account-label").textContent;
+  $("#checkout-dialog").showModal();
+}
+async function submitCheckout(event) {
+  event.preventDefault();
+  if (!(await ensureCustomer())) return;
+  const button = $("#confirm-order-button");
+  const errorBox = $("#checkout-error");
+  errorBox.textContent = "";
+  button.disabled = true;
+  button.textContent = "جارٍ تسجيل الطلب...";
+  try {
+    const form = new FormData($("#checkout-form"));
+    const { data, error } = await db.rpc("checkout_cart", {
+      p_customer_name: String(form.get("customerName") || "").trim(),
+      p_customer_phone: String(form.get("customerPhone") || "").trim(),
+      p_shipping_address: String(form.get("shippingAddress") || "").trim(),
+      p_notes: String(form.get("notes") || "").trim() || null
+    });
+    if (error) throw error;
+    if (!data || !data.id) throw new Error("لم تصلنا بيانات تأكيد الطلب. تحقق من الطلبات قبل إعادة المحاولة.");
+    $("#checkout-success-number").textContent = "رقم الطلب: #BB-" + (data.order_number ?? String(data.id).slice(0, 8).toUpperCase());
+    $("#checkout-success-total").textContent = "الإجمالي: " + money(data.total);
+    $("#checkout-form").hidden = true;
+    $("#checkout-success").hidden = false;
+    await initMarket();
+  } catch (error) {
+    console.error("Checkout failed:", error);
+    errorBox.textContent = error.message || "تعذر تسجيل الطلب. يرجى المحاولة مرة أخرى.";
+  } finally {
+    button.disabled = false;
+    button.textContent = "تأكيد الطلب";
+  }
 }
 async function initMarket() {
   $("#market-message").textContent = "جارٍ تحميل المنتجات...";
@@ -243,10 +289,14 @@ $("#account-button").addEventListener("click", async () => {
   window.location.href = "index.html";
 });
 $("#cart-button").addEventListener("click", openCart);
+$("#checkout-button").addEventListener("click", openCheckout);
+$("#checkout-form").addEventListener("submit", submitCheckout);
+$("#close-checkout-dialog").addEventListener("click", () => $("#checkout-dialog").close());
+$("#finish-checkout").addEventListener("click", () => $("#checkout-dialog").close());
 $("#close-product-dialog").addEventListener("click", () => $("#product-dialog").close());
 $("#close-cart-dialog").addEventListener("click", () => $("#cart-dialog").close());
 $("#continue-shopping").addEventListener("click", () => $("#cart-dialog").close());
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") { if ($("#product-dialog").open) $("#product-dialog").close(); if ($("#cart-dialog").open) $("#cart-dialog").close(); }
+  if (event.key === "Escape") { if ($("#product-dialog").open) $("#product-dialog").close(); if ($("#cart-dialog").open) $("#cart-dialog").close(); if ($("#checkout-dialog").open) $("#checkout-dialog").close(); }
 });
 initMarket();
