@@ -121,8 +121,13 @@ form.addEventListener("submit", async (event) => {
       });
       if (error) throw error;
 
-      if (data.session) {
-        window.location.href = selectedRole === "merchant" ? "seller.html" : "market.html";
+      if (data.session && selectedRole === "merchant") {
+        window.location.href = "seller.html";
+        return;
+      }
+      if (data.session && selectedRole === "customer") {
+        message.textContent = "تم إنشاء حساب المشتري بنجاح. واجهة السوق قيد التجهيز، ويمكنك تسجيل الدخول لاحقاً.";
+        message.classList.add("success");
         return;
       }
       message.textContent = "تم إنشاء طلب الحساب. افحص بريدك الإلكتروني لتأكيد الحساب، ثم سجّل الدخول.";
