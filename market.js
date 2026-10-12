@@ -448,7 +448,7 @@ async function initMarket() {
     if (isStorePage) {
       $("#store-public-hero").classList.remove("hidden");
       document.querySelector(".market-hero").classList.add("hidden");
-      document.querySelector("#categories-section h2").textContent = "تصنيفات المتجر";
+      document.querySelector(".section-heading:not(.product-heading) h2").textContent = "تصنيفات المتجر";
       document.querySelector("#products-section h2").textContent = "منتجات هذا المتجر";
       document.querySelector("#public-store-browse-button").addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth" }));
       if (!requestedStoreId) {
