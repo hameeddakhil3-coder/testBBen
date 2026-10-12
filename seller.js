@@ -270,6 +270,16 @@ async function initSeller() {
     logo.src = store.logo_url;
     logo.alt = "شعار المتجر";
     logo.className = "profile-avatar-image";
+    // Inline sizing also protects the avatar if an older cached stylesheet is served.
+    Object.assign(logo.style, {
+      display: "block",
+      width: "100%",
+      height: "100%",
+      maxWidth: "100%",
+      maxHeight: "100%",
+      objectFit: "cover",
+      borderRadius: "inherit"
+    });
     profileAvatar.append(logo);
     profileAvatar.setAttribute("aria-label", "الملف الشخصي للتاجر");
   } else {
