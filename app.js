@@ -88,7 +88,7 @@ loginTab.addEventListener("click", () => setMode("login"));
 registerTab.addEventListener("click", () => setMode("register"));
 switchModeButton.addEventListener("click", () => setMode(mode === "login" ? "register" : "login"));
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
   message.textContent = "";
   message.className = "form-message";
@@ -99,15 +99,63 @@ form.addEventListener("submit", (event) => {
     return;
   }
 
-  if (mode === "register") {
-    const selectedRole = form.querySelector('input[name="role"]:checked').value;
-    const roleName = selectedRole === "merchant" ? "التاجر" : "المشتري";
-    message.textContent = "الواجهة تعمل بشكل صحيح. تم التحقق من البيانات محلياً كمعاينة فقط. نوع الحساب المختار: " + roleName + ". التسجيل الحقيقي غير مفعّل إلى أن نربط Supabase.";
-  } else {
-    message.textContent = "الواجهة تعمل بشكل صحيح، لكن تسجيل الدخول الحقيقي غير مفعّل بعد. سنضيفه عند ربط Supabase.";
+  if (!window.bbenSupabase) {
+    message.textContent = "تعذر الاتصال بخدمة الحسابات. أعد تحميل الصفحة وحاول مجدداً.";
+    message.classList.add("error");
+    return;
   }
 
-  message.classList.add("success");
+  submitButton.disabled = true;
+  submitButton.textContent = mode === "register" ? "جارٍ إنشاء الحساب..." : "جارٍ تسجيل الدخول...";
+
+  try {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (mode === "register") {
+      const selectedRole = form.querySelector('input[name="role"]:checked').value;
+      const { data, error } = await window.bbenSupabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: nameInput.value.trim(), role: selectedRole } }
+      });
+      if (error) throw error;
+
+      if (data.session) {
+        window.location.href = selectedRole === "merchant" ? "seller.html" : "market.html";
+        return;
+      }
+      message.textContent = "تم إنشاء طلب الحساب. افحص بريدك الإلكتروني لتأكيد الحساب، ثم سجّل الدخول.";
+      message.classList.add("success");
+    } else {
+      const { data, error } = await window.bbenSupabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+
+      const { data: profile, error: profileError } = await window.bbenSupabase
+        .from("profiles").select("role").eq("id", data.user.id).single();
+      if (profileError) throw profileError;
+
+      if (profile.role === "merchant") {
+        window.location.href = "seller.html";
+        return;
+      }
+      message.textContent = "تم تسجيل الدخول بنجاح. واجهة المشتري قيد التجهيز، ويمكنك العودة لاحقاً.";
+      message.classList.add("success");
+    }
+  } catch (error) {
+    const messages = {
+      "Invalid login credentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+      "User already registered": "هذا البريد مسجل مسبقاً. جرّب تسجيل الدخول.",
+      "Email not confirmed": "أكد بريدك الإلكتروني أولاً من الرسالة التي وصلتك."
+    };
+    message.textContent = messages[error.message] || ("تعذر إكمال العملية: " + error.message);
+    message.classList.add("error");
+  } finally {
+    submitButton.disabled = false;
+    submitButton.innerHTML = mode === "register"
+      ? 'إنشاء الحساب <span aria-hidden="true">←</span>'
+      : 'تسجيل الدخول <span aria-hidden="true">←</span>';
+  }
 });
 
 [emailInput, passwordInput, nameInput, confirmInput].forEach((input) => {
