@@ -230,7 +230,7 @@ async function loadOrderHistory() {
   host.append(loading);
   try {
     const { data, error } = await db.from("orders")
-      .select("id,order_number,status,customer_name,customer_phone,shipping_address,notes,created_at,order_items(id,store_id,product_name,unit_price,quantity,line_total)")
+      .select("id,order_number,status,total,customer_name,customer_phone,shipping_address,notes,created_at,order_items(id,store_id,product_name,unit_price,quantity,line_total)")
       .eq("customer_id", currentUser.id)
       .order("created_at", { ascending: false });
     if (error) throw error;
