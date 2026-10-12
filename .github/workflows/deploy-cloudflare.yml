@@ -36,7 +36,7 @@ jobs:
           fi
 
       - name: Deploy static assets to Cloudflare Workers
-        run: npx --yes wrangler@4 deploy --config wrangler.jsonc
+        run: npx --yes wrangler@4.80.0 deploy --config wrangler.jsonc
         env:
           CLOUDFLARE_ACCOUNT_ID: 50b014526ccbc86942e2555fe3807ccf
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
