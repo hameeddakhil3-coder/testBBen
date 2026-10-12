@@ -17,6 +17,8 @@ let products = [];
 let currentUser = null;
 let currentStore = null;
 let merchantOrders = [];
+let orderFilter = "all";
+let activeProductsOnly = false;
 const db = window.bbenSupabase;
 let toastTimer;
 
@@ -28,9 +30,11 @@ function showToast(text) {
   toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
 }
 
-function showView(view) {
+function showView(view, options = {}) {
   const titles = {overview:"نظرة عامة",products:"إدارة المنتجات",orders:"إدارة الطلبات",analytics:"المبيعات والتقارير"};
   const isOverview = view === "overview";
+  if (view === "products") activeProductsOnly = options.activeOnly === true;
+  if (view === "orders" && options.pendingOnly !== undefined) orderFilter = options.pendingOnly ? "pending" : "all";
   overviewSections.forEach((section) => section.classList.toggle("hidden", !isOverview));
   Object.entries(views).forEach(([key, element]) => {
     if (element) element.classList.toggle("hidden", key !== view);
@@ -44,13 +48,39 @@ function showView(view) {
   breadcrumbTitle.textContent = titles[view] || titles.overview;
   pageTitle.textContent = isOverview ? "صباح الخير، تاجرنا 👋" : titles[view];
   sidebar.classList.remove("open");
-  if (view === "products") renderProductList();
-  if (view === "orders" && currentStore) loadMerchantOrders();
+  if (view === "products") {
+    document.querySelector("#products-view-title").textContent = activeProductsOnly ? "المنتجات النشطة" : "إدارة المنتجات";
+    document.querySelector("#products-view-description").textContent = activeProductsOnly ? "هذه المنتجات النشطة المعروضة للبيع في متجرك." : "أضف منتجاتك واحفظها في قاعدة البيانات.";
+    document.querySelector("#clear-product-filter-button").classList.toggle("hidden", !activeProductsOnly);
+    renderProductList();
+  }
+  if (view === "orders") {
+    document.querySelector("#orders-view-title").textContent = orderFilter === "pending" ? "الطلبات بانتظار المعالجة" : "إدارة الطلبات";
+    document.querySelector("#orders-view-description").textContent = orderFilter === "pending" ? "الطلبات التي لم يبدأ تجهيزها بعد." : "طلبات زبائن متجرك المحفوظة في قاعدة البيانات. يمكنك تحديث حالة كل طلب.";
+    document.querySelector("#clear-order-filter-button").classList.toggle("hidden", orderFilter !== "pending");
+    if (currentStore) loadMerchantOrders();
+  }
+  if (view === "analytics") updateOrderSummary();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => showView(button.dataset.view)));
 document.querySelectorAll("[data-go]").forEach((button) => button.addEventListener("click", () => showView(button.dataset.go)));
+document.querySelectorAll("[data-stat-target]").forEach((card) => {
+  const activate = () => {
+    const target = card.dataset.statTarget;
+    if (target === "pending-orders") showView("orders", { pendingOnly: true });
+    else if (target === "active-products") showView("products", { activeOnly: true });
+    else if (target === "orders") showView("orders", { pendingOnly: false });
+    else showView("analytics");
+  };
+  card.addEventListener("click", activate);
+  card.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(); }
+  });
+});
+document.querySelector("#clear-order-filter-button").addEventListener("click", () => showView("orders", { pendingOnly: false }));
+document.querySelector("#clear-product-filter-button").addEventListener("click", () => showView("products", { activeOnly: false }));
 menuToggle.addEventListener("click", () => sidebar.classList.toggle("open"));
 document.querySelector("#notification-button").addEventListener("click", () => showToast("لا توجد إشعارات جديدة."));
 document.querySelector("#refresh-orders-button").addEventListener("click", loadMerchantOrders);
@@ -115,14 +145,17 @@ document.querySelector("#cancel-dialog").addEventListener("click", () => dialog.
 function renderProductList() {
   const list = document.querySelector("#product-list");
   list.replaceChildren();
-  if (!products.length) {
+  const visibleProducts = activeProductsOnly ? products.filter((product) => product.status === "active") : products;
+  if (!visibleProducts.length) {
     const note = document.createElement("p");
     note.className = "dialog-note";
-    note.textContent = "لا توجد منتجات محفوظة بعد. اضغط «إضافة منتج» لإضافة أول منتج إلى قاعدة البيانات.";
+    note.textContent = activeProductsOnly
+      ? "لا توجد منتجات نشطة حالياً."
+      : "لا توجد منتجات محفوظة بعد. اضغط «إضافة منتج» لإضافة أول منتج إلى قاعدة البيانات.";
     list.append(note);
     return;
   }
-  products.forEach((product) => {
+  visibleProducts.forEach((product) => {
     const row = document.createElement("div");
     row.className = "product-list-row";
     const icon = product.image_url ? document.createElement("img") : document.createElement("span");
@@ -189,8 +222,9 @@ productForm.addEventListener("submit", async (event) => {
 
 function updateProductCounts() {
   const count = products.length;
+  const activeCount = products.filter((product) => product.status === "active").length;
   document.querySelector("#product-nav-count").textContent = String(count);
-  document.querySelector("#active-products-value").innerHTML = count + ' <small>منتجاً</small>';
+  document.querySelector("#active-products-value").innerHTML = activeCount + ' <small>منتجاً</small>';
   const badge = document.querySelector(".demo-badge");
   if (badge) badge.innerHTML = "<span></span>متصل بقاعدة البيانات";
 }
