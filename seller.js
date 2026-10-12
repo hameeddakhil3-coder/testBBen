@@ -34,7 +34,7 @@ function showView(view, options = {}) {
   const titles = {overview:"نظرة عامة",products:"إدارة المنتجات",orders:"إدارة الطلبات",analytics:"المبيعات والتقارير"};
   const isOverview = view === "overview";
   if (view === "products") activeProductsOnly = options.activeOnly === true;
-  if (view === "orders" && options.pendingOnly !== undefined) orderFilter = options.pendingOnly ? "pending" : "all";
+  if (view === "orders") orderFilter = options.pendingOnly === true ? "pending" : "all";
   overviewSections.forEach((section) => section.classList.toggle("hidden", !isOverview));
   Object.entries(views).forEach(([key, element]) => {
     if (element) element.classList.toggle("hidden", key !== view);
