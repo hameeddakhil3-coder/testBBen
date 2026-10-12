@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#563b2c">
+  <title>BBen | ملف التاجر والمتجر</title>
+  <link rel="stylesheet" href="seller.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="supabase-client.js"></script>
+  <script src="merchant-profile.js" defer></script>
+  <style>
+    .profile-page{max-width:980px;margin:auto;padding:28px 20px 45px}
+    .profile-page-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}
+    .profile-page-head h1{font-size:24px;margin:0 0 6px}.profile-page-head p{margin:0;color:var(--muted);font-size:12px}
+    .profile-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    .profile-field{display:flex;flex-direction:column;gap:7px}.profile-field label{font-size:12px;font-weight:700}
+    .profile-field input,.profile-field textarea{width:100%;min-height:44px;border:1px solid var(--border);border-radius:10px;padding:11px 12px;background:#fff;color:var(--text);font:inherit;font-size:13px}
+    .profile-field textarea{min-height:90px;resize:vertical}.profile-field.full{grid-column:1/-1}
+    .profile-card{background:#fff;border:1px solid var(--border);border-radius:15px;padding:22px;margin-bottom:18px}
+    .profile-card h2{font-size:16px;margin:0 0 5px}.profile-card>p{font-size:11px;color:var(--muted);margin:0 0 18px}
+    .profile-image-row{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+    .profile-image-preview{width:88px;height:88px;border-radius:15px;object-fit:cover;background:var(--brown-soft);border:1px solid var(--border)}
+    .profile-image-placeholder{display:grid;place-items:center;font-size:28px;color:var(--brown)}
+    .profile-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .profile-alert{font-size:12px;margin-top:12px;line-height:1.8}.profile-alert.error{color:var(--red)}.profile-alert.success{color:var(--green)}
+    .profile-top-link{border:0;background:transparent;color:var(--brown);font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+    @media(max-width:600px){.profile-page{padding:18px 12px}.profile-card{padding:16px}.profile-form-grid{grid-template-columns:1fr}.profile-field.full{grid-column:auto}.profile-page-head{align-items:flex-start;flex-direction:column}.profile-image-row{align-items:flex-start;flex-direction:column}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="seller.html" style="margin:0">B<span>Ben</span></a>
+    <div class="top-actions">
+      <button class="profile-top-link" id="back-dashboard" type="button">العودة إلى لوحة التاجر</button>
+      <button class="secondary-button" id="profile-logout" type="button">تسجيل الخروج</button>
+    </div>
+  </header>
+  <main class="profile-page">
+    <div class="profile-page-head">
+      <div><p class="page-eyebrow">إعدادات الحساب</p><h1>ملفي الشخصي ومتجري</h1><p>عدّل معلوماتك وبيانات متجرك وصورة الشعار من مكان واحد.</p></div>
+    </div>
+    <form id="merchant-profile-form">
+      <section class="profile-card">
+        <h2>معلومات التاجر</h2><p>هذه البيانات تخص حسابك الشخصي، ولا يؤدي حفظها إلى تسجيل خروجك.</p>
+        <div class="profile-form-grid">
+          <div class="profile-field"><label for="merchant-name">اسم التاجر</label><input id="merchant-name" name="merchantName" required minlength="2" maxlength="100"></div>
+          <div class="profile-field"><label for="merchant-phone">رقم الهاتف</label><input id="merchant-phone" name="merchantPhone" type="tel" maxlength="30" placeholder="07xxxxxxxxx"></div>
+        </div>
+      </section>
+      <section class="profile-card">
+        <h2>معلومات المتجر</h2><p>اسم المتجر وصورته سيظهران في واجهات المتجر عند عرض المنتجات.</p>
+        <div class="profile-image-row">
+          <img id="store-image-preview" class="profile-image-preview profile-image-placeholder" alt="صورة المتجر" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='88' height='88'%3E%3Crect width='100%25' height='100%25' rx='14' fill='%23f3ece6'/%3E%3Ctext x='50%25' y='58%25' font-size='30' text-anchor='middle' fill='%23563b2c'%3EB%3C/text%3E%3C/svg%3E">
+          <div class="profile-field"><label for="store-image">صورة المتجر (PNG أو JPG أو WebP، حتى 5 ميغابايت)</label><input id="store-image" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><small style="color:var(--muted);font-size:11px">اختر شعاراً أو صورة واضحة للمتجر.</small></div>
+        </div>
+        <div class="profile-form-grid">
+          <div class="profile-field"><label for="store-name">اسم المتجر</label><input id="store-name" name="storeName" required minlength="2" maxlength="100"></div>
+          <div class="profile-field"><label for="store-phone">هاتف المتجر</label><input id="store-phone" name="storePhone" type="tel" maxlength="30"></div>
+          <div class="profile-field"><label for="store-city">المدينة</label><input id="store-city" name="storeCity" maxlength="100" placeholder="مثال: السماوة"></div>
+          <div class="profile-field full"><label for="store-description">نبذة عن المتجر</label><textarea id="store-description" name="storeDescription" maxlength="1000" placeholder="اكتب وصفاً مختصراً عن متجرك ومنتجاتك"></textarea></div>
+        </div>
+      </section>
+      <div class="profile-actions">
+        <button class="primary-button" id="save-profile" type="submit">حفظ التعديلات</button>
+        <button class="secondary-button" id="cancel-profile" type="button">إلغاء التغييرات</button>
+      </div>
+      <p id="profile-message" class="profile-alert" role="status" aria-live="polite"></p>
+    </form>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
