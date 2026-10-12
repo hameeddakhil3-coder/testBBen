@@ -1,5 +1,9 @@
 const db = window.bbenSupabase;
 const $ = (selector) => document.querySelector(selector);
+const isStorePage = window.location.pathname.endsWith("/store.html") || window.location.pathname === "store.html";
+const requestedStoreId = new URLSearchParams(window.location.search).get("id");
+let publicStore = null;
+const storeHref = (store) => store?.id ? "store.html?id=" + encodeURIComponent(store.id) : "market.html";
 let allProducts = [];
 let allCategories = [];
 let activeCategory = "";
@@ -66,7 +70,7 @@ function renderProducts() {
   $("#clear-search").hidden = !$("#search-input").value;
   const message = $("#market-message");
   if (!items.length) {
-    message.textContent = allProducts.length ? "لم نعثر على منتجات تطابق بحثك. جرّب كلمة أخرى أو غيّر التصنيف." : "لا توجد منتجات منشورة للبيع حالياً. عندما يضيف التجار منتجات نشطة ستظهر هنا.";
+    message.textContent = allProducts.length ? "لم نعثر على منتجات تطابق بحثك. جرّب كلمة أخرى أو غيّر التصنيف." : (isStorePage ? "لا توجد منتجات نشطة في هذا المتجر حالياً." : "لا توجد منتجات منشورة للبيع حالياً. عندما يضيف التجار منتجات نشطة ستظهر هنا.");
     message.classList.remove("hidden"); message.classList.toggle("error", !allProducts.length && message.dataset.error === "true");
     return;
   }
@@ -84,7 +88,7 @@ function renderProducts() {
     const body = document.createElement("div"); body.className = "market-card-body";
     const category = document.createElement("span"); category.className = "market-card-category"; category.textContent = product.categories?.name || "أخرى";
     const title = document.createElement("strong"); title.className = "market-card-title"; title.textContent = product.name;
-    const store = document.createElement("p"); store.className = "market-card-store"; store.textContent = product.stores?.city ? product.stores.name + " · " + product.stores.city : product.stores?.name || "متجر BBen";
+    const store = document.createElement("a"); store.className = "market-card-store store-link"; store.href = storeHref(product.stores); store.textContent = product.stores?.city ? product.stores.name + " · " + product.stores.city : product.stores?.name || "متجر BBen"; store.setAttribute("aria-label", "زيارة متجر " + (product.stores?.name || "BBen"));
     const bottom = document.createElement("div"); bottom.className = "market-card-bottom";
     const price = document.createElement("span"); price.className = "market-price"; price.textContent = money(product.price);
     const actions = document.createElement("div"); actions.className = "market-card-actions";
@@ -107,9 +111,9 @@ function showProductDetails(product) {
   const title = document.createElement("h2"); title.textContent = product.name;
   const price = document.createElement("div"); price.className = "dialog-product-price"; price.textContent = money(product.price);
   const description = document.createElement("p"); description.textContent = product.description || "لا يوجد وصف إضافي لهذا المنتج حالياً.";
-  const store = document.createElement("div"); store.className = "dialog-store";
+  const store = document.createElement("a"); store.className = "dialog-store store-link"; store.href = storeHref(product.stores);
   if (product.stores?.logo_url) { const logo = document.createElement("img"); logo.src = product.stores.logo_url; logo.alt = ""; store.append(logo); }
-  const storeName = document.createElement("span"); storeName.textContent = "المتجر: " + (product.stores?.name || "متجر BBen") + (product.stores?.city ? " · " + product.stores.city : ""); store.append(storeName);
+  const storeName = document.createElement("span"); storeName.textContent = "زيارة المتجر: " + (product.stores?.name || "متجر BBen") + (product.stores?.city ? " · " + product.stores.city : ""); store.append(storeName);
   const stock = document.createElement("p"); stock.textContent = Number(product.stock_quantity) > 0 ? "الكمية المتاحة: " + product.stock_quantity : "نفدت الكمية حالياً.";
   const add = document.createElement("button"); add.type = "button"; add.className = "primary-market-button dialog-add"; add.textContent = Number(product.stock_quantity) > 0 ? "إضافة إلى السلة" : "غير متوفر"; add.disabled = Number(product.stock_quantity) <= 0; add.addEventListener("click", () => addToCart(product));
   info.append(category, title, price, description, store, stock, add); layout.append(image, info); host.append(layout);
@@ -436,18 +440,65 @@ async function initMarket() {
     if (currentUser) {
       const profileResult = await db.from("profiles").select("role,full_name").eq("id", currentUser.id).maybeSingle();
       currentRole = profileResult.data?.role || null;
-      if (currentRole === "merchant") { window.location.href = "seller.html"; return; }
+      if (currentRole === "merchant" && !isStorePage) { window.location.href = "seller.html"; return; }
       $("#account-label").textContent = profileResult.data?.full_name || "حسابي";
       $("#account-button").title = "الملف الشخصي";
     }
-    const [categoryResult, productResult] = await Promise.all([
+    if (isStorePage) {
+      if (!requestedStoreId) {
+        $("#public-store-name").textContent = "رابط المتجر غير مكتمل";
+        $("#public-store-description").textContent = "افتح صفحة المتجر من خلال رابط المتجر الموجود في السوق.";
+        $("#market-message").textContent = "لم يتم تحديد المتجر المطلوب.";
+        $("#market-message").classList.remove("hidden");
+        $("#product-grid").replaceChildren();
+        $("#results-summary").textContent = "لا يوجد متجر محدد";
+        return;
+      }
+      const storeResult = await db.from("stores")
+        .select("id,name,slug,description,logo_url,phone,city,status")
+        .eq("id", requestedStoreId).eq("status", "active").maybeSingle();
+      if (storeResult.error) throw storeResult.error;
+      publicStore = storeResult.data;
+      if (!publicStore) {
+        $("#public-store-name").textContent = "المتجر غير متاح";
+        $("#public-store-description").textContent = "قد يكون المتجر غير نشط أو أن الرابط لم يعد صالحاً.";
+        $("#market-message").textContent = "هذا المتجر غير متاح حالياً.";
+        $("#market-message").classList.remove("hidden");
+        $("#market-message").classList.add("error");
+        $("#product-grid").replaceChildren();
+        $("#results-summary").textContent = "المتجر غير متاح";
+        return;
+      }
+      document.title = "BBen | " + publicStore.name;
+      $("#public-store-name").textContent = publicStore.name || "متجر BBen";
+      $("#public-store-location").textContent = publicStore.city || "";
+      $("#public-store-description").textContent = publicStore.description || "مرحباً بك في متجرنا. تصفح المنتجات المتاحة واختر ما يناسبك.";
+      if (publicStore.logo_url) {
+        const logo = document.createElement("img");
+        logo.src = publicStore.logo_url; logo.alt = "شعار " + publicStore.name;
+        $("#public-store-logo").replaceChildren(logo);
+      }
+      if (publicStore.phone) {
+        const phone = $("#public-store-phone");
+        phone.href = "tel:" + publicStore.phone.replace(/[^+0-9]/g, "");
+        phone.textContent = "اتصل بالمتجر";
+        phone.hidden = false;
+      }
+      $("#browse-button").textContent = "تصفح المنتجات ↓";
+    }
+    const [categoryResult, productQuery] = await Promise.all([
       db.from("categories").select("id,name,slug").order("name"),
-      db.from("products").select("id,name,description,price,currency,stock_quantity,image_url,status,category_id,created_at,categories(name),stores(id,name,logo_url,city,status)").eq("status","active").gt("stock_quantity",0).order("created_at",{ascending:false})
+      (() => {
+        let query = db.from("products").select("id,name,description,price,currency,stock_quantity,image_url,status,category_id,store_id,created_at,categories(name),stores(id,name,slug,description,logo_url,phone,city,status)").eq("status","active").gt("stock_quantity",0).order("created_at",{ascending:false});
+        if (isStorePage) query = query.eq("store_id", requestedStoreId);
+        return query;
+      })()
     ]);
     if (categoryResult.error) throw categoryResult.error;
-    if (productResult.error) throw productResult.error;
+    if (productQuery.error) throw productQuery.error;
     allCategories = categoryResult.data || [];
-    allProducts = (productResult.data || []).filter((p) => p.stores?.status === "active");
+    allProducts = (productQuery.data || []).filter((p) => p.stores?.status === "active");
+    if (isStorePage) $("#public-store-products-count").textContent = allProducts.length + " منتج متاح";
     renderCategories(); renderProducts(); await loadCart();
   } catch (error) {
     console.error("Market load failed:", error);
