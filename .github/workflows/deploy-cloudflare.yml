@@ -24,7 +24,7 @@ jobs:
       - name: Prepare static assets
         run: |
           mkdir -p public
-          cp index.html styles.css app.js supabase-client.js seller.html seller.css seller.js merchant-profile.html merchant-profile.js market.html market.css market.js public/
+          cp index.html styles.css app.js supabase-client.js seller.html seller.css seller.js merchant-profile.html merchant-profile.js market.html market.css market.js store.html public/
 
       - name: Verify Cloudflare deployment secret
         env:
