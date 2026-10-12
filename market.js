@@ -446,6 +446,11 @@ async function initMarket() {
       $("#account-button").title = "الملف الشخصي";
     }
     if (isStorePage) {
+      $("#store-public-hero").classList.remove("hidden");
+      document.querySelector(".market-hero").classList.add("hidden");
+      document.querySelector("#categories-section h2").textContent = "تصنيفات المتجر";
+      document.querySelector("#products-section h2").textContent = "منتجات هذا المتجر";
+      document.querySelector("#public-store-browse-button").addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth" }));
       if (!requestedStoreId) {
         $("#public-store-name").textContent = "رابط المتجر غير مكتمل";
         $("#public-store-description").textContent = "افتح صفحة المتجر من خلال رابط المتجر الموجود في السوق.";
@@ -485,7 +490,7 @@ async function initMarket() {
         phone.textContent = "اتصل بالمتجر";
         phone.hidden = false;
       }
-      $("#browse-button").textContent = "تصفح المنتجات ↓";
+      $("#public-store-browse-button").textContent = "تصفح المنتجات ↓";
     }
     const [categoryResult, productQuery] = await Promise.all([
       db.from("categories").select("id,name,slug").order("name"),
