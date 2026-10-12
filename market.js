@@ -204,6 +204,121 @@ async function changeCartQuantity(item, quantity) {
 async function openCart() {
   await loadCart(); renderCart(); $("#cart-dialog").showModal();
 }
+const orderStatusLabels = {
+  pending: { label: "قيد الانتظار", className: "pending" },
+  processing: { label: "قيد التجهيز", className: "processing" },
+  shipped: { label: "قيد التوصيل", className: "shipped" },
+  delivered: { label: "مكتمل", className: "delivered" },
+  cancelled: { label: "ملغي", className: "cancelled" }
+};
+async function loadOrderHistory() {
+  const host = $("#order-history-list");
+  const refresh = $("#refresh-orders-button");
+  host.replaceChildren();
+  if (!currentUser || currentRole !== "customer") {
+    const note = document.createElement("p");
+    note.className = "market-message";
+    note.textContent = "سجّل الدخول بحساب مشتري لعرض طلباتك.";
+    host.append(note);
+    return;
+  }
+  refresh.disabled = true;
+  refresh.textContent = "جارٍ التحديث...";
+  const loading = document.createElement("p");
+  loading.className = "market-message";
+  loading.textContent = "جارٍ تحميل طلباتك...";
+  host.append(loading);
+  try {
+    const { data, error } = await db.from("orders")
+      .select("id,order_number,status,customer_name,customer_phone,shipping_address,notes,created_at,order_items(id,store_id,product_name,unit_price,quantity,line_total)")
+      .eq("customer_id", currentUser.id)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    host.replaceChildren();
+    const orders = data || [];
+    if (!orders.length) {
+      const empty = document.createElement("p");
+      empty.className = "market-message";
+      empty.textContent = "لا توجد طلبات مسجلة حتى الآن. ستظهر طلباتك هنا بعد إتمام الشراء.";
+      host.append(empty);
+      return;
+    }
+    orders.forEach((order) => {
+      const card = document.createElement("article");
+      card.className = "order-history-card";
+      const head = document.createElement("div");
+      head.className = "order-history-card-head";
+      const identity = document.createElement("div");
+      const number = document.createElement("strong");
+      number.textContent = "#BB-" + order.order_number;
+      const date = document.createElement("small");
+      const parsedDate = order.created_at ? new Date(order.created_at) : null;
+      date.textContent = parsedDate && !Number.isNaN(parsedDate.getTime())
+        ? parsedDate.toLocaleString("ar-IQ", { dateStyle: "medium", timeStyle: "short" })
+        : "تاريخ الطلب غير متاح";
+      identity.append(number, date);
+      const statusInfo = orderStatusLabels[order.status] || { label: order.status || "غير معروف", className: "unknown" };
+      const status = document.createElement("span");
+      status.className = "order-history-status " + statusInfo.className;
+      status.textContent = statusInfo.label;
+      head.append(identity, status);
+      const itemsHost = document.createElement("div");
+      itemsHost.className = "order-history-items";
+      let total = 0;
+      (order.order_items || []).forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "order-history-item";
+        const name = document.createElement("span");
+        name.textContent = item.product_name || "منتج";
+        const quantity = document.createElement("small");
+        quantity.textContent = "الكمية: " + Number(item.quantity || 0);
+        const price = document.createElement("strong");
+        const lineTotal = item.line_total == null ? Number(item.unit_price || 0) * Number(item.quantity || 0) : Number(item.line_total);
+        total += lineTotal;
+        price.textContent = money(lineTotal);
+        const details = document.createElement("div");
+        details.className = "order-history-item-details";
+        details.append(name, quantity);
+        row.append(details, price);
+        itemsHost.append(row);
+      });
+      const footer = document.createElement("div");
+      footer.className = "order-history-card-footer";
+      const address = document.createElement("span");
+      address.textContent = "عنوان التوصيل: " + (order.shipping_address || "غير مسجل");
+      const totalLabel = document.createElement("strong");
+      totalLabel.textContent = "الإجمالي: " + money(total);
+      footer.append(address, totalLabel);
+      card.append(head, itemsHost, footer);
+      if (order.notes) {
+        const note = document.createElement("p");
+        note.className = "order-history-note";
+        note.textContent = "ملاحظاتك: " + order.notes;
+        card.append(note);
+      }
+      host.append(card);
+    });
+  } catch (error) {
+    console.error("Order history load failed:", error);
+    host.replaceChildren();
+    const problem = document.createElement("p");
+    problem.className = "market-message error";
+    problem.textContent = "تعذر تحميل طلباتك: " + (error.message || "حاول مجدداً.");
+    host.append(problem);
+  } finally {
+    refresh.disabled = false;
+    refresh.textContent = "تحديث الطلبات ↻";
+  }
+}
+async function openOrderHistory() {
+  if (!currentUser || currentRole !== "customer") {
+    toast("سجّل الدخول بحساب مشتري أولاً لعرض طلباتك.");
+    window.location.href = "index.html";
+    return;
+  }
+  await loadOrderHistory();
+  $("#order-history-dialog").showModal();
+}
 async function openCheckout() {
   if (!(await ensureCustomer())) return;
   await loadCart();
@@ -289,6 +404,10 @@ $("#account-button").addEventListener("click", async () => {
   window.location.href = "index.html";
 });
 $("#cart-button").addEventListener("click", openCart);
+$("#orders-button").addEventListener("click", openOrderHistory);
+$("#refresh-orders-button").addEventListener("click", loadOrderHistory);
+$("#close-orders-dialog").addEventListener("click", () => $("#order-history-dialog").close());
+$("#view-orders-after-checkout").addEventListener("click", () => { $("#checkout-dialog").close(); openOrderHistory(); });
 $("#checkout-button").addEventListener("click", openCheckout);
 $("#checkout-form").addEventListener("submit", submitCheckout);
 $("#close-checkout-dialog").addEventListener("click", () => $("#checkout-dialog").close());
@@ -297,6 +416,6 @@ $("#close-product-dialog").addEventListener("click", () => $("#product-dialog").
 $("#close-cart-dialog").addEventListener("click", () => $("#cart-dialog").close());
 $("#continue-shopping").addEventListener("click", () => $("#cart-dialog").close());
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") { if ($("#product-dialog").open) $("#product-dialog").close(); if ($("#cart-dialog").open) $("#cart-dialog").close(); if ($("#checkout-dialog").open) $("#checkout-dialog").close(); }
+  if (event.key === "Escape") { if ($("#product-dialog").open) $("#product-dialog").close(); if ($("#cart-dialog").open) $("#cart-dialog").close(); if ($("#checkout-dialog").open) $("#checkout-dialog").close(); if ($("#order-history-dialog").open) $("#order-history-dialog").close(); }
 });
 initMarket();
