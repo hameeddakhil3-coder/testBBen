@@ -261,7 +261,46 @@ async function loadOrderHistory() {
       const status = document.createElement("span");
       status.className = "order-history-status " + statusInfo.className;
       status.textContent = statusInfo.label;
-      head.append(identity, status);
+      const headActions = document.createElement("div");
+      headActions.className = "order-history-head-actions";
+      headActions.append(status);
+      if (order.status === "pending") {
+        const cancel = document.createElement("button");
+        cancel.type = "button";
+        cancel.className = "cancel-customer-order";
+        cancel.textContent = "إلغاء الطلب";
+        cancel.addEventListener("click", () => cancelCustomerOrder(order, cancel));
+        headActions.append(cancel);
+      }
+      head.append(identity, headActions);
+      const progress = document.createElement("div");
+      progress.className = "order-progress";
+      const stages = [
+        { key: "pending", label: "قيد الانتظار" },
+        { key: "processing", label: "قيد التجهيز" },
+        { key: "shipped", label: "قيد التوصيل" },
+        { key: "delivered", label: "مكتمل" }
+      ];
+      const stageIndex = stages.findIndex((stage) => stage.key === order.status);
+      stages.forEach((stage, index) => {
+        const step = document.createElement("div");
+        step.className = "order-progress-step";
+        if (order.status === "cancelled") step.classList.add("is-cancelled");
+        else if (stageIndex >= 0 && index < stageIndex) step.classList.add("is-complete");
+        else if (index === stageIndex) step.classList.add("is-current");
+        const dot = document.createElement("span");
+        dot.className = "order-progress-dot";
+        const label = document.createElement("small");
+        label.textContent = stage.label;
+        step.append(dot, label);
+        progress.append(step);
+      });
+      if (order.status === "cancelled") {
+        const cancelled = document.createElement("p");
+        cancelled.className = "order-cancelled-note";
+        cancelled.textContent = "تم إلغاء هذا الطلب.";
+        progress.replaceChildren(cancelled);
+      }
       const itemsHost = document.createElement("div");
       itemsHost.className = "order-history-items";
       let total = 0;
@@ -287,9 +326,9 @@ async function loadOrderHistory() {
       const address = document.createElement("span");
       address.textContent = "عنوان التوصيل: " + (order.shipping_address || "غير مسجل");
       const totalLabel = document.createElement("strong");
-      totalLabel.textContent = "الإجمالي: " + money(total);
+      totalLabel.textContent = "الإجمالي: " + money(order.total == null ? total : order.total);
       footer.append(address, totalLabel);
-      card.append(head, itemsHost, footer);
+      card.append(head, progress, itemsHost, footer);
       if (order.notes) {
         const note = document.createElement("p");
         note.className = "order-history-note";
@@ -308,6 +347,28 @@ async function loadOrderHistory() {
   } finally {
     refresh.disabled = false;
     refresh.textContent = "تحديث الطلبات ↻";
+  }
+}
+async function cancelCustomerOrder(order, button) {
+  if (order.status !== "pending") {
+    toast("لا يمكن إلغاء الطلب بعد بدء تجهيزه.");
+    return;
+  }
+  const orderLabel = "#BB-" + order.order_number;
+  if (!window.confirm("هل تريد إلغاء الطلب " + orderLabel + "؟ ستُعاد الكميات إلى مخزون المتجر.")) return;
+  button.disabled = true;
+  button.textContent = "جارٍ الإلغاء...";
+  try {
+    const { data, error } = await db.rpc("cancel_customer_order", { p_order_id: order.id });
+    if (error) throw error;
+    if (!data?.success || data.status !== "cancelled") throw new Error("لم يصل تأكيد الإلغاء من النظام.");
+    toast("تم إلغاء الطلب " + orderLabel + " وإعادة الكمية إلى المخزون.");
+    await Promise.all([loadOrderHistory(), initMarket()]);
+  } catch (error) {
+    console.error("Order cancellation failed:", error);
+    toast(error.message || "تعذر إلغاء الطلب. حدّث القائمة وحاول مجدداً.");
+    button.disabled = false;
+    button.textContent = "إلغاء الطلب";
   }
 }
 async function openOrderHistory() {
