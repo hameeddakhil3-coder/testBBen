@@ -357,16 +357,35 @@ async function updateMerchantOrderStatus(order, select) {
   const previous = order.status;
   const next = select.value;
   if (next === previous) return;
+  if (next === "cancelled" && !window.confirm("هل تريد إلغاء الطلب #" + order.order_number + "؟ ستُعاد الكميات الخاصة بمتجرك إلى المخزون.")) {
+    select.value = previous;
+    return;
+  }
   select.disabled = true;
   try {
-    const { data, error } = await db.from("orders").update({ status: next }).eq("id", order.id).select("id,status").single();
+    const { data, error } = await db.rpc("update_merchant_order_status", {
+      p_order_id: order.id,
+      p_next_status: next
+    });
     if (error) throw error;
+    if (!data?.success || !data.status) throw new Error("لم يصل تأكيد تحديث الحالة من النظام.");
     order.status = data.status;
     showToast("تم تحديث حالة الطلب #" + order.order_number + " إلى «" + (orderStatusLabels[data.status] || data.status) + "».");
-    renderMerchantOrders();
+    if (data.status === "cancelled") {
+      const { data: refreshedProducts, error: productsError } = await db.from("products")
+        .select("id,name,price,stock_quantity,status,category_id,image_url,categories(name)")
+        .eq("store_id", currentStore.id).order("created_at", { ascending: false });
+      if (!productsError) {
+        products = refreshedProducts || [];
+        updateProductCounts();
+        renderProductList();
+        renderProductCards();
+      }
+    }
+    await loadMerchantOrders();
   } catch (error) {
     select.value = previous;
-    showToast("تعذر تحديث حالة الطلب: " + error.message);
+    showToast("تعذر تحديث حالة الطلب: " + (error.message || "حاول مجدداً."));
   } finally {
     select.disabled = false;
   }
