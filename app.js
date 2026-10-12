@@ -126,8 +126,7 @@ form.addEventListener("submit", async (event) => {
         return;
       }
       if (data.session && selectedRole === "customer") {
-        message.textContent = "تم إنشاء حساب المشتري بنجاح. واجهة السوق قيد التجهيز، ويمكنك تسجيل الدخول لاحقاً.";
-        message.classList.add("success");
+        window.location.href = "market.html";
         return;
       }
       message.textContent = "تم إنشاء طلب الحساب. افحص بريدك الإلكتروني لتأكيد الحساب، ثم سجّل الدخول.";
@@ -144,8 +143,12 @@ form.addEventListener("submit", async (event) => {
         window.location.href = "seller.html";
         return;
       }
-      message.textContent = "تم تسجيل الدخول بنجاح. واجهة المشتري قيد التجهيز، ويمكنك العودة لاحقاً.";
-      message.classList.add("success");
+      if (profile.role === "customer") {
+        window.location.href = "market.html";
+        return;
+      }
+      message.textContent = "تم تسجيل الدخول، لكن نوع الحساب غير معروف. تواصل مع الدعم.";
+      message.classList.add("error");
     }
   } catch (error) {
     const messages = {
