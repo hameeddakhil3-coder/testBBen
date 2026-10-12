@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#563b2c" />
   <title>BBen | لوحة التاجر</title>
   <link rel="stylesheet" href="seller.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-client.js"></script>
   <script src="seller.js" defer></script>
 </head>
 <body>
@@ -38,7 +40,7 @@
       <section class="page-body">
         <div class="welcome-row">
           <div><p class="page-eyebrow">مساحة إدارة متجرك</p><h1 id="page-title">صباح الخير، تاجرنا 👋</h1><p class="page-subtitle">إليك ملخص أداء متجرك اليوم.</p></div>
-          <div class="welcome-actions"><span class="demo-badge"><span></span>بيانات تجريبية</span><button class="primary-button" id="add-product-top">＋ إضافة منتج</button></div>
+          <div class="welcome-actions"><span class="demo-badge"><span></span>جارٍ الاتصال بقاعدة البيانات</span><button class="primary-button" id="add-product-top">＋ إضافة منتج</button></div>
         </div>
 
         <section class="stats-grid" aria-label="ملخص المتجر">
@@ -79,7 +81,7 @@
         </section>
 
         <section class="panel view-panel hidden" id="orders-view"><div class="panel-heading"><div><h2>إدارة الطلبات</h2><p>هذه بيانات تجريبية لمرحلة تصميم الواجهة.</p></div></div><div class="notice-box">ستُفعّل إدارة الطلبات وتحديث حالاتها بعد ربط قاعدة البيانات.</div></section>
-        <section class="panel view-panel hidden" id="products-view"><div class="panel-heading"><div><h2>إدارة المنتجات</h2><p>أضف منتجات تجريبية وراجعها قبل ربط قاعدة البيانات.</p></div><button class="primary-button" id="add-product-view">＋ إضافة منتج</button></div><div class="notice-box">المنتجات الظاهرة حالياً أمثلة للمعاينة وليست محفوظة في قاعدة بيانات.</div><div id="product-list" class="product-list"></div></section>
+        <section class="panel view-panel hidden" id="products-view"><div class="panel-heading"><div><h2>إدارة المنتجات</h2><p>أضف منتجاتك واحفظها في قاعدة البيانات.</p></div><button class="primary-button" id="add-product-view">＋ إضافة منتج</button></div><div class="notice-box">المنتجات التي تضيفها تُحفظ في قاعدة البيانات وتظهر هنا.</div><div id="product-list" class="product-list"></div></section>
         <section class="panel view-panel hidden" id="analytics-view"><div class="panel-heading"><div><h2>المبيعات والتقارير</h2><p>ملخص توضيحي لشكل التقارير المستقبلية.</p></div></div><div class="analytics-summary"><div><span>إجمالي المبيعات التجريبية</span><strong>1,280,000 د.ع</strong></div><div><span>عدد الطلبات التجريبي</span><strong>48</strong></div><div><span>متوسط قيمة الطلب</span><strong>26,667 د.ع</strong></div></div><div class="notice-box">الأرقام تجريبية وليست مبيعات فعلية.</div></section>
         <footer class="page-footer"><span>© BBen 2026</span><span>لوحة التاجر · نسخة تجريبية للتصميم</span></footer>
       </section>
@@ -88,14 +90,14 @@
 
   <dialog id="product-dialog" class="product-dialog">
     <form id="product-form" method="dialog">
-      <div class="dialog-heading"><div><p class="page-eyebrow">كتالوج المتجر</p><h2>إضافة منتج تجريبي</h2></div><button class="icon-button" type="button" id="close-dialog" aria-label="إغلاق">×</button></div>
-      <p class="dialog-note">هذه الإضافة للمعاينة فقط؛ لن يُحفظ المنتج في قاعدة بيانات بعد.</p>
+      <div class="dialog-heading"><div><p class="page-eyebrow">كتالوج المتجر</p><h2>إضافة منتج</h2></div><button class="icon-button" type="button" id="close-dialog" aria-label="إغلاق">×</button></div>
+      <p class="dialog-note">أدخل بيانات المنتج ليُحفظ في متجرك.</p>
       <label for="product-name">اسم المنتج</label><input id="product-name" name="productName" required minlength="2" placeholder="مثال: سماعات لاسلكية" />
       <label for="product-price">السعر بالدينار العراقي</label><input id="product-price" name="productPrice" type="number" required min="1" step="1" placeholder="45000" />
       <label for="product-category">التصنيف</label><select id="product-category" name="productCategory"><option>إلكترونيات</option><option>أزياء</option><option>منزل ومطبخ</option><option>إكسسوارات</option><option>أحذية</option><option>أخرى</option></select>
       <label for="product-stock">الكمية المتوفرة</label><input id="product-stock" name="productStock" type="number" required min="0" step="1" placeholder="10" />
       <p class="dialog-error" id="dialog-error" aria-live="polite"></p>
-      <div class="dialog-actions"><button type="button" class="secondary-button" id="cancel-dialog">إلغاء</button><button type="submit" class="primary-button">إضافة للمعاينة</button></div>
+      <div class="dialog-actions"><button type="button" class="secondary-button" id="cancel-dialog">إلغاء</button><button type="submit" class="primary-button">حفظ المنتج</button></div>
     </form>
   </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
