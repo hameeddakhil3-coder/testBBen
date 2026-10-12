@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#563b2c" />
   <title>BBen | تسجيل الدخول</title>
   <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase-client.js"></script>
   <script src="app.js" defer></script>
 </head>
@@ -23,7 +23,6 @@
       <div class="brand-decoration decoration-two"></div>
       <div class="brand-footer">تجربة تسوّق أقرب إليك</div>
     </section>
-
     <section class="form-panel">
       <div class="mobile-brand brand-mark">B<span>Ben</span></div>
       <div class="form-wrap">
@@ -32,37 +31,31 @@
           <h2 id="form-title">تسجيل الدخول</h2>
           <p id="form-subtitle">أدخل بياناتك للمتابعة إلى حسابك.</p>
         </div>
-
         <div class="mode-switch" role="tablist" aria-label="نوع العملية">
           <button class="mode-button active" id="login-tab" type="button" role="tab" aria-selected="true">تسجيل الدخول</button>
           <button class="mode-button" id="register-tab" type="button" role="tab" aria-selected="false">إنشاء حساب</button>
         </div>
-
         <form id="auth-form" novalidate>
           <div class="field hidden" id="name-field">
             <label for="full-name">الاسم الكامل</label>
             <input id="full-name" name="fullName" type="text" autocomplete="name" placeholder="اكتب اسمك الكامل" />
             <small class="field-error" id="name-error"></small>
           </div>
-
           <div class="field">
             <label for="email">البريد الإلكتروني</label>
             <input id="email" name="email" type="email" autocomplete="email" placeholder="name@example.com" inputmode="email" />
             <small class="field-error" id="email-error"></small>
           </div>
-
           <div class="field">
             <label for="password">كلمة المرور</label>
             <input id="password" name="password" type="password" autocomplete="current-password" placeholder="أدخل كلمة المرور" />
             <small class="field-error" id="password-error"></small>
           </div>
-
           <div class="field hidden" id="confirm-field">
             <label for="confirm-password">تأكيد كلمة المرور</label>
             <input id="confirm-password" name="confirmPassword" type="password" autocomplete="new-password" placeholder="أعد كتابة كلمة المرور" />
             <small class="field-error" id="confirm-error"></small>
           </div>
-
           <fieldset class="role-field hidden" id="role-field">
             <legend>نوع الحساب</legend>
             <label class="role-option">
@@ -76,11 +69,9 @@
               <span><strong>تاجر</strong><small>أدير منتجاتي وطلباتي</small></span>
             </label>
           </fieldset>
-
           <p class="form-message" id="form-message" role="status" aria-live="polite"></p>
           <button class="submit-button" id="submit-button" type="submit">تسجيل الدخول <span aria-hidden="true">←</span></button>
         </form>
-
         <p class="switch-copy" id="switch-copy">ما عندك حساب؟ <button type="button" id="switch-mode">أنشئ حساباً جديداً</button></p>
         <p class="security-note"><span aria-hidden="true">🔒</span> تسجيل آمن للحسابات عبر Supabase.</p>
       </div>
