@@ -57,3 +57,20 @@
 .order-progress-step.is-current .order-progress-dot{box-shadow:0 0 0 3px #7c9e8528}
 .order-cancelled-note{width:100%;margin:0;padding:8px 10px;border-radius:8px;background:#ffebe8;color:#a33127;text-align:center;font-size:11px}
 @media(max-width:420px){.order-progress-step small{font-size:8px}.order-history-head-actions{gap:5px}.cancel-customer-order{padding:6px 7px;font-size:9px}}
+
+
+/* Public storefront */
+.store-public-hero{position:relative;overflow:hidden;margin:30px 0 35px;padding:clamp(22px,4vw,42px);border:1px solid #eaded3;border-radius:20px;background:radial-gradient(circle at 90% 0,#ead9c9 0,transparent 36%),linear-gradient(120deg,#fbf7f1,#f2e8df);box-shadow:0 10px 30px #39271e08}
+.store-public-identity{display:flex;align-items:center;gap:18px}
+.store-public-logo{display:grid;place-items:center;flex-shrink:0;width:88px;height:88px;overflow:hidden;border:1px solid #e3d2c2;border-radius:22px;background:#fff;color:var(--brown);font-size:34px;box-shadow:0 5px 20px #39271e0b}
+.store-public-logo img{width:100%;height:100%;object-fit:cover;display:block}
+.store-public-identity h1{margin:0;color:var(--brown);font-size:clamp(23px,4vw,35px);overflow-wrap:anywhere}
+.store-public-location{margin:8px 0 0;color:var(--muted);font-size:12px}
+.store-public-description{max-width:760px;margin:22px 0;color:#65584d;font-size:14px;line-height:2;white-space:pre-line}
+.store-public-meta{display:flex;align-items:center;gap:15px;flex-wrap:wrap;margin-bottom:20px;color:var(--muted);font-size:11px}
+.store-public-phone,.store-back-link{display:inline-flex;align-items:center;gap:6px;padding:8px 11px;border:1px solid #e2d3c6;border-radius:9px;background:#ffffffb8;color:var(--brown);font-weight:700}
+.store-public-hero .hero-button{border:0}
+.store-link{width:fit-content;max-width:100%;cursor:pointer}
+.store-link:hover{text-decoration:underline;color:var(--brown)}
+.dialog-store.store-link{display:flex;align-items:center;gap:9px}
+@media(max-width:600px){.store-public-hero{margin:18px 0 25px;padding:20px 16px;border-radius:15px}.store-public-logo{width:66px;height:66px;border-radius:17px}.store-public-description{font-size:12px}.store-public-meta{gap:8px}.store-public-identity{gap:12px}}
