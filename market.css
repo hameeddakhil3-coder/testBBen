@@ -74,3 +74,7 @@
 .store-link:hover{text-decoration:underline;color:var(--brown)}
 .dialog-store.store-link{display:flex;align-items:center;gap:9px}
 @media(max-width:600px){.store-public-hero{margin:18px 0 25px;padding:20px 16px;border-radius:15px}.store-public-logo{width:66px;height:66px;border-radius:17px}.store-public-description{font-size:12px}.store-public-meta{gap:8px}.store-public-identity{gap:12px}}
+
+
+/* Shared visibility utility used by marketplace and storefront states */
+.hidden{display:none!important}
