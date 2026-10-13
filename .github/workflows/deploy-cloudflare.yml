@@ -59,7 +59,13 @@ jobs:
 
       - name: Deploy static assets to Cloudflare Workers
         run: |
-          echo "Deploying commit $GITHUB_SHA"
+          set -e
+          LATEST_SHA="$(git ls-remote origin refs/heads/main | cut -f1)"
+          if [ "$LATEST_SHA" != "$GITHUB_SHA" ]; then
+            echo "Skipping stale deployment for $GITHUB_SHA; main is now $LATEST_SHA"
+            exit 0
+          fi
+          echo "Deploying current main commit $GITHUB_SHA"
           npx --yes wrangler@4.80.0 deploy --config wrangler.jsonc --assets ./public
         env:
           CLOUDFLARE_ACCOUNT_ID: 50b014526ccbc86942e2555fe3807ccf
