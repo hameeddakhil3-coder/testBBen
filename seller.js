@@ -615,6 +615,10 @@ async function initSeller() {
   renderProductList();
   renderProductCards();
   await loadMerchantOrders();
+  // Deep-link from the public store's order button directly to merchant order management.
+  if (new URLSearchParams(window.location.search).get("view") === "orders") {
+    showView("orders");
+  }
 }
 
 initSeller();
