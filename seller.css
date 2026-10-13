@@ -47,3 +47,14 @@
 .stat-card-interactive .stat-value{overflow-wrap:anywhere}
 .orders-view-actions,.products-view-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 @media(max-width:520px){.stat-card-interactive .stat-foot{align-items:flex-start;flex-direction:column;gap:3px}.stat-card-interactive .stat-foot>span:last-child{text-align:right}.orders-view-actions,.products-view-actions{gap:7px}}
+
+
+/* Merchant delivery timeline */
+.merchant-order-history{margin:12px 0 15px;padding:12px 13px;border:1px solid #eee5dc;border-radius:10px;background:#fcfaf7}
+.merchant-order-history>strong{display:block;margin-bottom:9px;font-size:11px;color:var(--brown)}
+.merchant-order-history ol{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.merchant-order-history li{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:7px;border-bottom:1px dashed #e8ded4}
+.merchant-order-history li:last-child{padding-bottom:0;border-bottom:0}
+.merchant-order-history li span{font-size:10px;color:var(--text);line-height:1.7}
+.merchant-order-history li time{flex-shrink:0;font-size:9px;color:var(--muted);line-height:1.7}
+@media(max-width:520px){.merchant-order-history li{flex-direction:column;gap:2px}.merchant-order-history li time{font-size:8px}}
