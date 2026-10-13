@@ -48,7 +48,7 @@ jobs:
           test -s public/platform/index.html
           test -s public/index.html
           echo "Verified required deployed assets:"
-          find public -maxdepth 1 -type f -printf '%f (%s bytes)\\n' | sort
+          find public -maxdepth 1 -type f -printf '%f (%s bytes)\n' | sort
 
       - name: Build self-contained admin dashboard Worker
         run: |
@@ -65,13 +65,13 @@ jobs:
 
           html, n_css = re.subn(
               r'<link rel="stylesheet" href="platform\.css[^"]*">',
-              lambda _: "<style>\\n" + css + "\\n</style>",
+              lambda _: "<style>\n" + css + "\n</style>",
               html,
               count=1,
           )
           html, n_client = re.subn(
               r'<script src="supabase-client\.js"></script>',
-              lambda _: "<script>\\n" + client + "\\n</script>",
+              lambda _: "<script>\n" + client + "\n</script>",
               html,
               count=1,
           )
@@ -83,14 +83,14 @@ jobs:
           )
           if (n_css, n_client, n_app) != (1, 1, 1):
               raise SystemExit("Could not inline the expected dashboard assets.")
-          html = html.replace("</body>", "<script>\\n" + app + "\\n</script></body>")
+          html = html.replace("</body>", "<script>\n" + app + "\n</script></body>")
           worker = (
-              "const ADMIN_HTML = " + json.dumps(html, ensure_ascii=False) + ";\\n"
-              "export default { async fetch(request, env) {\\n"
-              "  const url = new URL(request.url);\\n"
-              "  if (url.pathname === '/admin.html') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\\n"
-              "  return env.ASSETS.fetch(request);\\n"
-              "} };\\n"
+              "const ADMIN_HTML = " + json.dumps(html, ensure_ascii=False) + ";\n"
+              "export default { async fetch(request, env) {\n"
+              "  const url = new URL(request.url);\n"
+              "  if (url.pathname === '/admin.html') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\n"
+              "  return env.ASSETS.fetch(request);\n"
+              "} };\n"
           )
           Path("worker.generated.js").write_text(worker)
           config = json.loads(Path("wrangler.jsonc").read_text())
