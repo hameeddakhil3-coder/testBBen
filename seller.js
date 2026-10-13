@@ -280,7 +280,13 @@ function updateOrderSummary() {
   const pending = merchantOrders.filter((order) => order.status === "pending").length;
   const completedOrders = merchantOrders.filter((order) => order.status === "delivered");
   const completedSales = completedOrders.reduce((sum, order) => {
-    return sum + order.order_items.reduce((lineSum, item) => lineSum + Number(item.line_total ?? (Number(item.unit_price) * Number(item.quantity))), 0);
+    return sum + Number(order.subtotal ?? order.order_items.reduce((lineSum, item) => lineSum + Number(item.line_total ?? (Number(item.unit_price) * Number(item.quantity))), 0));
+  }, 0);
+  const completedCommission = completedOrders.reduce((sum, order) => sum + Number(order.commission_amount || 0), 0);
+  const completedDelivery = completedOrders.reduce((sum, order) => sum + Number(order.delivery_fee || 0), 0);
+  const completedMerchantNet = completedOrders.reduce((sum, order) => {
+    const gross = Number(order.total ?? (Number(order.subtotal || 0) + Number(order.delivery_fee || 0)));
+    return sum + Math.max(0, gross - Number(order.commission_amount || 0));
   }, 0);
   const average = completedOrders.length ? completedSales / completedOrders.length : 0;
   const salesValue = document.querySelector("#total-sales-value");
@@ -301,10 +307,16 @@ function updateOrderSummary() {
   const analyticsSales = document.querySelector("#analytics-sales-total");
   const analyticsOrders = document.querySelector("#analytics-orders-count");
   const analyticsAverage = document.querySelector("#analytics-average-order");
+  const analyticsCommission = document.querySelector("#analytics-commission-total");
+  const analyticsNet = document.querySelector("#analytics-merchant-net");
+  const analyticsDelivery = document.querySelector("#analytics-delivery-total");
   const analyticsEmpty = document.querySelector("#analytics-empty-note");
   if (analyticsSales) analyticsSales.textContent = orderMoney(completedSales);
   if (analyticsOrders) analyticsOrders.textContent = String(count);
   if (analyticsAverage) analyticsAverage.textContent = orderMoney(average);
+  if (analyticsCommission) analyticsCommission.textContent = orderMoney(completedCommission);
+  if (analyticsNet) analyticsNet.textContent = orderMoney(completedMerchantNet);
+  if (analyticsDelivery) analyticsDelivery.textContent = orderMoney(completedDelivery);
   if (analyticsEmpty) {
     analyticsEmpty.textContent = completedOrders.length
       ? "المبيعات محسوبة من الطلبات المكتملة فقط."
@@ -386,7 +398,15 @@ function renderMerchantOrders() {
     const deliveryValue = document.createElement("strong"); deliveryValue.textContent = orderMoney(deliveryFee);
     const payableCaption = document.createElement("small"); payableCaption.textContent = "إجمالي الطلب على المشتري";
     const payableValue = document.createElement("strong"); payableValue.textContent = orderMoney(orderTotal);
-    totalLabel.append(totalCaption, totalValue, deliveryCaption, deliveryValue, payableCaption, payableValue);
+    const commission = order.status === "cancelled" ? 0 : Number(order.commission_amount || 0);
+    const commissionCaption = document.createElement("small");
+    commissionCaption.textContent = order.status === "delivered" ? "عمولة المنصة (5%)" : order.status === "cancelled" ? "عمولة المنصة (ملغي)" : "العمولة المتوقعة عند التسليم (5%)";
+    const commissionValue = document.createElement("strong"); commissionValue.textContent = orderMoney(commission);
+    const netCaption = document.createElement("small");
+    netCaption.textContent = order.status === "delivered" ? "صافي مستحق التاجر شامل التوصيل" : order.status === "cancelled" ? "صافي مستحق التاجر" : "الصافي المتوقع عند التسليم";
+    const netValue = document.createElement("strong");
+    netValue.textContent = orderMoney(order.status === "cancelled" ? 0 : Math.max(0, orderTotal - commission));
+    totalLabel.append(totalCaption, totalValue, deliveryCaption, deliveryValue, payableCaption, payableValue, commissionCaption, commissionValue, netCaption, netValue);
     const controls = document.createElement("label"); controls.className = "order-status-control";
     const controlsLabel = document.createElement("span"); controlsLabel.textContent = "تحديث الحالة";
     const select = document.createElement("select"); select.setAttribute("aria-label", "تحديث حالة الطلب #" + order.order_number);
@@ -415,7 +435,7 @@ async function loadMerchantOrders() {
   host.replaceChildren();
   const loading = document.createElement("div"); loading.className = "notice-box"; loading.textContent = "جارٍ تحميل الطلبات من قاعدة البيانات..."; host.append(loading);
   const { data, error } = await db.from("orders")
-    .select("id,order_number,status,subtotal,delivery_fee,total,customer_name,customer_phone,shipping_address,notes,created_at,order_items!inner(id,store_id,product_name,unit_price,quantity,line_total)")
+    .select("id,order_number,status,subtotal,delivery_fee,total,commission_rate,commission_amount,customer_name,customer_phone,shipping_address,notes,created_at,order_items!inner(id,store_id,product_name,unit_price,quantity,line_total)")
     .eq("order_items.store_id", currentStore.id)
     .order("created_at", { ascending: false });
   if (error) {
