@@ -341,6 +341,20 @@ function renderMerchantOrders() {
     status.textContent = orderStatusLabels[order.status] || order.status;
     head.append(heading, status); card.append(head);
 
+    if (order.status_history.length) {
+      const historyPanel = document.createElement("div"); historyPanel.className = "merchant-order-history";
+      const historyTitle = document.createElement("strong"); historyTitle.textContent = "سجل التوصيل والحالة";
+      const historyList = document.createElement("ol");
+      order.status_history.forEach((event) => {
+        const entry = document.createElement("li");
+        const eventLabel = document.createElement("span"); eventLabel.textContent = event.note || orderStatusLabels[event.status] || event.status;
+        const eventDate = document.createElement("time"); eventDate.dateTime = event.created_at;
+        eventDate.textContent = new Date(event.created_at).toLocaleString("ar-IQ", { dateStyle: "medium", timeStyle: "short" });
+        entry.append(eventLabel, eventDate); historyList.append(entry);
+      });
+      historyPanel.append(historyTitle, historyList); card.append(historyPanel);
+    }
+
     const customer = document.createElement("div"); customer.className = "merchant-order-customer";
     const customerName = document.createElement("strong"); customerName.textContent = order.customer_name || "لم يذكر الاسم";
     const phone = document.createElement("a"); phone.textContent = order.customer_phone || "لم يذكر رقم الهاتف";
@@ -404,7 +418,23 @@ async function loadMerchantOrders() {
     showToast("تعذر تحميل الطلبات من قاعدة البيانات.");
     return;
   }
-  merchantOrders = (data || []).map((order) => ({ ...order, order_items: order.order_items || [] }));
+  merchantOrders = (data || []).map((order) => ({ ...order, order_items: order.order_items || [], status_history: [] }));
+  if (merchantOrders.length) {
+    const { data: historyRows, error: historyError } = await db.from("order_status_history")
+      .select("id,order_id,status,note,created_at")
+      .in("order_id", merchantOrders.map((order) => order.id))
+      .order("created_at", { ascending: true });
+    if (!historyError) {
+      const historyMap = new Map();
+      (historyRows || []).forEach((event) => {
+        if (!historyMap.has(event.order_id)) historyMap.set(event.order_id, []);
+        historyMap.get(event.order_id).push(event);
+      });
+      merchantOrders.forEach((order) => { order.status_history = historyMap.get(order.id) || []; });
+    } else {
+      console.warn("Merchant order history unavailable:", historyError);
+    }
+  }
   renderMerchantOrders();
 }
 
