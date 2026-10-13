@@ -16,7 +16,13 @@ async function load(){
  const a=await db.rpc("admin_dashboard_summary");
  const b=await db.rpc("admin_list_merchants");
  const c=await db.rpc("admin_list_commission_ledger");
- if(a.error||b.error||c.error){$("#connection-status").textContent="تعذر تحميل البيانات";return}
+ if(a.error||b.error||c.error){
+  const failures=[["ملخص المنصة",a.error],["قائمة التجار",b.error],["سجل العمولات",c.error]].filter(([,e])=>e);
+  console.error("BBen admin RPC failure:",failures);
+  const first=failures[0];
+  $("#connection-status").textContent="تعذر تحميل "+first[0]+": "+(first[1].message||first[1].details||first[1].code||"خطأ غير معروف");
+  return;
+ }
  const d=a.data;
  document.querySelector("#merchant-count").textContent=d.merchant_count;
  document.querySelector("#store-count").textContent=d.store_count+" متجر";
