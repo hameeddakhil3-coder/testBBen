@@ -35,7 +35,7 @@ function renderStores(data){
  const body=$("#stores-table");body.replaceChildren();
  const query=($("#store-search")?.value||"").trim().toLocaleLowerCase("ar");
  const filtered=data.filter(s=>[s.store_name,s.owner_name,s.owner_phone,s.city].some(v=>String(v||"").toLocaleLowerCase("ar").includes(query)));
- if(!filtered.length){const tr=document.createElement("tr");const td=document.createElement("td");td.colSpan=8;td.textContent=query?"لا توجد نتائج مطابقة للبحث.":"لا توجد متاجر.";tr.append(td);body.append(tr);return}
+ if(!filtered.length){const tr=document.createElement("tr");const td=document.createElement("td");td.colSpan=7;td.textContent=query?"لا توجد نتائج مطابقة للبحث.":"لا توجد متاجر.";tr.append(td);body.append(tr);return}
  filtered.forEach(s=>{
   const tr=document.createElement("tr");
   [(s.store_name||"متجر")+" — "+(s.owner_name||"غير مسجل"),s.store_status==="active"?"نشط":s.store_status==="suspended"?"موقوف":"غير معروف",Number(s.active_product_count||0)+" / "+Number(s.product_count||0),Number(s.order_count||0),money(s.completed_sales),money(s.commission_due)].forEach((v,i)=>{
