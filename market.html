@@ -75,7 +75,8 @@
       <textarea id="checkout-address" name="shippingAddress" required minlength="6" autocomplete="street-address" rows="3" placeholder="المحافظة، المنطقة، أقرب نقطة دالة"></textarea>
       <label for="checkout-notes">ملاحظات للسائق (اختياري)</label>
       <textarea id="checkout-notes" name="notes" rows="2" placeholder="تفاصيل إضافية للتوصيل"></textarea>
-      <p class="cart-note">سيُسجّل الطلب بحالة «قيد الانتظار». لا يتم تحصيل أي مبلغ إلكتروني في هذه المرحلة.</p>
+      <div id="checkout-cost-summary" class="checkout-cost-summary" aria-live="polite"></div>
+      <p class="cart-note">سيُسجّل الطلب بحالة «قيد الانتظار». أجرة التوصيل تُحتسب مرة واحدة لكل متجر في الطلب. لا يتم تحصيل أي مبلغ إلكتروني في هذه المرحلة.</p>
       <p id="checkout-error" class="checkout-error" role="alert" aria-live="polite"></p>
       <button id="confirm-order-button" class="primary-market-button" type="submit">تأكيد الطلب</button>
     </form>
