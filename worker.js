@@ -2,8 +2,12 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Normalize the admin directory URL to its explicit entry file.
-    if (url.pathname === "/platform" || url.pathname === "/platform/") {
+    // Route every known dashboard URL to the explicit dashboard entry file.
+    if (
+      url.pathname === "/platform.html" ||
+      url.pathname === "/platform" ||
+      url.pathname === "/platform/"
+    ) {
       url.pathname = "/platform/index.html";
     }
 
