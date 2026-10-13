@@ -248,6 +248,20 @@ async function loadOrderHistory() {
       host.append(empty);
       return;
     }
+    const historyByOrder = new Map();
+    try {
+      const { data: historyRows, error: historyError } = await db.from("order_status_history")
+        .select("id,order_id,status,note,created_at")
+        .in("order_id", orders.map((order) => order.id))
+        .order("created_at", { ascending: true });
+      if (historyError) throw historyError;
+      (historyRows || []).forEach((event) => {
+        if (!historyByOrder.has(event.order_id)) historyByOrder.set(event.order_id, []);
+        historyByOrder.get(event.order_id).push(event);
+      });
+    } catch (historyError) {
+      console.warn("Order status history unavailable:", historyError);
+    }
     orders.forEach((order) => {
       const card = document.createElement("article");
       card.className = "order-history-card";
@@ -286,7 +300,13 @@ async function loadOrderHistory() {
         { key: "shipped", label: "قيد التوصيل" },
         { key: "delivered", label: "مكتمل" }
       ];
+      const orderHistory = historyByOrder.get(order.id) || [];
       const stageIndex = stages.findIndex((stage) => stage.key === order.status);
+      const formatStatusDate = (value) => {
+        if (!value) return "";
+        const parsed = new Date(value);
+        return Number.isNaN(parsed.getTime()) ? "" : parsed.toLocaleString("ar-IQ", { dateStyle: "short", timeStyle: "short" });
+      };
       stages.forEach((stage, index) => {
         const step = document.createElement("div");
         step.className = "order-progress-step";
@@ -298,8 +318,24 @@ async function loadOrderHistory() {
         const label = document.createElement("small");
         label.textContent = stage.label;
         step.append(dot, label);
+        const event = orderHistory.find((entry) => entry.status === stage.key);
+        if (event) {
+          const time = document.createElement("time");
+          time.className = "order-progress-time";
+          time.dateTime = event.created_at;
+          time.textContent = formatStatusDate(event.created_at);
+          time.title = event.note || stage.label;
+          step.append(time);
+        }
         progress.append(step);
       });
+      if (orderHistory.length) {
+        const historySummary = document.createElement("p");
+        historySummary.className = "order-status-last-update";
+        const lastEvent = orderHistory[orderHistory.length - 1];
+        historySummary.textContent = (lastEvent.note || "آخر تحديث للحالة") + " · " + formatStatusDate(lastEvent.created_at);
+        progress.after(historySummary);
+      }
       if (order.status === "cancelled") {
         const cancelled = document.createElement("p");
         cancelled.className = "order-cancelled-note";
