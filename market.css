@@ -122,3 +122,5 @@
   .order-progress-time{font-size:7px}
   .order-progress-step:not(:last-child)::after{right:calc(50% + 8px);left:calc(-50% + 8px)}
 }
+
+/* mobile timeline layout fix rollout marker */
