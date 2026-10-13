@@ -34,7 +34,8 @@ async function load(){
 function renderStores(data){
  const body=$("#stores-table");body.replaceChildren();
  const query=($("#store-search")?.value||"").trim().toLocaleLowerCase("ar");
- const filtered=data.filter(s=>[s.store_name,s.owner_name,s.owner_phone,s.city].some(v=>String(v||"").toLocaleLowerCase("ar").includes(query)));
+ const statusFilter=$("#store-status-filter")?.value||"all";
+ const filtered=data.filter(s=>(statusFilter==="all"||s.store_status===statusFilter)&&[s.store_name,s.owner_name,s.owner_phone,s.city].some(v=>String(v||"").toLocaleLowerCase("ar").includes(query)));
  if(!filtered.length){const tr=document.createElement("tr");const td=document.createElement("td");td.colSpan=7;td.textContent=query?"لا توجد نتائج مطابقة للبحث.":"لا توجد متاجر.";tr.append(td);body.append(tr);return}
  filtered.forEach(s=>{
   const tr=document.createElement("tr");
@@ -96,4 +97,4 @@ function renderLedger(){
  const body=$("#ledger-table");body.replaceChildren();const filter=$("#ledger-filter").value;
  rows.filter(o=>filter==="all"||o.commission_state===filter).forEach(o=>{const tr=document.createElement("tr");["#BB-"+o.order_number,o.store_names,new Date(o.created_at).toLocaleDateString("ar-IQ"),money(o.subtotal),money(o.delivery_fee),Number(o.commission_rate)>0?money(o.commission_amount)+" (5%)":"—",({due:"عمولة مستحقة",pending:"بانتظار الاكتمال",legacy_exempt:"طلب سابق معفى",cancelled:"ملغي"})[o.commission_state]||o.status].forEach(v=>{const td=document.createElement("td");td.textContent=v||"—";tr.append(td)});body.append(tr)});
 }
-$("#refresh").addEventListener("click",load);$("#store-search").addEventListener("input",()=>renderStores(storeRows));$("#ledger-filter").addEventListener("change",renderLedger);$("#logout").addEventListener("click",async()=>{await db.auth.signOut();location.href="index.html"});start();
+$("#refresh").addEventListener("click",load);$("#store-search").addEventListener("input",()=>renderStores(storeRows));$("#store-status-filter").addEventListener("change",()=>renderStores(storeRows));$("#ledger-filter").addEventListener("change",renderLedger);$("#logout").addEventListener("click",async()=>{await db.auth.signOut();location.href="index.html"});start();
