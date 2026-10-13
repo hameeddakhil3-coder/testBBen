@@ -31,7 +31,39 @@ async function load(){
 }
 function renderStores(data){
  const body=$("#stores-table");body.replaceChildren();
- data.forEach(s=>{const tr=document.createElement("tr");[(s.store_name||"متجر")+" — "+(s.owner_name||"غير مسجل"),s.store_status,s.active_product_count+" / "+s.product_count,s.order_count,money(s.completed_sales),money(s.commission_due)].forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.append(td)});body.append(tr)});
+ if(!data.length){const tr=document.createElement("tr");const td=document.createElement("td");td.colSpan=7;td.textContent="لا توجد متاجر.";tr.append(td);body.append(tr);return}
+ data.forEach(s=>{
+  const tr=document.createElement("tr");
+  [(s.store_name||"متجر")+" — "+(s.owner_name||"غير مسجل"),s.store_status==="active"?"نشط":s.store_status==="suspended"?"موقوف":"غير معروف",s.active_product_count+" / "+s.product_count,s.order_count,money(s.completed_sales),money(s.commission_due)].forEach((v,i)=>{
+   const td=document.createElement("td");td.textContent=v;
+   if(i===1){const badge=document.createElement("span");badge.className="status "+(s.store_status==="active"?"store-active":s.store_status==="suspended"?"store-suspended":"");badge.textContent=v;td.replaceChildren(badge)}
+   tr.append(td);
+  });
+  const actionCell=document.createElement("td");
+  const action=document.createElement("button");action.type="button";
+  action.className="store-action "+(s.store_status==="active"?"danger":"primary");
+  action.textContent=s.store_status==="active"?"إيقاف المتجر":s.store_status==="suspended"?"إعادة التفعيل":"حالة غير مدعومة";
+  action.disabled=!["active","suspended"].includes(s.store_status);
+  action.addEventListener("click",()=>changeStoreStatus(s,action));
+  actionCell.append(action);tr.append(actionCell);body.append(tr);
+ });
+}
+async function changeStoreStatus(store,button){
+ const next=store.store_status==="active"?"suspended":"active";
+ const actionText=next==="suspended"?"إيقاف":"إعادة تفعيل";
+ const warning=next==="suspended"
+  ?"سيختفي المتجر من واجهة التسوق، ولن تُقبل طلبات جديدة منه. الطلبات السابقة والمخزون لن يتغيرا. هل تريد المتابعة؟"
+  :"سيظهر المتجر مجدداً في واجهة التسوق ويمكن استقبال طلبات جديدة. لن تتغير الطلبات السابقة أو كميات المخزون. هل تريد المتابعة؟";
+ if(!window.confirm("هل تريد "+actionText+" متجر «"+store.store_name+"»؟\n\n"+warning))return;
+ button.disabled=true;button.textContent="جارٍ الحفظ...";
+ const {data,error}=await db.rpc("admin_set_store_status",{p_store_id:store.store_id,p_status:next});
+ if(error){
+  alert("تعذر تغيير حالة المتجر: "+error.message);
+  button.disabled=false;button.textContent=store.store_status==="active"?"إيقاف المتجر":"إعادة التفعيل";
+  return;
+ }
+ alert("تم "+actionText+" المتجر بنجاح.");
+ await load();
 }
 function renderLedger(){
  const body=$("#ledger-table");body.replaceChildren();const filter=$("#ledger-filter").value;
