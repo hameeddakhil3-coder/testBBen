@@ -37,10 +37,12 @@ jobs:
           test -f platform/index.html
           mkdir -p public
           cp index.html styles.css app.js supabase-client.js seller.html seller.css seller.js merchant-profile.html merchant-profile.js market.html market.css market.js store.html platform.html platform.css platform.js public/
+          cp platform.html public/admin.html
           mkdir -p public/platform
           cp platform/index.html public/platform/index.html
           test -s public/store.html
           test -s public/platform.html
+          test -s public/admin.html
           test -s public/platform.css
           test -s public/platform.js
           test -s public/platform/index.html
