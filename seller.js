@@ -398,9 +398,16 @@ function renderMerchantOrders() {
     const deliveryValue = document.createElement("strong"); deliveryValue.textContent = orderMoney(deliveryFee);
     const payableCaption = document.createElement("small"); payableCaption.textContent = "إجمالي الطلب على المشتري";
     const payableValue = document.createElement("strong"); payableValue.textContent = orderMoney(orderTotal);
+    const commissionRate = Number(order.commission_rate || 0);
     const commission = order.status === "cancelled" ? 0 : Number(order.commission_amount || 0);
     const commissionCaption = document.createElement("small");
-    commissionCaption.textContent = order.status === "delivered" ? "عمولة المنصة (5%)" : order.status === "cancelled" ? "عمولة المنصة (ملغي)" : "العمولة المتوقعة عند التسليم (5%)";
+    commissionCaption.textContent = order.status === "cancelled"
+      ? "عمولة المنصة (ملغي)"
+      : commissionRate <= 0
+        ? "عمولة المنصة (لا تطبق على الطلب السابق)"
+        : order.status === "delivered"
+          ? "عمولة المنصة (" + commissionRate + "%)"
+          : "العمولة المتوقعة عند التسليم (" + commissionRate + "%)";
     const commissionValue = document.createElement("strong"); commissionValue.textContent = orderMoney(commission);
     const netCaption = document.createElement("small");
     netCaption.textContent = order.status === "delivered" ? "صافي مستحق التاجر شامل التوصيل" : order.status === "cancelled" ? "صافي مستحق التاجر" : "الصافي المتوقع عند التسليم";
