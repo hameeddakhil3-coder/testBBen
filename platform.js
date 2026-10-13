@@ -1,0 +1,1 @@
+document.addEventListener('DOMContentLoaded',()=>{const node=document.querySelector('#connection-status');if(node)node.textContent='لوحة إدارة BBen';});
