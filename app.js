@@ -148,7 +148,7 @@ form.addEventListener("submit", async (event) => {
         return;
       }
       if (profile.role === "admin") {
-        window.location.href = "platform.html";
+        window.location.href = "platform/";
         return;
       }
       message.textContent = "تم تسجيل الدخول، لكن نوع الحساب غير معروف. تواصل مع الدعم.";
