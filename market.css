@@ -124,3 +124,15 @@
 }
 
 /* mobile timeline layout fix rollout marker */
+
+
+/* Merchant-specific delivery fee breakdown */
+.cart-total-breakdown,.checkout-cost-summary{display:grid;gap:8px;align-items:stretch;font-weight:400}
+.checkout-cost-row{display:flex;align-items:center;justify-content:space-between;gap:14px;font-size:12px;line-height:1.7}
+.checkout-cost-row span{color:var(--muted);overflow-wrap:anywhere}
+.checkout-cost-row strong{flex-shrink:0;color:var(--text);font-size:12px;font-weight:700}
+.checkout-cost-row.is-total{margin-top:3px;padding-top:10px;border-top:1px solid var(--border)}
+.checkout-cost-row.is-total span,.checkout-cost-row.is-total strong{color:var(--brown);font-weight:800}
+.checkout-cost-row.is-total strong{font-size:16px}
+.checkout-cost-summary{padding:12px;border:1px solid var(--border);border-radius:11px;background:#fcfaf7}
+.store-public-delivery-fee{display:inline-flex;align-items:center;padding:7px 10px;border-radius:9px;background:#f3ece6;color:var(--brown);font-weight:700;font-size:11px}
