@@ -334,7 +334,7 @@ async function loadOrderHistory() {
         historySummary.className = "order-status-last-update";
         const lastEvent = orderHistory[orderHistory.length - 1];
         historySummary.textContent = (lastEvent.note || "آخر تحديث للحالة") + " · " + formatStatusDate(lastEvent.created_at);
-        progress.after(historySummary);
+        progress.append(historySummary);
       }
       if (order.status === "cancelled") {
         const cancelled = document.createElement("p");
