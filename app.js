@@ -147,6 +147,10 @@ form.addEventListener("submit", async (event) => {
         window.location.href = "market.html";
         return;
       }
+      if (profile.role === "admin") {
+        window.location.href = "platform.html";
+        return;
+      }
       message.textContent = "تم تسجيل الدخول، لكن نوع الحساب غير معروف. تواصل مع الدعم.";
       message.classList.add("error");
     }
