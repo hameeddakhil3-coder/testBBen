@@ -449,8 +449,18 @@ async function cancelCustomerOrder(order, button) {
   }
 }
 async function openOrderHistory() {
-  if (!currentUser || currentRole !== "customer") {
-    toast("سجّل الدخول بحساب مشتري أولاً لعرض طلباتك.");
+  if (!currentUser) {
+    toast("سجّل الدخول أولاً لعرض الطلبات.");
+    window.location.href = "index.html";
+    return;
+  }
+  if (currentRole === "merchant") {
+    toast("جارٍ فتح طلبات متجرك.");
+    window.location.href = "seller.html?view=orders";
+    return;
+  }
+  if (currentRole !== "customer") {
+    toast("تعذر تحديد نوع الحساب. سجّل الدخول مجدداً.");
     window.location.href = "index.html";
     return;
   }
