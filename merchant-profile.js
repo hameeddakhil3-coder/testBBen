@@ -25,6 +25,7 @@ function fillForm() {
   $("#store-name").value = currentStore?.name || "";
   $("#store-phone").value = currentStore?.phone || "";
   $("#store-city").value = currentStore?.city || "";
+  $("#store-delivery-fee").value = String(currentStore?.delivery_fee ?? 0);
   $("#store-description").value = currentStore?.description || "";
   originalImageUrl = currentStore?.logo_url || null;
   if (originalImageUrl) imagePreview.src = originalImageUrl;
@@ -72,9 +73,10 @@ form.addEventListener("submit", async (event) => {
       logo_url: logoUrl,
       phone: $("#store-phone").value.trim() || null,
       city: $("#store-city").value.trim() || null,
+      delivery_fee: Number($("#store-delivery-fee").value),
       description: $("#store-description").value.trim() || null
     }).eq("id", currentStore.id).eq("owner_id", currentUser.id)
-      .select("id,owner_id,name,slug,description,logo_url,phone,city").single();
+      .select("id,owner_id,name,slug,description,logo_url,phone,city,delivery_fee").single();
     if (storeResult.error) throw storeResult.error;
     currentProfile = profileResult.data; currentStore = storeResult.data; fillForm(); imageInput.value = "";
     setMessage("تم حفظ معلومات التاجر والمتجر بنجاح.", "success");
@@ -91,7 +93,7 @@ async function initProfile() {
   const profileResult = await db.from("profiles").select("id,full_name,phone,role").eq("id", currentUser.id).single();
   if (profileResult.error || profileResult.data?.role !== "merchant") { toast("هذه الصفحة مخصصة لحساب التاجر."); setTimeout(() => { window.location.href = "index.html"; }, 1400); return; }
   currentProfile = profileResult.data;
-  const storeResult = await db.from("stores").select("id,owner_id,name,slug,description,logo_url,phone,city").eq("owner_id", currentUser.id).maybeSingle();
+  const storeResult = await db.from("stores").select("id,owner_id,name,slug,description,logo_url,phone,city,delivery_fee").eq("owner_id", currentUser.id).maybeSingle();
   if (storeResult.error || !storeResult.data) { setMessage("تعذر تحميل بيانات المتجر: " + (storeResult.error?.message || "لم يتم العثور على متجر."), "error"); return; }
   currentStore = storeResult.data; fillForm();
 }
