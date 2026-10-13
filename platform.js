@@ -2,6 +2,8 @@ const db=window.bbenSupabase;
 const $=s=>document.querySelector(s);
 const money=v=>new Intl.NumberFormat("ar-IQ").format(Number(v)||0)+" د.ع";
 let rows=[];
+let storeRows=[];
+const expandedStores=new Set();
 async function start(){
  const {data:{session}}=await db.auth.getSession();
  if(!session){$("#access-state").textContent="سجّل الدخول أولاً";return}
@@ -27,25 +29,47 @@ async function load(){
  document.querySelector("#eligible-count").textContent=d.eligible_completed_orders+" طلب مكتمل مؤهل";
  document.querySelector("#delivery-fees").textContent=money(d.completed_delivery_fees);
  document.querySelector("#delivered-count").textContent=d.delivered_order_count+" طلب مكتمل";
- renderStores(b.data||[]);rows=c.data||[];renderLedger();$("#connection-status").textContent="البيانات محدثة";
+ storeRows=b.data||[];renderStores(storeRows);rows=c.data||[];renderLedger();$("#connection-status").textContent="البيانات محدثة";
 }
 function renderStores(data){
  const body=$("#stores-table");body.replaceChildren();
- if(!data.length){const tr=document.createElement("tr");const td=document.createElement("td");td.colSpan=7;td.textContent="لا توجد متاجر.";tr.append(td);body.append(tr);return}
- data.forEach(s=>{
+ const query=($("#store-search")?.value||"").trim().toLocaleLowerCase("ar");
+ const filtered=data.filter(s=>[s.store_name,s.owner_name,s.owner_phone,s.city].some(v=>String(v||"").toLocaleLowerCase("ar").includes(query)));
+ if(!filtered.length){const tr=document.createElement("tr");const td=document.createElement("td");td.colSpan=8;td.textContent=query?"لا توجد نتائج مطابقة للبحث.":"لا توجد متاجر.";tr.append(td);body.append(tr);return}
+ filtered.forEach(s=>{
   const tr=document.createElement("tr");
-  [(s.store_name||"متجر")+" — "+(s.owner_name||"غير مسجل"),s.store_status==="active"?"نشط":s.store_status==="suspended"?"موقوف":"غير معروف",s.active_product_count+" / "+s.product_count,s.order_count,money(s.completed_sales),money(s.commission_due)].forEach((v,i)=>{
+  [(s.store_name||"متجر")+" — "+(s.owner_name||"غير مسجل"),s.store_status==="active"?"نشط":s.store_status==="suspended"?"موقوف":"غير معروف",Number(s.active_product_count||0)+" / "+Number(s.product_count||0),Number(s.order_count||0),money(s.completed_sales),money(s.commission_due)].forEach((v,i)=>{
    const td=document.createElement("td");td.textContent=v;
    if(i===1){const badge=document.createElement("span");badge.className="status "+(s.store_status==="active"?"store-active":s.store_status==="suspended"?"store-suspended":"");badge.textContent=v;td.replaceChildren(badge)}
    tr.append(td);
   });
   const actionCell=document.createElement("td");
+  const detail=document.createElement("button");detail.type="button";detail.className="store-action details";
+  detail.textContent=expandedStores.has(s.store_id)?"إخفاء التفاصيل":"تفاصيل التاجر";
+  detail.setAttribute("aria-expanded",String(expandedStores.has(s.store_id)));
+  detail.addEventListener("click",()=>{
+   if(expandedStores.has(s.store_id))expandedStores.delete(s.store_id);else expandedStores.add(s.store_id);
+   renderStores(storeRows);
+  });
   const action=document.createElement("button");action.type="button";
   action.className="store-action "+(s.store_status==="active"?"danger":"primary");
   action.textContent=s.store_status==="active"?"إيقاف المتجر":s.store_status==="suspended"?"إعادة التفعيل":"حالة غير مدعومة";
   action.disabled=!["active","suspended"].includes(s.store_status);
   action.addEventListener("click",()=>changeStoreStatus(s,action));
-  actionCell.append(action);tr.append(actionCell);body.append(tr);
+  const actions=document.createElement("div");actions.className="store-actions";actions.append(detail,action);actionCell.append(actions);tr.append(actionCell);body.append(tr);
+  if(expandedStores.has(s.store_id)){
+   const detailRow=document.createElement("tr");detailRow.className="store-detail-row";
+   const detailCell=document.createElement("td");detailCell.colSpan=7;
+   const panel=document.createElement("div");panel.className="store-detail-grid";
+   const fields=[
+    ["اسم المتجر",s.store_name||"—"],["اسم التاجر",s.owner_name||"غير مسجل"],
+    ["هاتف التاجر",s.owner_phone||"غير مسجل"],["المدينة",s.city||"غير محددة"],
+    ["أجرة التوصيل",money(s.delivery_fee)],["الطلبات المكتملة المؤهلة للعمولة",Number(s.commission_eligible_orders||0)],
+    ["إجمالي المنتجات",Number(s.product_count||0)],["المنتجات النشطة",Number(s.active_product_count||0)]
+   ];
+   fields.forEach(([label,value])=>{const item=document.createElement("div");item.className="store-detail-item";const strong=document.createElement("strong");strong.textContent=label;const span=document.createElement("span");span.textContent=String(value);item.append(strong,span);panel.append(item)});
+   detailCell.append(panel);detailRow.append(detailCell);body.append(detailRow);
+  }
  });
 }
 async function changeStoreStatus(store,button){
@@ -72,4 +96,4 @@ function renderLedger(){
  const body=$("#ledger-table");body.replaceChildren();const filter=$("#ledger-filter").value;
  rows.filter(o=>filter==="all"||o.commission_state===filter).forEach(o=>{const tr=document.createElement("tr");["#BB-"+o.order_number,o.store_names,new Date(o.created_at).toLocaleDateString("ar-IQ"),money(o.subtotal),money(o.delivery_fee),Number(o.commission_rate)>0?money(o.commission_amount)+" (5%)":"—",({due:"عمولة مستحقة",pending:"بانتظار الاكتمال",legacy_exempt:"طلب سابق معفى",cancelled:"ملغي"})[o.commission_state]||o.status].forEach(v=>{const td=document.createElement("td");td.textContent=v||"—";tr.append(td)});body.append(tr)});
 }
-$("#refresh").addEventListener("click",load);$("#ledger-filter").addEventListener("change",renderLedger);$("#logout").addEventListener("click",async()=>{await db.auth.signOut();location.href="index.html"});start();
+$("#refresh").addEventListener("click",load);$("#store-search").addEventListener("input",()=>renderStores(storeRows));$("#ledger-filter").addEventListener("change",renderLedger);$("#logout").addEventListener("click",async()=>{await db.auth.signOut();location.href="index.html"});start();
