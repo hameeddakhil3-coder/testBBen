@@ -36,8 +36,13 @@ jobs:
           test -f platform.js
           mkdir -p public
           cp index.html styles.css app.js supabase-client.js seller.html seller.css seller.js merchant-profile.html merchant-profile.js market.html market.css market.js store.html platform.html platform.css platform.js public/
-          test -f public/store.html
-          echo "Verified public store page is included in deployment assets."
+          test -s public/store.html
+          test -s public/platform.html
+          test -s public/platform.css
+          test -s public/platform.js
+          test -s public/index.html
+          echo "Verified required deployed assets:"
+          find public -maxdepth 1 -type f -printf '%f (%s bytes)\\n' | sort
 
       - name: Verify Cloudflare deployment secret
         env:
