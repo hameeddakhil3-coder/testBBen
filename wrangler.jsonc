@@ -7,7 +7,6 @@
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
-    "html_handling": "auto-trailing-slash",
-    "run_worker_first": ["/platform*"]
+    "html_handling": "auto-trailing-slash"
   }
 }
