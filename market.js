@@ -155,11 +155,45 @@ async function addToCart(product) {
 async function loadCart() {
   if (!db || !currentUser || currentRole !== "customer") { cartItems = []; $("#cart-count").textContent = "0"; return; }
   const { data, error } = await db.from("cart_items")
-    .select("id,customer_id,product_id,quantity,products(id,name,price,currency,stock_quantity,image_url,store_id,stores(name))")
+    .select("id,customer_id,product_id,quantity,products(id,name,price,currency,stock_quantity,image_url,store_id,stores(name,delivery_fee))")
     .eq("customer_id", currentUser.id).order("created_at", { ascending: false });
   if (error) { console.warn("Cart load failed:", error.message); return; }
   cartItems = (data || []).filter((item) => item.products);
   $("#cart-count").textContent = String(cartItems.reduce((sum,item) => sum + Number(item.quantity || 0),0));
+}
+function getCartPricing() {
+  let subtotal = 0;
+  const stores = new Map();
+  cartItems.forEach((item) => {
+    const product = item.products;
+    const quantity = Number(item.quantity || 0);
+    subtotal += Number(product.price || 0) * quantity;
+    const store = Array.isArray(product.stores) ? product.stores[0] : product.stores;
+    const storeId = product.store_id || item.product_id;
+    if (!stores.has(storeId)) {
+      stores.set(storeId, {
+        id: storeId,
+        name: store?.name || "المتجر",
+        fee: Math.max(0, Number(store?.delivery_fee || 0))
+      });
+    }
+  });
+  const deliveryFee = [...stores.values()].reduce((sum, store) => sum + store.fee, 0);
+  return { subtotal, stores: [...stores.values()], deliveryFee, total: subtotal + deliveryFee };
+}
+function renderPricingBreakdown(host, pricing, totalLabel = "الإجمالي المتوقع") {
+  host.replaceChildren();
+  host.classList.add("cart-total-breakdown");
+  const addRow = (labelText, value, emphasis = false) => {
+    const row = document.createElement("div");
+    row.className = "checkout-cost-row" + (emphasis ? " is-total" : "");
+    const label = document.createElement("span"); label.textContent = labelText;
+    const amount = document.createElement("strong"); amount.textContent = money(value);
+    row.append(label, amount); host.append(row);
+  };
+  addRow("مجموع المنتجات", pricing.subtotal);
+  pricing.stores.forEach((store) => addRow("أجرة التوصيل — " + store.name, store.fee));
+  addRow(totalLabel, pricing.total, true);
 }
 function renderCart() {
   $("#checkout-button").disabled = true;
@@ -172,9 +206,9 @@ function renderCart() {
     const p = document.createElement("p"); p.className = "market-message"; p.textContent = "سلتك فارغة حالياً. أضف المنتجات التي تعجبك من السوق."; host.append(p);
     $("#cart-total").replaceChildren(); return;
   }
-  let total = 0;
+  const pricing = getCartPricing();
   cartItems.forEach((item) => {
-    const product = item.products; const quantity = Number(item.quantity); total += Number(product.price) * quantity;
+    const product = item.products; const quantity = Number(item.quantity);
     const row = document.createElement("div"); row.className = "cart-row";
     row.append(imageOrPlaceholder(product.image_url, product.name));
     const info = document.createElement("div");
@@ -186,12 +220,10 @@ function renderCart() {
     const plus = document.createElement("button"); plus.type = "button"; plus.textContent = "+"; plus.setAttribute("aria-label", "زيادة الكمية"); plus.disabled = quantity >= Number(product.stock_quantity); plus.addEventListener("click", () => changeCartQuantity(item, quantity + 1));
     const remove = document.createElement("button"); remove.type = "button"; remove.className = "remove-cart"; remove.textContent = "حذف"; remove.addEventListener("click", () => changeCartQuantity(item, 0));
     controls.append(minus, count, plus, remove); info.append(name, price, controls);
-    const subtotal = document.createElement("span"); subtotal.className = "cart-row-price"; subtotal.textContent = money(Number(product.price) * quantity);
-    row.append(info, subtotal); host.append(row);
+    const lineTotal = document.createElement("span"); lineTotal.className = "cart-row-price"; lineTotal.textContent = money(Number(product.price) * quantity);
+    row.append(info, lineTotal); host.append(row);
   });
-  const label = document.createElement("span"); label.textContent = "المجموع التقريبي";
-  const value = document.createElement("strong"); value.textContent = money(total);
-  $("#cart-total").replaceChildren(label, value);
+  renderPricingBreakdown($("#cart-total"), pricing, "الإجمالي مع التوصيل");
   $("#checkout-button").disabled = false;
 }
 async function changeCartQuantity(item, quantity) {
@@ -235,7 +267,7 @@ async function loadOrderHistory() {
   host.append(loading);
   try {
     const { data, error } = await db.from("orders")
-      .select("id,order_number,status,total,customer_name,customer_phone,shipping_address,notes,created_at,order_items(id,store_id,product_name,unit_price,quantity,line_total)")
+      .select("id,order_number,status,subtotal,delivery_fee,total,customer_name,customer_phone,shipping_address,notes,created_at,order_items(id,store_id,product_name,unit_price,quantity,line_total)")
       .eq("customer_id", currentUser.id)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -366,9 +398,13 @@ async function loadOrderHistory() {
       footer.className = "order-history-card-footer";
       const address = document.createElement("span");
       address.textContent = "عنوان التوصيل: " + (order.shipping_address || "غير مسجل");
+      const subtotalLabel = document.createElement("span");
+      subtotalLabel.textContent = "مجموع المنتجات: " + money(order.subtotal == null ? total : order.subtotal);
+      const deliveryLabel = document.createElement("span");
+      deliveryLabel.textContent = "أجرة التوصيل: " + money(order.delivery_fee || 0);
       const totalLabel = document.createElement("strong");
-      totalLabel.textContent = "الإجمالي: " + money(order.total == null ? total : order.total);
-      footer.append(address, totalLabel);
+      totalLabel.textContent = "الإجمالي: " + money(order.total == null ? total + Number(order.delivery_fee || 0) : order.total);
+      footer.append(address, subtotalLabel, deliveryLabel, totalLabel);
       card.append(head, progress, itemsHost, footer);
       if (order.notes) {
         const note = document.createElement("p");
@@ -432,6 +468,7 @@ async function openCheckout() {
   $("#checkout-form").hidden = false;
   $("#checkout-success").hidden = true;
   if (!$("#checkout-name").value.trim()) $("#checkout-name").value = $("#account-label").textContent === "حسابي" ? "" : $("#account-label").textContent;
+  renderPricingBreakdown($("#checkout-cost-summary"), getCartPricing(), "الإجمالي المتوقع");
   $("#checkout-dialog").showModal();
 }
 async function submitCheckout(event) {
