@@ -13,3 +13,6 @@ body{margin:0;background:#f7f5f2;color:#302720;font-family:Tahoma,Arial,sans-ser
 .store-detail-item span{font-size:13px;overflow-wrap:anywhere;color:#302720}
 @media(max-width:800px){.store-detail-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.store-actions{flex-direction:column;align-items:stretch}.store-action{min-width:115px}}
 @media(max-width:420px){.store-detail-grid{grid-template-columns:1fr}#store-search{min-width:0;width:100%}}
+
+.store-filter-label{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0;color:#6f5c4f;font-size:13px}
+#store-status-filter{min-width:170px}
