@@ -375,12 +375,18 @@ function renderMerchantOrders() {
       const notes = document.createElement("p"); notes.className = "merchant-order-notes";
       notes.textContent = "ملاحظات الزبون: " + order.notes; card.append(notes);
     }
-    const total = order.order_items.reduce((sum, item) => sum + Number(item.line_total ?? (Number(item.unit_price) * Number(item.quantity))), 0);
+    const productsSubtotal = order.order_items.reduce((sum, item) => sum + Number(item.line_total ?? (Number(item.unit_price) * Number(item.quantity))), 0);
+    const deliveryFee = Number(order.delivery_fee || 0);
+    const orderTotal = order.total == null ? productsSubtotal + deliveryFee : Number(order.total);
     const footer = document.createElement("div"); footer.className = "merchant-order-footer";
     const totalLabel = document.createElement("div");
-    const totalCaption = document.createElement("small"); totalCaption.textContent = "إجمالي منتجات متجرك";
-    const totalValue = document.createElement("strong"); totalValue.textContent = orderMoney(total);
-    totalLabel.append(totalCaption, totalValue);
+    const totalCaption = document.createElement("small"); totalCaption.textContent = "مجموع المنتجات";
+    const totalValue = document.createElement("strong"); totalValue.textContent = orderMoney(productsSubtotal);
+    const deliveryCaption = document.createElement("small"); deliveryCaption.textContent = "أجرة التوصيل";
+    const deliveryValue = document.createElement("strong"); deliveryValue.textContent = orderMoney(deliveryFee);
+    const payableCaption = document.createElement("small"); payableCaption.textContent = "إجمالي الطلب على المشتري";
+    const payableValue = document.createElement("strong"); payableValue.textContent = orderMoney(orderTotal);
+    totalLabel.append(totalCaption, totalValue, deliveryCaption, deliveryValue, payableCaption, payableValue);
     const controls = document.createElement("label"); controls.className = "order-status-control";
     const controlsLabel = document.createElement("span"); controlsLabel.textContent = "تحديث الحالة";
     const select = document.createElement("select"); select.setAttribute("aria-label", "تحديث حالة الطلب #" + order.order_number);
@@ -409,7 +415,7 @@ async function loadMerchantOrders() {
   host.replaceChildren();
   const loading = document.createElement("div"); loading.className = "notice-box"; loading.textContent = "جارٍ تحميل الطلبات من قاعدة البيانات..."; host.append(loading);
   const { data, error } = await db.from("orders")
-    .select("id,order_number,status,customer_name,customer_phone,shipping_address,notes,created_at,order_items!inner(id,store_id,product_name,unit_price,quantity,line_total)")
+    .select("id,order_number,status,subtotal,delivery_fee,total,customer_name,customer_phone,shipping_address,notes,created_at,order_items!inner(id,store_id,product_name,unit_price,quantity,line_total)")
     .eq("order_items.store_id", currentStore.id)
     .order("created_at", { ascending: false });
   if (error) {
