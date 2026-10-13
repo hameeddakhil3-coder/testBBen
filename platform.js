@@ -55,15 +55,18 @@ async function changeStoreStatus(store,button){
   ?"سيختفي المتجر من واجهة التسوق، ولن تُقبل طلبات جديدة منه. الطلبات السابقة والمخزون لن يتغيرا. هل تريد المتابعة؟"
   :"سيظهر المتجر مجدداً في واجهة التسوق ويمكن استقبال طلبات جديدة. لن تتغير الطلبات السابقة أو كميات المخزون. هل تريد المتابعة؟";
  if(!window.confirm("هل تريد "+actionText+" متجر «"+store.store_name+"»؟\n\n"+warning))return;
+ const originalText=button.textContent;
  button.disabled=true;button.textContent="جارٍ الحفظ...";
- const {data,error}=await db.rpc("admin_set_store_status",{p_store_id:store.store_id,p_status:next});
- if(error){
-  alert("تعذر تغيير حالة المتجر: "+error.message);
-  button.disabled=false;button.textContent=store.store_status==="active"?"إيقاف المتجر":"إعادة التفعيل";
-  return;
+ try{
+  const {data,error}=await db.rpc("admin_set_store_status",{p_store_id:store.store_id,p_status:next});
+  if(error)throw error;
+  if(!data||data.store_status!==next)throw new Error("لم يؤكد الخادم الحالة الجديدة للمتجر.");
+  alert("تم "+actionText+" المتجر بنجاح.");
+  await load();
+ }catch(error){
+  alert("تعذر "+actionText+" المتجر: "+(error?.message||"حدث خطأ غير متوقع."));
+  button.disabled=false;button.textContent=originalText;
  }
- alert("تم "+actionText+" المتجر بنجاح.");
- await load();
 }
 function renderLedger(){
  const body=$("#ledger-table");body.replaceChildren();const filter=$("#ledger-filter").value;
