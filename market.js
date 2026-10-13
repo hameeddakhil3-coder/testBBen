@@ -534,7 +534,7 @@ async function initMarket() {
         return;
       }
       const storeResult = await db.from("stores")
-        .select("id,name,slug,description,logo_url,phone,city,status")
+        .select("id,name,slug,description,logo_url,phone,city,status,delivery_fee")
         .eq("id", requestedStoreId).eq("status", "active").maybeSingle();
       if (storeResult.error) throw storeResult.error;
       publicStore = storeResult.data;
@@ -552,6 +552,7 @@ async function initMarket() {
       $("#public-store-name").textContent = publicStore.name || "متجر BBen";
       $("#public-store-location").textContent = publicStore.city || "";
       $("#public-store-description").textContent = publicStore.description || "مرحباً بك في متجرنا. تصفح المنتجات المتاحة واختر ما يناسبك.";
+      $("#public-store-delivery-fee").textContent = "أجرة التوصيل: " + money(publicStore.delivery_fee || 0);
       if (publicStore.logo_url) {
         const logo = document.createElement("img");
         logo.src = publicStore.logo_url; logo.alt = "شعار " + publicStore.name;
