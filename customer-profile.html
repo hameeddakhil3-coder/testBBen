@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#563b2c">
+<title>BBen | حساب المشتري</title>
+<link rel="stylesheet" href="seller.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script><script src="customer-profile.js" defer></script>
+<style>
+.customer-page{max-width:850px;margin:auto;padding:28px 18px 48px}.customer-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:22px}.customer-head h1{margin:0 0 7px;font-size:25px;color:var(--brown)}.customer-head p{margin:0;color:var(--muted);font-size:12px;line-height:1.8}.customer-card{padding:22px;background:#fff;border:1px solid var(--border);border-radius:16px;margin-bottom:16px}.customer-card h2{margin:0 0 6px;font-size:16px}.customer-card>p{margin:0 0 18px;color:var(--muted);font-size:12px;line-height:1.8}.customer-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.customer-field{display:flex;flex-direction:column;gap:7px}.customer-field label{font-size:12px;font-weight:700}.customer-field input{width:100%;min-height:45px;padding:11px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text);font:inherit;font-size:13px}.customer-field input:focus{outline:2px solid #c7a58b;outline-offset:1px}.customer-field small{color:var(--muted);font-size:10px;line-height:1.7}.customer-email{direction:ltr;text-align:right;background:#f8f5f1!important;color:#77695d!important}.customer-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.customer-message{min-height:22px;margin:12px 0 0;font-size:12px;line-height:1.8}.customer-message.error{color:var(--red)}.customer-message.success{color:var(--green)}.customer-top-link{border:0;background:transparent;color:var(--brown);font:inherit;font-size:12px;font-weight:700;cursor:pointer}.customer-hint{padding:12px 14px;border-radius:10px;background:#f8f4ef;color:#665548;font-size:11px;line-height:1.9}@media(max-width:600px){.customer-page{padding:18px 12px}.customer-head{align-items:flex-start;flex-direction:column}.customer-card{padding:16px}.customer-fields{grid-template-columns:1fr}}
+</style></head>
+<body>
+<header class="topbar"><a class="brand" href="market.html" style="margin:0" aria-label="BBen السوق">B<span>Ben</span></a><div class="top-actions"><button class="customer-top-link" id="back-market" type="button">العودة إلى السوق</button><button class="secondary-button" id="customer-logout" type="button">تسجيل الخروج</button></div></header>
+<main class="customer-page">
+<div class="customer-head"><div><p class="page-eyebrow">إعدادات الحساب</p><h1>حساب المشتري</h1><p>حدّث معلومات التواصل التي تساعد المتاجر على تجهيز طلباتك وتوصيلها.</p></div><button class="primary-button" id="customer-orders" type="button">عرض طلباتي</button></div>
+<form id="customer-profile-form"><section class="customer-card"><h2>معلوماتك الشخصية</h2><p>تعديل هذه المعلومات لا يسجّل خروجك ولا يغيّر أي طلب سابق.</p>
+<div class="customer-fields">
+<div class="customer-field"><label for="customer-name">الاسم الكامل</label><input id="customer-name" name="full_name" required minlength="2" maxlength="100" autocomplete="name" placeholder="اكتب اسمك الكامل"></div>
+<div class="customer-field"><label for="customer-phone">رقم الهاتف</label><input id="customer-phone" name="phone" type="tel" maxlength="30" autocomplete="tel" inputmode="tel" placeholder="07xxxxxxxxx"><small>استخدم الرقم الذي يمكن التواصل معك عليه عند التوصيل.</small></div>
+<div class="customer-field" style="grid-column:1/-1"><label for="customer-email">البريد الإلكتروني</label><input id="customer-email" class="customer-email" type="email" readonly aria-readonly="true"><small>البريد مرتبط بتسجيل الدخول ولا يمكن تغييره من هذه الصفحة.</small></div>
+</div><div class="customer-actions"><button class="primary-button" id="save-customer-profile" type="submit">حفظ التعديلات</button><button class="secondary-button" id="reset-customer-profile" type="button">إلغاء التغييرات</button></div><p id="customer-profile-message" class="customer-message" role="status" aria-live="polite"></p>
+</section><div class="customer-hint">ملاحظة: عنوان التوصيل يُدخل حالياً عند إتمام كل طلب، حتى تتمكن من تحديد العنوان المناسب لكل عملية شراء.</div></form>
+</main></body></html>
