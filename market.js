@@ -218,6 +218,32 @@ let activeChatProduct = null;
 let chatSending = false;
 let chatMessagesLoading = false;
 let chatRefreshTimer = null;
+let buyerChatRealtimeChannel = null;
+
+function subscribeBuyerChatMessages() {
+  if (buyerChatRealtimeChannel) {
+    db.removeChannel(buyerChatRealtimeChannel);
+    buyerChatRealtimeChannel = null;
+  }
+  if (!activeChatConversationId || !db) return;
+  buyerChatRealtimeChannel = db
+    .channel("buyer-chat-" + activeChatConversationId)
+    .on("postgres_changes", {
+      event: "INSERT",
+      schema: "public",
+      table: "chat_messages",
+      filter: "conversation_id=eq." + activeChatConversationId
+    }, () => {
+      if (!chatMessagesLoading && $("#chat-dialog").open) {
+        loadChatMessages().catch((error) => console.warn("Buyer realtime chat update failed:", error));
+      }
+    })
+    .subscribe((status) => {
+      if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        console.warn("Buyer chat realtime unavailable; automatic polling remains enabled.");
+      }
+    });
+}
 
 function startChatAutoRefresh() {
   stopChatAutoRefresh();
@@ -231,6 +257,10 @@ function startChatAutoRefresh() {
 function stopChatAutoRefresh() {
   if (chatRefreshTimer !== null) window.clearInterval(chatRefreshTimer);
   chatRefreshTimer = null;
+  if (buyerChatRealtimeChannel && db) {
+    db.removeChannel(buyerChatRealtimeChannel);
+    buyerChatRealtimeChannel = null;
+  }
 }
 
 async function openChatForProduct(product) {
@@ -241,6 +271,7 @@ async function openChatForProduct(product) {
   }
   const storeId = product?.store_id || product?.stores?.id;
   if (!storeId) { toast("تعذر تحديد المتجر المرتبط بهذا المنتج."); return; }
+  stopChatAutoRefresh();
   activeChatProduct = product;
   activeChatConversationId = null;
   const storeName = product?.stores?.name || "متجر BBen";
@@ -277,6 +308,7 @@ async function openChatForProduct(product) {
     activeChatConversationId = result.data.id;
     await loadChatMessages();
     startChatAutoRefresh();
+    subscribeBuyerChatMessages();
     $("#chat-message-input").disabled = false;
     $("#chat-form button[type='submit']").disabled = false;
     $("#chat-message-input").focus();
