@@ -1399,7 +1399,7 @@ $("#mobile-nav-favorites")?.addEventListener("click", () => { window.location.hr
 $("#mobile-nav-cart")?.addEventListener("click", openCart);
 $("#mobile-nav-account")?.addEventListener("click", () => { window.location.href = currentUser && currentRole === "customer" ? "customer-profile.html" : "index.html"; });
 $("#favorites-page-button")?.addEventListener("click", () => { window.location.href = "market.html?view=favorites"; });
-$("#account-button").addEventListener("click", async () => {
+$("#account-button").addEventListener("click", () => {
   if (currentUser && currentRole === "customer") { window.location.href = "customer-profile.html"; return; }
   window.location.href = "index.html";
 });
