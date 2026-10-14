@@ -25,6 +25,108 @@ try {
 }
 
 const money = (value) => new Intl.NumberFormat("ar-IQ").format(Number(value) || 0) + " د.ع";
+
+let marketCampaigns = [];
+let activeCampaignIndex = 0;
+let campaignTimer = null;
+let campaignTarget = "#products-section";
+function safeCampaignTarget(value) {
+  const target = String(value || "#products-section").trim();
+  if (!target || /^(?:https?:)?\/\//i.test(target) || /^javascript:/i.test(target) || target.startsWith("..") || /[\r\n]/.test(target)) return "#products-section";
+  if (target.startsWith("#")) return target;
+  if (/^[a-z0-9_./?=&%-]+$/i.test(target) && !target.includes(":")) return target;
+  return "#products-section";
+}
+function renderCampaign(index = activeCampaignIndex) {
+  const section = $("#market-promo-strip");
+  if (!section) return;
+  const campaign = marketCampaigns[index] || null;
+  activeCampaignIndex = campaign ? index : 0;
+  $("#campaign-eyebrow").textContent = campaign ? "حملة مميزة من BBen" : "مرحباً بك في BBen";
+  $("#campaign-title").textContent = campaign?.title || "اكتشف منتجات المتاجر";
+  $("#campaign-subtitle").textContent = campaign?.subtitle || "تصفّح المنتجات المتاحة واختر ما يناسبك من متاجر BBen.";
+  $("#browse-button").textContent = (campaign?.button_label || "تصفّح المنتجات") + " ←";
+  campaignTarget = safeCampaignTarget(campaign?.target_url);
+  const image = $("#campaign-image");
+  const placeholder = section.querySelector(".campaign-art-placeholder");
+  const imageUrl = String(campaign?.image_url || "").trim();
+  if (imageUrl && /^https?:\/\//i.test(imageUrl)) {
+    image.src = imageUrl;
+    image.alt = "";
+    image.hidden = false;
+    if (placeholder) placeholder.hidden = true;
+    image.onerror = () => {
+      image.hidden = true;
+      if (placeholder) placeholder.hidden = false;
+    };
+  } else {
+    image.removeAttribute("src");
+    image.hidden = true;
+    if (placeholder) placeholder.hidden = false;
+  }
+  section.classList.toggle("no-campaign-image", !imageUrl);
+  const pagination = $("#campaign-pagination");
+  pagination.replaceChildren();
+  marketCampaigns.forEach((item, dotIndex) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "campaign-dot" + (dotIndex === activeCampaignIndex ? " active" : "");
+    dot.setAttribute("aria-label", "عرض الحملة " + (dotIndex + 1) + ": " + item.title);
+    dot.setAttribute("aria-current", String(dotIndex === activeCampaignIndex));
+    dot.addEventListener("click", () => { renderCampaign(dotIndex); restartCampaignTimer(); });
+    pagination.append(dot);
+  });
+  const hasMultiple = marketCampaigns.length > 1;
+  $("#campaign-prev").hidden = !hasMultiple;
+  $("#campaign-next").hidden = !hasMultiple;
+  pagination.hidden = !hasMultiple;
+  if (!campaign) {
+    $("#campaign-prev").hidden = true;
+    $("#campaign-next").hidden = true;
+    pagination.hidden = true;
+  }
+}
+async function loadCampaigns() {
+  try {
+    const result = await db.from("marketing_campaigns")
+      .select("id,title,subtitle,image_url,button_label,target_url,sort_order,starts_at,ends_at")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false });
+    if (result.error) throw result.error;
+    const now = Date.now();
+    marketCampaigns = (result.data || []).filter(c =>
+      (!c.starts_at || new Date(c.starts_at).getTime() <= now) &&
+      (!c.ends_at || new Date(c.ends_at).getTime() > now)
+    );
+  } catch (error) {
+    console.warn("Campaigns could not be loaded:", error);
+    marketCampaigns = [];
+  }
+  activeCampaignIndex = 0;
+  renderCampaign(0);
+  restartCampaignTimer();
+}
+function restartCampaignTimer() {
+  if (campaignTimer !== null) window.clearInterval(campaignTimer);
+  campaignTimer = null;
+  if (marketCampaigns.length < 2) return;
+  campaignTimer = window.setInterval(() => {
+    const section = $("#market-promo-strip");
+    if (!section || section.hidden || document.hidden || section.matches(":hover") || section.contains(document.activeElement)) return;
+    renderCampaign((activeCampaignIndex + 1) % marketCampaigns.length);
+  }, 6000);
+}
+function openCampaignTarget() {
+  const target = safeCampaignTarget(campaignTarget);
+  if (target.startsWith("#")) {
+    const element = document.querySelector(target);
+    if (element) element.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+  window.location.href = target;
+}
+
 const safeText = (value) => String(value ?? "");
 function toast(text) {
   const el = $("#market-toast");
@@ -1075,7 +1177,7 @@ async function initMarket() {
       $("#account-label").textContent = profileResult.data?.full_name || "حسابي";
       $("#account-button").title = "الملف الشخصي";
     }
-    await loadFavoriteIds();
+    await loadFavoriteIds();\n    await loadCampaigns();
     if (isFavoritesPage) {
       document.body.classList.add("favorites-page");
       document.title = "BBen | منتجاتي المفضلة";
@@ -1177,7 +1279,7 @@ $("#search-input").addEventListener("input", renderProducts);
 $("#clear-search").addEventListener("click", () => { $("#search-input").value = ""; renderProducts(); $("#search-input").focus(); });
 $("#sort-select").addEventListener("change", renderProducts);
 $("#city-filter")?.addEventListener("change", () => { activeCity = $("#city-filter").value; renderProducts(); });
-$("#browse-button").addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth" }));
+$("#browse-button").addEventListener("click", openCampaignTarget);\n$("#campaign-prev")?.addEventListener("click", () => { if (marketCampaigns.length > 1) { renderCampaign((activeCampaignIndex - 1 + marketCampaigns.length) % marketCampaigns.length); restartCampaignTimer(); } });\n$("#campaign-next")?.addEventListener("click", () => { if (marketCampaigns.length > 1) { renderCampaign((activeCampaignIndex + 1) % marketCampaigns.length); restartCampaignTimer(); } });
 $("#show-all-categories").addEventListener("click", () => { activeCategory = ""; renderCategories(); renderProducts(); });
 $("#favorite-filter-button").addEventListener("click", () => {
   if (isFavoritesPage) { window.location.href = "market.html"; return; }
