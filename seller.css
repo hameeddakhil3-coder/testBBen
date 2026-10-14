@@ -86,3 +86,8 @@
 .product-image-preview-item small{position:absolute;right:5px;bottom:5px;padding:3px 6px;border-radius:6px;background:#493126;color:white;font-size:10px}
 .remove-product-image{position:absolute;top:5px;left:5px;display:grid;place-items:center;width:25px;height:25px;border:0;border-radius:50%;background:#fff;color:#a33127;font-size:19px;line-height:1;box-shadow:0 2px 8px #0002;cursor:pointer}
 @media(max-width:460px){.product-images-preview{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+
+/* Explicit multi-batch image selection on mobile */
+.add-more-images-button{display:flex;width:100%;margin-top:9px;align-items:center;justify-content:center;border-color:#d9c7b8;background:#faf6f1;color:var(--brown,#563b2c);font-weight:700}
+.add-more-images-button:active{background:#f0e5d9}
