@@ -1,5 +1,6 @@
 const db = window.bbenSupabase;
 const $ = (selector) => document.querySelector(selector);
+let currentProfile = null;
 const pageParams = new URLSearchParams(window.location.search);
 const requestedStoreId = pageParams.get("store_id") || (window.location.pathname.endsWith("/store.html") || window.location.pathname === "store.html" ? pageParams.get("id") : null);
 const isStorePage = Boolean(requestedStoreId);
@@ -477,7 +478,8 @@ async function openCheckout() {
   $("#checkout-error").textContent = "";
   $("#checkout-form").hidden = false;
   $("#checkout-success").hidden = true;
-  if (!$("#checkout-name").value.trim()) $("#checkout-name").value = $("#account-label").textContent === "حسابي" ? "" : $("#account-label").textContent;
+  if (!$("#checkout-name").value.trim()) $("#checkout-name").value = currentProfile?.full_name || "";
+  if (!$("#checkout-phone").value.trim()) $("#checkout-phone").value = currentProfile?.phone || "";
   renderPricingBreakdown($("#checkout-cost-summary"), getCartPricing(), "الإجمالي المتوقع");
   $("#checkout-dialog").showModal();
 }
@@ -522,8 +524,9 @@ async function initMarket() {
     const sessionResult = await db.auth.getSession();
     currentUser = sessionResult.data?.session?.user || null;
     if (currentUser) {
-      const profileResult = await db.from("profiles").select("role,full_name").eq("id", currentUser.id).maybeSingle();
+      const profileResult = await db.from("profiles").select("role,full_name,phone").eq("id", currentUser.id).maybeSingle();
       currentRole = profileResult.data?.role || null;
+      currentProfile = profileResult.data || null;
       if (currentRole === "merchant" && !isStorePage) { window.location.href = "seller.html"; return; }
       $("#account-label").textContent = profileResult.data?.full_name || "حسابي";
       $("#account-button").title = "الملف الشخصي";
@@ -602,7 +605,7 @@ $("#sort-select").addEventListener("change", renderProducts);
 $("#browse-button").addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth" }));
 $("#show-all-categories").addEventListener("click", () => { activeCategory = ""; renderCategories(); renderProducts(); });
 $("#account-button").addEventListener("click", async () => {
-  if (currentUser && currentRole === "customer") { toast("أنت مسجّل الدخول بحساب مشتري."); return; }
+  if (currentUser && currentRole === "customer") { window.location.href = "customer-profile.html"; return; }
   window.location.href = "index.html";
 });
 $("#cart-button").addEventListener("click", openCart);
