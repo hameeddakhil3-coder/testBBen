@@ -13,6 +13,14 @@ let currentUser = null;
 let currentRole = null;
 let cartItems = [];
 let toastTimer;
+let showFavoritesOnly = false;
+let favoriteIds = new Set();
+try {
+  const savedFavorites = JSON.parse(window.localStorage.getItem("bben_favorite_products") || "[]");
+  if (Array.isArray(savedFavorites)) favoriteIds = new Set(savedFavorites.map(String));
+} catch (error) {
+  console.warn("Could not read saved favorites:", error);
+}
 
 const money = (value) => new Intl.NumberFormat("ar-IQ").format(Number(value) || 0) + " د.ع";
 const safeText = (value) => String(value ?? "");
@@ -55,8 +63,9 @@ function visibleProducts() {
   const query = $("#search-input").value.trim().toLocaleLowerCase("ar");
   let items = allProducts.filter((p) => {
     const categoryMatch = !activeCategory || p.category_id === activeCategory;
+    const favoriteMatch = !showFavoritesOnly || favoriteIds.has(String(p.id));
     const haystack = [p.name, p.description, p.categories?.name, p.stores?.name, p.stores?.city].filter(Boolean).join(" ").toLocaleLowerCase("ar");
-    return categoryMatch && (!query || haystack.includes(query));
+    return categoryMatch && favoriteMatch && (!query || haystack.includes(query));
   });
   const sort = $("#sort-select").value;
   if (sort === "price-asc") items.sort((a,b) => Number(a.price)-Number(b.price));
@@ -69,10 +78,20 @@ function renderProducts() {
   const grid = $("#product-grid"); grid.replaceChildren();
   const items = visibleProducts();
   $("#results-summary").textContent = items.length + " منتج";
+  const favoriteFilter = $("#favorite-filter-button");
+  if (favoriteFilter) {
+    favoriteFilter.classList.toggle("active", showFavoritesOnly);
+    favoriteFilter.setAttribute("aria-pressed", String(showFavoritesOnly));
+    favoriteFilter.textContent = showFavoritesOnly ? "♥ عرض الكل" : "♡ المفضلة";
+  }
   $("#clear-search").hidden = !$("#search-input").value;
   const message = $("#market-message");
   if (!items.length) {
-    message.textContent = allProducts.length ? "لم نعثر على منتجات تطابق بحثك. جرّب كلمة أخرى أو غيّر التصنيف." : (isStorePage ? "لا توجد منتجات نشطة في هذا المتجر حالياً." : "لا توجد منتجات منشورة للبيع حالياً. عندما يضيف التجار منتجات نشطة ستظهر هنا.");
+    message.textContent = showFavoritesOnly && favoriteIds.size === 0
+      ? "لم تحفظ أي منتج في المفضلة بعد. اضغط ♡ على المنتج لحفظه هنا."
+      : (showFavoritesOnly && !items.length
+        ? "لا توجد منتجات محفوظة تطابق هذه التصفية."
+        : (allProducts.length ? "لم نعثر على منتجات تطابق بحثك. جرّب كلمة أخرى أو غيّر التصنيف." : (isStorePage ? "لا توجد منتجات نشطة في هذا المتجر حالياً." : "لا توجد منتجات منشورة للبيع حالياً. عندما يضيف التجار منتجات نشطة ستظهر هنا.")));
     message.classList.remove("hidden"); message.classList.toggle("error", !allProducts.length && message.dataset.error === "true");
     return;
   }
@@ -95,10 +114,25 @@ function renderProducts() {
     const price = document.createElement("span"); price.className = "market-price"; price.textContent = money(product.price);
     const actions = document.createElement("div"); actions.className = "market-card-actions";
     const detailButton = document.createElement("button"); detailButton.type = "button"; detailButton.className = "card-icon-button"; detailButton.textContent = "↗"; detailButton.setAttribute("aria-label", "تفاصيل المنتج"); detailButton.addEventListener("click", () => showProductDetails(product));
+    const favoriteButton = document.createElement("button");
+    favoriteButton.type = "button";
+    favoriteButton.className = "card-favorite-button" + (favoriteIds.has(String(product.id)) ? " is-favorite" : "");
+    favoriteButton.textContent = favoriteIds.has(String(product.id)) ? "♥" : "♡";
+    favoriteButton.setAttribute("aria-label", favoriteIds.has(String(product.id)) ? "إزالة من المفضلة" : "حفظ في المفضلة");
+    favoriteButton.setAttribute("aria-pressed", String(favoriteIds.has(String(product.id))));
+    favoriteButton.addEventListener("click", () => {
+      const id = String(product.id);
+      if (favoriteIds.has(id)) favoriteIds.delete(id);
+      else favoriteIds.add(id);
+      try { window.localStorage.setItem("bben_favorite_products", JSON.stringify([...favoriteIds])); }
+      catch (error) { console.warn("Could not save favorites:", error); }
+      renderProducts();
+      toast(favoriteIds.has(id) ? "أُضيف المنتج إلى المفضلة." : "أُزيل المنتج من المفضلة.");
+    });
     const addButton = document.createElement("button"); addButton.type = "button"; addButton.className = "card-add-button"; addButton.textContent = "+"; addButton.setAttribute("aria-label", "أضف إلى السلة");
     addButton.disabled = Number(product.stock_quantity) <= 0; addButton.title = addButton.disabled ? "نفدت الكمية" : "أضف إلى السلة";
     addButton.addEventListener("click", () => addToCart(product));
-    actions.append(detailButton, addButton); bottom.append(price, actions);
+    actions.append(detailButton, favoriteButton, addButton); bottom.append(price, actions);
     const stock = document.createElement("div"); stock.className = "stock-label" + (Number(product.stock_quantity) <= 0 ? " out" : "");
     stock.textContent = Number(product.stock_quantity) > 0 ? "متوفر · " + product.stock_quantity + " قطعة" : "نفدت الكمية";
     body.append(category, title, store, bottom, stock); card.append(image, body); grid.append(card);
@@ -532,6 +566,7 @@ async function initMarket() {
       $("#account-button").title = "الملف الشخصي";
     }
     if (isStorePage) {
+      $("#market-promo-strip").classList.add("hidden");
       $("#store-public-hero").classList.remove("hidden");
       document.querySelector(".market-hero").classList.add("hidden");
       document.querySelector(".section-heading:not(.product-heading) h2").textContent = "تصنيفات المتجر";
@@ -605,6 +640,12 @@ $("#clear-search").addEventListener("click", () => { $("#search-input").value = 
 $("#sort-select").addEventListener("change", renderProducts);
 $("#browse-button").addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth" }));
 $("#show-all-categories").addEventListener("click", () => { activeCategory = ""; renderCategories(); renderProducts(); });
+$("#favorite-filter-button").addEventListener("click", () => {
+  showFavoritesOnly = !showFavoritesOnly;
+  renderProducts();
+  if (showFavoritesOnly) $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+$("#promo-browse-button").addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" }));
 $("#account-button").addEventListener("click", async () => {
   if (currentUser && currentRole === "customer") { window.location.href = "customer-profile.html"; return; }
   window.location.href = "index.html";
