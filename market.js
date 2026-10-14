@@ -671,4 +671,14 @@ $("#continue-shopping").addEventListener("click", () => $("#cart-dialog").close(
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") { if ($("#product-dialog").open) $("#product-dialog").close(); if ($("#cart-dialog").open) $("#cart-dialog").close(); if ($("#checkout-dialog").open) $("#checkout-dialog").close(); if ($("#order-history-dialog").open) $("#order-history-dialog").close(); }
 });
+// Mobile navigation delegates to the existing buyer actions; data and checkout logic stay unchanged.
+const mobileBrowseButton = $("#mobile-nav-browse");
+if (mobileBrowseButton) mobileBrowseButton.addEventListener("click", () => $("#browse-button").click());
+const mobileOrdersButton = $("#mobile-nav-orders");
+if (mobileOrdersButton) mobileOrdersButton.addEventListener("click", () => $("#orders-button").click());
+const mobileCartButton = $("#mobile-nav-cart");
+if (mobileCartButton) mobileCartButton.addEventListener("click", () => $("#cart-button").click());
+const mobileAccountButton = $("#mobile-nav-account");
+if (mobileAccountButton) mobileAccountButton.addEventListener("click", () => $("#account-button").click());
+
 initMarket();
