@@ -216,6 +216,22 @@ function renderProducts() {
 let activeChatConversationId = null;
 let activeChatProduct = null;
 let chatSending = false;
+let chatMessagesLoading = false;
+let chatRefreshTimer = null;
+
+function startChatAutoRefresh() {
+  stopChatAutoRefresh();
+  chatRefreshTimer = window.setInterval(async () => {
+    if (!activeChatConversationId || !$("#chat-dialog").open || chatMessagesLoading) return;
+    try { await loadChatMessages(); }
+    catch (error) { console.warn("Chat auto-refresh failed:", error); }
+  }, 4000);
+}
+
+function stopChatAutoRefresh() {
+  if (chatRefreshTimer !== null) window.clearInterval(chatRefreshTimer);
+  chatRefreshTimer = null;
+}
 
 async function openChatForProduct(product) {
   if (!currentUser || currentRole !== "customer") {
@@ -260,6 +276,7 @@ async function openChatForProduct(product) {
     }
     activeChatConversationId = result.data.id;
     await loadChatMessages();
+    startChatAutoRefresh();
     $("#chat-message-input").disabled = false;
     $("#chat-form button[type='submit']").disabled = false;
     $("#chat-message-input").focus();
@@ -275,14 +292,17 @@ async function openChatForProduct(product) {
 }
 
 async function loadChatMessages() {
-  if (!activeChatConversationId || !currentUser) return;
+  if (!activeChatConversationId || !currentUser || chatMessagesLoading) return;
+  chatMessagesLoading = true;
   const host = $("#chat-messages");
-  const { data, error } = await db.from("chat_messages")
-    .select("id,sender_id,body,created_at")
-    .eq("conversation_id", activeChatConversationId)
-    .order("created_at", { ascending: true });
-  if (error) throw error;
-  host.replaceChildren();
+  const wasNearBottom = host.scrollHeight - host.scrollTop - host.clientHeight < 60;
+  try {
+    const { data, error } = await db.from("chat_messages")
+      .select("id,sender_id,body,created_at")
+      .eq("conversation_id", activeChatConversationId)
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+    host.replaceChildren();
   if (!data?.length) {
     const empty = document.createElement("div");
     empty.className = "chat-placeholder";
@@ -290,8 +310,8 @@ async function loadChatMessages() {
     const title = document.createElement("strong"); title.textContent = "ابدأ محادثتك مع التاجر";
     const note = document.createElement("p"); note.textContent = "اسأل عن توفر المنتج أو المقاسات أو أجرة التوصيل.";
     empty.append(icon, title, note); host.append(empty); return;
-  }
-  data.forEach((message) => {
+    }
+    data.forEach((message) => {
     const bubble = document.createElement("article");
     const own = message.sender_id === currentUser.id;
     bubble.className = "chat-message-bubble " + (own ? "is-mine" : "is-theirs");
@@ -303,8 +323,11 @@ async function loadChatMessages() {
     time.dateTime = message.created_at;
     time.textContent = Number.isNaN(date.getTime()) ? "" : date.toLocaleString("ar-IQ", { dateStyle: "short", timeStyle: "short" });
     bubble.append(sender, body, time); host.append(bubble);
-  });
-  host.scrollTop = host.scrollHeight;
+    });
+    if (wasNearBottom) host.scrollTop = host.scrollHeight;
+  } finally {
+    chatMessagesLoading = false;
+  }
 }
 
 async function sendChatMessage(event) {
@@ -870,7 +893,8 @@ $("#checkout-form").addEventListener("submit", submitCheckout);
 $("#close-checkout-dialog").addEventListener("click", () => $("#checkout-dialog").close());
 $("#finish-checkout").addEventListener("click", () => $("#checkout-dialog").close());
 $("#close-product-dialog").addEventListener("click", () => $("#product-dialog").close());
-$("#close-chat-dialog").addEventListener("click", () => $("#chat-dialog").close());
+$("#close-chat-dialog").addEventListener("click", () => { stopChatAutoRefresh(); $("#chat-dialog").close(); });
+$("#chat-dialog").addEventListener("close", stopChatAutoRefresh);
 $("#chat-form").addEventListener("submit", sendChatMessage);
 $("#chat-refresh-button")?.addEventListener("click", async () => {
   try { await loadChatMessages(); }
