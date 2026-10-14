@@ -95,6 +95,27 @@
       <button id="finish-checkout" class="primary-market-button" type="button">العودة إلى السوق</button>
     </div>
   </dialog>
+
+  <dialog id="chat-dialog" class="cart-dialog chat-dialog">
+    <div class="cart-dialog-head">
+      <div><p class="section-eyebrow">تواصل مباشر</p><h2>الدردشة مع التاجر</h2></div>
+      <button id="close-chat-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button>
+    </div>
+    <div class="chat-context" id="chat-context">استفسارك عن المنتج والمتجر سيظهر هنا.</div>
+    <div class="chat-messages" aria-live="polite">
+      <div class="chat-placeholder">
+        <span aria-hidden="true">💬</span>
+        <strong>ابدأ محادثتك مع التاجر</strong>
+        <p>اسأل عن توفر المنتج أو المقاسات أو أجرة التوصيل.</p>
+      </div>
+    </div>
+    <form id="chat-form" class="chat-compose">
+      <label class="sr-only" for="chat-message-input">رسالتك</label>
+      <textarea id="chat-message-input" rows="2" maxlength="1000" placeholder="اكتب رسالتك هنا..." required></textarea>
+      <button class="primary-market-button" type="submit" aria-label="إرسال الرسالة">إرسال ↗</button>
+    </form>
+    <p class="cart-note">واجهة الدردشة قيد التجهيز؛ لن تُرسل الرسالة أو تُحفظ حتى يتم تفعيل خدمة المحادثات.</p>
+  </dialog>
   <nav class="mobile-bottom-nav" aria-label="التنقل السريع">
     <button type="button" id="mobile-nav-browse"><span aria-hidden="true">⌂</span><small>السوق</small></button>
     <button type="button" id="mobile-nav-orders"><span aria-hidden="true">▤</span><small>طلباتي</small></button>
