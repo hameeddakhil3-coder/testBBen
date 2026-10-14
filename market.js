@@ -213,11 +213,124 @@ function renderProducts() {
     body.append(category, title, store, bottom, stock); card.append(image, body); grid.append(card);
   });
 }
-function openChatForProduct(product) {
+let activeChatConversationId = null;
+let activeChatProduct = null;
+let chatSending = false;
+
+async function openChatForProduct(product) {
+  if (!currentUser || currentRole !== "customer") {
+    toast("سجّل الدخول بحساب مشتري لمراسلة التاجر.");
+    window.location.href = "index.html";
+    return;
+  }
+  const storeId = product?.store_id || product?.stores?.id;
+  if (!storeId) { toast("تعذر تحديد المتجر المرتبط بهذا المنتج."); return; }
+  activeChatProduct = product;
+  activeChatConversationId = null;
   const storeName = product?.stores?.name || "متجر BBen";
   $("#chat-context").textContent = "المتجر: " + storeName + " · المنتج: " + (product?.name || "استفسار عام");
   $("#chat-message-input").value = "";
+  $("#chat-message-input").disabled = true;
+  $("#chat-form button[type='submit']").disabled = true;
+  $("#chat-messages").replaceChildren();
+  const loading = document.createElement("p");
+  loading.className = "chat-state";
+  loading.textContent = "جارٍ فتح المحادثة...";
+  $("#chat-messages").append(loading);
   $("#chat-dialog").showModal();
+  try {
+    let result = await db.from("chat_conversations")
+      .select("id")
+      .eq("customer_id", currentUser.id)
+      .eq("store_id", storeId)
+      .eq("product_id", product.id)
+      .maybeSingle();
+    if (result.error) throw result.error;
+    if (!result.data) {
+      result = await db.from("chat_conversations")
+        .insert({ customer_id: currentUser.id, store_id: storeId, product_id: product.id })
+        .select("id").single();
+      if (result.error) {
+        // Another open tab may have created the same conversation; re-read before reporting failure.
+        const retry = await db.from("chat_conversations").select("id")
+          .eq("customer_id", currentUser.id).eq("store_id", storeId).eq("product_id", product.id).maybeSingle();
+        if (retry.error || !retry.data) throw result.error;
+        result = retry;
+      }
+    }
+    activeChatConversationId = result.data.id;
+    await loadChatMessages();
+    $("#chat-message-input").disabled = false;
+    $("#chat-form button[type='submit']").disabled = false;
+    $("#chat-message-input").focus();
+  } catch (error) {
+    console.error("Chat open failed:", error);
+    $("#chat-messages").replaceChildren();
+    const message = document.createElement("p");
+    message.className = "chat-state chat-state-error";
+    message.textContent = "تعذر فتح المحادثة. تأكد من تسجيل الدخول وأن المتجر متاح، ثم حاول مجدداً.";
+    $("#chat-messages").append(message);
+    toast("تعذر فتح المحادثة: " + (error.message || "خطأ غير معروف"));
+  }
+}
+
+async function loadChatMessages() {
+  if (!activeChatConversationId || !currentUser) return;
+  const host = $("#chat-messages");
+  const { data, error } = await db.from("chat_messages")
+    .select("id,sender_id,body,created_at")
+    .eq("conversation_id", activeChatConversationId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  host.replaceChildren();
+  if (!data?.length) {
+    const empty = document.createElement("div");
+    empty.className = "chat-placeholder";
+    const icon = document.createElement("span"); icon.setAttribute("aria-hidden", "true"); icon.textContent = "💬";
+    const title = document.createElement("strong"); title.textContent = "ابدأ محادثتك مع التاجر";
+    const note = document.createElement("p"); note.textContent = "اسأل عن توفر المنتج أو المقاسات أو أجرة التوصيل.";
+    empty.append(icon, title, note); host.append(empty); return;
+  }
+  data.forEach((message) => {
+    const bubble = document.createElement("article");
+    const own = message.sender_id === currentUser.id;
+    bubble.className = "chat-message-bubble " + (own ? "is-mine" : "is-theirs");
+    const sender = document.createElement("small");
+    sender.textContent = own ? "أنت" : "التاجر";
+    const body = document.createElement("p"); body.textContent = message.body;
+    const time = document.createElement("time");
+    const date = new Date(message.created_at);
+    time.dateTime = message.created_at;
+    time.textContent = Number.isNaN(date.getTime()) ? "" : date.toLocaleString("ar-IQ", { dateStyle: "short", timeStyle: "short" });
+    bubble.append(sender, body, time); host.append(bubble);
+  });
+  host.scrollTop = host.scrollHeight;
+}
+
+async function sendChatMessage(event) {
+  event.preventDefault();
+  const body = $("#chat-message-input").value.trim();
+  if (!body || !activeChatConversationId || chatSending) return;
+  if (body.length > 1000) { toast("الرسالة أطول من الحد المسموح (1000 حرف)."); return; }
+  chatSending = true;
+  const submit = $("#chat-form button[type='submit']");
+  submit.disabled = true;
+  try {
+    const { error } = await db.from("chat_messages").insert({
+      conversation_id: activeChatConversationId,
+      sender_id: currentUser.id,
+      body
+    });
+    if (error) throw error;
+    $("#chat-message-input").value = "";
+    await loadChatMessages();
+  } catch (error) {
+    console.error("Chat send failed:", error);
+    toast("لم تُرسل الرسالة. " + (error.message || "حاول مجدداً."));
+  } finally {
+    chatSending = false;
+    submit.disabled = !activeChatConversationId;
+  }
 }
 function showProductDetails(product) {
   const host = $("#dialog-product-content"); host.replaceChildren();
@@ -758,9 +871,10 @@ $("#close-checkout-dialog").addEventListener("click", () => $("#checkout-dialog"
 $("#finish-checkout").addEventListener("click", () => $("#checkout-dialog").close());
 $("#close-product-dialog").addEventListener("click", () => $("#product-dialog").close());
 $("#close-chat-dialog").addEventListener("click", () => $("#chat-dialog").close());
-$("#chat-form").addEventListener("submit", (event) => {
-  event.preventDefault();
-  toast("واجهة الدردشة تجريبية حالياً؛ لم تُرسل الرسالة أو تُحفظ.");
+$("#chat-form").addEventListener("submit", sendChatMessage);
+$("#chat-refresh-button")?.addEventListener("click", async () => {
+  try { await loadChatMessages(); }
+  catch (error) { toast("تعذر تحديث الرسائل: " + (error.message || "حاول مجدداً.")); }
 });
 $("#close-cart-dialog").addEventListener("click", () => $("#cart-dialog").close());
 $("#continue-shopping").addEventListener("click", () => $("#cart-dialog").close());
