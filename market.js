@@ -680,5 +680,9 @@ const mobileCartButton = $("#mobile-nav-cart");
 if (mobileCartButton) mobileCartButton.addEventListener("click", () => $("#cart-button").click());
 const mobileAccountButton = $("#mobile-nav-account");
 if (mobileAccountButton) mobileAccountButton.addEventListener("click", () => $("#account-button").click());
+const dismissPromoButton = $("#dismiss-promo");
+if (dismissPromoButton) dismissPromoButton.addEventListener("click", () => { $("#market-promo").hidden = true; });
+const promoStripBrowseButton = $("#promo-strip-browse-button");
+if (promoStripBrowseButton) promoStripBrowseButton.addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" }));
 
 initMarket();
