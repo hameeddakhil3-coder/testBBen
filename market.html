@@ -16,6 +16,7 @@
     <div class="market-search"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="ابحث عن منتج أو متجر..." aria-label="ابحث عن منتج أو متجر"><button id="clear-search" type="button" aria-label="مسح البحث" hidden>×</button></div>
     <div class="market-header-actions">
       <button class="header-action favorites-page-link" id="favorites-page-button" type="button"><span aria-hidden="true">♥</span><span>المفضلة</span></button>
+      <button class="header-action" id="notifications-button" type="button"><span aria-hidden="true">🔔</span><span>الإشعارات</span></button>
       <button class="header-action" id="orders-button" type="button"><span aria-hidden="true">📦</span><span>طلباتي</span></button>
       <button class="header-action" id="cart-button" type="button"><span aria-hidden="true">🛒</span><span>السلة</span><b id="cart-count">0</b></button>
       <button class="header-action account-action" id="account-button" type="button"><span aria-hidden="true">♙</span><span id="account-label">تسجيل الدخول</span></button>
@@ -102,6 +103,11 @@
       <textarea id="checkout-address" name="shippingAddress" required minlength="6" autocomplete="street-address" rows="3" placeholder="المحافظة، المنطقة، أقرب نقطة دالة"></textarea>
       <label for="checkout-notes">ملاحظات للسائق (اختياري)</label>
       <textarea id="checkout-notes" name="notes" rows="2" placeholder="تفاصيل إضافية للتوصيل"></textarea>
+      <div class="coupon-entry">
+        <label for="checkout-coupon-code">كود الخصم (اختياري)</label>
+        <div class="coupon-entry-row"><input id="checkout-coupon-code" name="couponCode" maxlength="40" autocomplete="off" placeholder="أدخل كود الكوبون"><button id="apply-coupon-button" class="secondary-market-button" type="button">تطبيق</button></div>
+        <p id="coupon-message" class="coupon-message" role="status" aria-live="polite"></p>
+      </div>
       <div id="checkout-cost-summary" class="checkout-cost-summary" aria-live="polite"></div>
       <p class="cart-note">سيُسجّل الطلب بحالة «قيد الانتظار». أجرة التوصيل تُحتسب مرة واحدة لكل متجر في الطلب. لا يتم تحصيل أي مبلغ إلكتروني في هذه المرحلة.</p>
       <p id="checkout-error" class="checkout-error" role="alert" aria-live="polite"></p>
@@ -118,6 +124,10 @@
     </div>
   </dialog>
 
+  <dialog id="notifications-dialog" class="cart-dialog">
+    <div class="cart-dialog-head"><div><p class="section-eyebrow">آخر المستجدات</p><h2>الإشعارات</h2></div><button id="close-notifications-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button></div>
+    <div id="notifications-list" class="order-history-list"><p class="market-message">جارٍ تحميل الإشعارات...</p></div>
+  </dialog>
   <dialog id="chat-dialog" class="cart-dialog chat-dialog">
     <div class="cart-dialog-head">
       <div><p class="section-eyebrow">تواصل مباشر</p><h2>الدردشة مع التاجر</h2></div>
