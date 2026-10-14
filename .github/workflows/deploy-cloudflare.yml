@@ -104,13 +104,13 @@ jobs:
 
           customer_html, n_css = re.subn(
               r'<link rel="stylesheet" href="seller\.css">',
-              lambda _: "<style>\\n" + seller_css + "\\n</style>",
+              lambda _: "<style>\n" + seller_css + "\n</style>",
               customer_html,
               count=1,
           )
           customer_html, n_client = re.subn(
               r'<script src="supabase-client\.js"></script>',
-              lambda _: "<script>\\n" + supabase_client + "\\n</script>",
+              lambda _: "<script>\n" + supabase_client + "\n</script>",
               customer_html,
               count=1,
           )
@@ -123,19 +123,19 @@ jobs:
           if (n_css, n_client, n_app) != (1, 1, 1):
               raise SystemExit("Could not inline the expected buyer account assets.")
           customer_html = customer_html.replace(
-              "</body>", "<script>\\n" + customer_app + "\\n</script></body>"
+              "</body>", "<script>\n" + customer_app + "\n</script></body>"
           )
 
           worker = worker.replace(
               "export default { async fetch(request, env) {",
-              "const CUSTOMER_HTML = " + json.dumps(customer_html, ensure_ascii=False) + ";\\n"
+              "const CUSTOMER_HTML = " + json.dumps(customer_html, ensure_ascii=False) + ";\n"
               "export default { async fetch(request, env) {",
               1,
           )
           worker = worker.replace(
-              "  if (url.pathname === '/admin.html') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\\n",
-              "  if (url.pathname === '/admin.html') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\\n"
-              "  if (url.pathname === '/customer-profile.html') return new Response(CUSTOMER_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\\n",
+              "  if (url.pathname === '/admin.html') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\n",
+              "  if (url.pathname === '/admin.html') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\n"
+              "  if (url.pathname === '/customer-profile.html') return new Response(CUSTOMER_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\n",
               1,
           )
           Path("worker.generated.js").write_text(worker)
