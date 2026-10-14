@@ -151,8 +151,8 @@ async function saveCampaign(event){
  try{
   const result=id?await db.from("marketing_campaigns").update(payload).eq("id",id):await db.from("marketing_campaigns").insert(payload);
   if(result.error)throw result.error;
-  message.textContent=id?"تم تحديث الحملة.":"تم إنشاء الحملة.";
-  resetCampaignForm();await loadCampaigns();
+  const successMessage=id?"تم تحديث الحملة.":"تم إنشاء الحملة.";
+  resetCampaignForm();await loadCampaigns();message.textContent=successMessage;
  }catch(error){message.textContent="تعذر حفظ الحملة: "+(error.message||"تحقق من البيانات والصلاحيات.");}
  finally{button.disabled=false;button.textContent=$("#campaign-id").value?"حفظ التعديلات":"حفظ الحملة";}
 }
