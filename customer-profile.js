@@ -1,4 +1,4 @@
-const db = window.bbenSupabase;
+const db = globalThis.bbenSupabase;
 const $ = (selector) => document.querySelector(selector);
 let currentUser = null;
 let currentProfile = null;
@@ -62,13 +62,13 @@ function fillForm() {
   $("#customer-address").value = currentProfile?.default_shipping_address || "";
   $("#customer-email").value = currentUser?.email || "";
 }
-$("#back-market").addEventListener("click", () => { window.location.href = "market.html"; });
+$("#back-market").addEventListener("click", () => { globalThis.location.href = "market.html"; });
 $("#customer-orders").addEventListener("click", () => { $("#customer-orders-section").scrollIntoView({behavior:"smooth",block:"start"}); loadCustomerOrders(); });
 $("#refresh-customer-orders").addEventListener("click", loadCustomerOrders);
 $("#reset-customer-profile").addEventListener("click", () => { fillForm(); showMessage(""); });
 $("#customer-logout").addEventListener("click", async () => {
   const button = $("#customer-logout"); button.disabled = true;
-  try { if (db) await db.auth.signOut(); } finally { window.location.href = "index.html"; }
+  try { if (db) await db.auth.signOut(); } finally { globalThis.location.href = "index.html"; }
 });
 $("#customer-profile-form").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -89,17 +89,17 @@ $("#customer-profile-form").addEventListener("submit", async (event) => {
   } finally { button.disabled = false; button.textContent = "حفظ التعديلات"; }
 });
 async function initCustomerProfile() {
-  if (!db) { window.location.href = "index.html"; return; }
+  if (!db) { globalThis.location.href = "index.html"; return; }
   try {
     const { data, error } = await db.auth.getSession(); if (error) throw error;
     currentUser = data?.session?.user || null;
-    if (!currentUser) { window.location.href = "index.html"; return; }
+    if (!currentUser) { globalThis.location.href = "index.html"; return; }
     const result = await db.from("profiles").select("id,full_name,phone,default_shipping_address,role").eq("id", currentUser.id).single();
     if (result.error) throw result.error;
     if (result.data?.role !== "customer") {
-      if (result.data?.role === "merchant") window.location.href = "seller.html";
-      else if (result.data?.role === "admin") window.location.href = "platform/";
-      else window.location.href = "index.html";
+      if (result.data?.role === "merchant") globalThis.location.href = "seller.html";
+      else if (result.data?.role === "admin") globalThis.location.href = "platform/";
+      else globalThis.location.href = "index.html";
       return;
     }
     currentProfile = result.data; fillForm(); await loadCustomerOrders();
