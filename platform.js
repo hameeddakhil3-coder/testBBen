@@ -1,4 +1,4 @@
-const db=window.bbenSupabase;
+const db=globalThis.bbenSupabase;
 const $=s=>document.querySelector(s);
 const money=v=>new Intl.NumberFormat("ar-IQ").format(Number(v)||0)+" د.ع";
 let rows=[];
@@ -255,7 +255,7 @@ async function changeStoreStatus(store,button){
  const warning=next==="suspended"
   ?"سيختفي المتجر من واجهة التسوق، ولن تُقبل طلبات جديدة منه. الطلبات السابقة والمخزون لن يتغيرا. هل تريد المتابعة؟"
   :"سيظهر المتجر مجدداً في واجهة التسوق ويمكن استقبال طلبات جديدة. لن تتغير الطلبات السابقة أو كميات المخزون. هل تريد المتابعة؟";
- if(!window.confirm("هل تريد "+actionText+" متجر «"+store.store_name+"»؟\n\n"+warning))return;
+ if(!globalThis.confirm("هل تريد "+actionText+" متجر «"+store.store_name+"»؟\n\n"+warning))return;
  const originalText=button.textContent;
  button.disabled=true;button.textContent="جارٍ الحفظ...";
  try{
