@@ -130,7 +130,7 @@ function renderStores() {
     name.textContent = store.name || "متجر BBen";
     const details = document.createElement("small");
     details.textContent = [store.city, store.productCount + " منتج متاح"].filter(Boolean).join(" · ");
-    copy.append(name, details);
+    copy.append(name, details, storeRatingSummary(store));
 
     const visit = document.createElement("span");
     visit.className = "market-store-visit";
@@ -155,6 +155,72 @@ function visibleProducts() {
   else if (sort === "name") items.sort((a,b) => a.name.localeCompare(b.name, "ar"));
   else items.sort((a,b) => new Date(b.created_at)-new Date(a.created_at));
   return items;
+}
+
+
+async function loadStoreReviews(store, host) {
+  if (!store?.id) return;
+  const section=document.createElement("section"); section.className="store-reviews-section";
+  section.innerHTML='<div class="reviews-heading"><h3>تقييمات المتجر</h3><span class="reviews-loading">جارٍ تحميل التقييمات...</span></div>';
+  host.append(section); const heading=section.querySelector(".reviews-heading");
+  try {
+    const result=await db.from("store_reviews").select("id,store_id,order_id,customer_id,rating,review_text,created_at,updated_at").eq("store_id",store.id).order("created_at",{ascending:false});
+    if(result.error)throw result.error;
+    const list=result.data||[]; heading.querySelector(".reviews-loading")?.remove();
+    const avg=list.length?list.reduce((sum,r)=>sum+Number(r.rating),0)/list.length:0;
+    store.store_review_count=list.length;store.store_review_average=avg;
+    const overview=document.createElement("div");overview.className="reviews-overview";
+    const score=document.createElement("strong");score.textContent=list.length?avg.toFixed(1):"—";
+    const stars=document.createElement("span");stars.className="rating-stars";stars.textContent=list.length?"★".repeat(Math.round(avg))+"☆".repeat(5-Math.round(avg)):"☆☆☆☆☆";
+    const count=document.createElement("small");count.textContent=list.length+" تقييم";overview.append(score,stars,count);heading.append(overview);
+    const listHost=document.createElement("div");listHost.className="product-review-list";
+    if(!list.length){const empty=document.createElement("p");empty.className="reviews-empty";empty.textContent="لا توجد تقييمات لهذا المتجر بعد.";listHost.append(empty);}
+    list.forEach(review=>{
+      const item=document.createElement("article");item.className="product-review";
+      const top=document.createElement("div");top.className="product-review-top";
+      const who=document.createElement("strong");who.textContent=currentUser&&review.customer_id===currentUser.id?"تقييمك":"مشتري";
+      const stars=document.createElement("span");stars.className="rating-stars";stars.textContent="★".repeat(Number(review.rating))+"☆".repeat(5-Number(review.rating));
+      const date=document.createElement("time");date.textContent=new Date(review.created_at).toLocaleDateString("ar-IQ");top.append(who,stars,date);item.append(top);
+      if(review.review_text){const body=document.createElement("p");body.textContent=review.review_text;item.append(body);}
+      if(currentUser&&review.customer_id===currentUser.id){
+        const del=document.createElement("button");del.type="button";del.className="delete-product-review";del.textContent="حذف تقييمي";
+        del.addEventListener("click",async()=>{if(!window.confirm("هل تريد حذف تقييم المتجر؟"))return;del.disabled=true;try{const d=await db.from("store_reviews").delete().eq("id",review.id).eq("customer_id",currentUser.id);if(d.error)throw d.error;toast("تم حذف تقييم المتجر.");section.remove();loadStoreReviews(store,host);}catch(e){toast("تعذر حذف التقييم: "+(e.message||"حاول مجدداً."));del.disabled=false;}});
+        item.append(del);
+      }
+      listHost.append(item);
+    });
+    section.append(listHost);
+    if(currentUser&&currentRole==="customer"){
+      const eligibility=await db.from("orders").select("id,order_items!inner(store_id)").eq("customer_id",currentUser.id).eq("status","delivered").eq("order_items.store_id",store.id);
+      if(eligibility.error)throw eligibility.error;
+      const eligible=eligibility.data||[];
+      const previous=list.find(r=>r.customer_id===currentUser.id);
+      const target=eligible.find(o=>previous&&o.id===previous.order_id)||eligible[0];
+      if(target){
+        const form=document.createElement("form");form.className="product-review-form";
+        const title=document.createElement("h4");title.textContent=previous?"تعديل تقييم المتجر":"قيّم هذا المتجر";
+        const label=document.createElement("label");label.textContent="تقييمك من 1 إلى 5 نجوم";
+        const select=document.createElement("select");select.required=true;
+        for(let n=5;n>=1;n--){const opt=document.createElement("option");opt.value=String(n);opt.textContent="★".repeat(n)+"☆".repeat(5-n)+" — "+n;if(Number(previous?.rating||5)===n)opt.selected=true;select.append(opt);}
+        const textLabel=document.createElement("label");textLabel.textContent="مراجعة مكتوبة (اختياري)";
+        const textarea=document.createElement("textarea");textarea.maxLength=1200;textarea.rows=3;textarea.placeholder="شارك تجربتك مع المتجر...";textarea.value=previous?.review_text||"";
+        const submit=document.createElement("button");submit.type="submit";submit.className="primary-market-button";submit.textContent=previous?"حفظ التعديل":"إرسال تقييم المتجر";
+        form.append(title,label,select,textLabel,textarea,submit);
+        form.addEventListener("submit",async event=>{event.preventDefault();submit.disabled=true;try{
+          const payload={store_id:store.id,order_id:target.id,customer_id:currentUser.id,rating:Number(select.value),review_text:textarea.value.trim()||null};
+          const saved=previous?await db.from("store_reviews").update({rating:payload.rating,review_text:payload.review_text}).eq("id",previous.id).eq("customer_id",currentUser.id):await db.from("store_reviews").insert(payload);
+          if(saved.error)throw saved.error;toast(previous?"تم تحديث تقييم المتجر.":"تم إرسال تقييم المتجر، شكراً لك.");section.remove();loadStoreReviews(store,host);
+        }catch(e){toast("تعذر حفظ تقييم المتجر: "+(e.message||"حاول مجدداً."));submit.disabled=false;}});
+        section.append(form);
+      }else{const note=document.createElement("p");note.className="review-eligibility-note";note.textContent="يمكنك تقييم المتجر بعد تسليم طلب منه.";section.append(note);}
+    }
+  }catch(error){console.error("Store reviews load failed:",error);heading.querySelector(".reviews-loading")?.remove();const p=document.createElement("p");p.className="reviews-empty";p.textContent="تعذر تحميل تقييمات المتجر حالياً.";section.append(p);}
+}
+function storeRatingSummary(store){
+ const row=document.createElement("div");row.className="product-rating-summary store-rating-summary";
+ const stars=document.createElement("span");stars.className="rating-stars";const count=Number(store.store_review_count||0),avg=Number(store.store_review_average||0);
+ stars.textContent=count?"★".repeat(Math.round(avg))+"☆".repeat(5-Math.round(avg)):"☆☆☆☆☆";
+ const label=document.createElement("small");label.textContent=count?avg.toFixed(1)+" · "+count+" تقييم":"لا توجد تقييمات";row.append(stars,label);return row;
 }
 
 function ratingSummary(product) {
@@ -535,6 +601,7 @@ function showProductDetails(product) {
   });
   info.append(category, title, price, ratingSummary(product), description, store, stock, add, chatButton); layout.append(image, info); host.append(layout);
   loadProductReviews(product, host);
+  loadStoreReviews(product.stores, host);
   $("#product-dialog").showModal();
 }
 async function ensureCustomer() {
@@ -1002,6 +1069,7 @@ async function initMarket() {
       $("#public-store-location").textContent = publicStore.city || "";
       $("#public-store-description").textContent = publicStore.description || "مرحباً بك في متجرنا. تصفح المنتجات المتاحة واختر ما يناسبك.";
       $("#public-store-delivery-fee").textContent = "أجرة التوصيل: " + money(publicStore.delivery_fee || 0);
+      const storeReviewSlot = document.createElement("div"); storeReviewSlot.id = "public-store-rating"; storeReviewSlot.className = "store-rating-public"; $("#public-store-products-count").parentElement.insertBefore(storeReviewSlot, $("#public-store-products-count").nextSibling);
       if (publicStore.logo_url) {
         const logo = document.createElement("img");
         logo.src = publicStore.logo_url; logo.alt = "شعار " + publicStore.name;
@@ -1027,6 +1095,12 @@ async function initMarket() {
     if (productQuery.error) throw productQuery.error;
     allCategories = categoryResult.data || [];
     allProducts = (productQuery.data || []).filter((p) => p.stores?.status === "active");
+    const storeReviewResult = await db.from("store_reviews").select("store_id,rating");
+    if (storeReviewResult.error) throw storeReviewResult.error;
+    const storeRatingMap = new Map();
+    (storeReviewResult.data || []).forEach((review) => { const entry = storeRatingMap.get(review.store_id) || {count:0,sum:0}; entry.count++; entry.sum += Number(review.rating); storeRatingMap.set(review.store_id,entry); });
+    allProducts.forEach((product) => { const entry = storeRatingMap.get(product.store_id); if (product.stores) { product.stores.store_review_count = entry?.count || 0; product.stores.store_review_average = entry ? entry.sum / entry.count : 0; } });
+    if (publicStore) { const entry = storeRatingMap.get(publicStore.id); publicStore.store_review_count = entry?.count || 0; publicStore.store_review_average = entry ? entry.sum / entry.count : 0; const slot = $("#public-store-rating"); if (slot) slot.replaceChildren(storeRatingSummary(publicStore)); }
     const reviewResult = await db.from("product_reviews").select("product_id,rating");
     if (reviewResult.error) throw reviewResult.error;
     const ratingMap = new Map();
