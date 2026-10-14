@@ -1348,3 +1348,29 @@ body{background:#faf8f5;color:var(--text)}
  .campaign-content h1{font-size:16px}
  .campaign-content>p:not(.hero-eyebrow){font-size:9px}
 }
+
+.market-nav{display:flex;align-items:center;justify-content:center;gap:clamp(18px,3vw,38px);min-height:43px;padding:0 clamp(18px,5vw,76px);border-bottom:1px solid #edf3ee;background:#fff;overflow-x:auto;scrollbar-width:none}
+.market-nav::-webkit-scrollbar{display:none}
+.market-nav a{flex:0 0 auto;display:inline-flex;align-items:center;min-height:42px;color:#354b3d;font-size:12px;font-weight:700;white-space:nowrap;border-bottom:2px solid transparent}
+.market-nav a:hover,.market-nav a:focus-visible,.market-nav a.active{color:#047857;border-bottom-color:#059669}
+.campaign-art-placeholder[hidden]{display:none!important}
+.category-list{display:flex;align-items:flex-start;justify-content:space-between;gap:13px;flex-wrap:nowrap;overflow-x:auto;padding:3px 2px 12px;scrollbar-width:thin;scroll-snap-type:x proximity}
+.category-chip{display:flex;flex:0 0 82px;min-width:72px;flex-direction:column;align-items:center;justify-content:flex-start;gap:7px;padding:0 3px;border:0;border-radius:13px;background:transparent;color:#334b3c;white-space:normal;scroll-snap-align:start}
+.category-chip:hover,.category-chip.active{border:0;background:transparent;color:#047857}
+.category-icon{display:grid;place-items:center;width:56px;height:56px;border:2px solid transparent;border-radius:50%;font-size:25px;line-height:1;transition:transform .15s,border-color .15s}
+.category-chip:hover .category-icon{transform:translateY(-2px)}
+.category-chip.active .category-icon{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.09)}
+.category-label{font-size:11px;font-weight:700;line-height:1.4;text-align:center;max-width:100%;overflow-wrap:anywhere}
+.category-chip.tone-0 .category-icon{background:#dcfce7;color:#047857}
+.category-chip.tone-1 .category-icon{background:#e0f2fe;color:#0284c7}
+.category-chip.tone-2 .category-icon{background:#fce7f3;color:#db2777}
+.category-chip.tone-3 .category-icon{background:#fef3c7;color:#b45309}
+.category-chip.tone-4 .category-icon{background:#d1fae5;color:#059669}
+@media(max-width:700px){
+ .market-nav{justify-content:flex-start;gap:22px;min-height:38px;padding-inline:14px}
+ .market-nav a{min-height:38px;font-size:11px}
+ .category-list{justify-content:flex-start;gap:10px;margin-inline:-2px}
+ .category-chip{flex-basis:70px;min-width:70px}
+ .category-icon{width:49px;height:49px;font-size:22px}
+ .category-label{font-size:10px}
+}
