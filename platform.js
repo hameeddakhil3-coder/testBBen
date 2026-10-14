@@ -3,10 +3,12 @@ const $=s=>document.querySelector(s);
 const money=v=>new Intl.NumberFormat("ar-IQ").format(Number(v)||0)+" د.ع";
 let rows=[];
 let storeRows=[];
+let currentAdminId=null;
 const expandedStores=new Set();
 async function start(){
  const {data:{session}}=await db.auth.getSession();
  if(!session){$("#access-state").textContent="سجّل الدخول أولاً";return}
+ currentAdminId=session.user.id;
  const p=await db.from("profiles").select("role").eq("id",session.user.id).single();
  if(p.error||p.data.role!=="admin"){$("#access-state").textContent="هذه الصفحة لمسؤول المنصة فقط";return}
  $("#access-state").classList.add("hidden");$("#platform-content").classList.remove("hidden");await load();
