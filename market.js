@@ -751,7 +751,7 @@ async function loadOrderHistory() {
   host.append(loading);
   try {
     const { data, error } = await db.from("orders")
-      .select("id,order_number,status,subtotal,delivery_fee,total,customer_name,customer_phone,shipping_address,notes,created_at,order_items(id,store_id,product_name,unit_price,quantity,line_total)")
+      .select("id,order_number,status,subtotal,delivery_fee,total,customer_name,customer_phone,shipping_address,notes,created_at,order_items(id,store_id,product_id,product_name,unit_price,quantity,line_total)")
       .eq("customer_id", currentUser.id)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -884,7 +884,7 @@ async function loadOrderHistory() {
           rateButton.addEventListener("click", () => {
             const product = allProducts.find((entry) => String(entry.id) === String(item.product_id));
             if (!product) {
-              toast("هذا المنتج لم يعد منشوراً في السوق، ولا يمكن فتح صفحة تقييمه حالياً.");
+              toast("لا يمكن فتح المنتج من السوق حالياً. يمكنك البحث عنه في السوق لتقييمه.");
               return;
             }
             $("#order-history-dialog").close();
@@ -892,6 +892,21 @@ async function loadOrderHistory() {
             $("#product-dialog").scrollTop = 0;
           });
           details.append(rateButton);
+        }
+        if (order.status === "delivered" && item.store_id) {
+          const storeRateButton = document.createElement("button");
+          storeRateButton.type = "button";
+          storeRateButton.className = "order-rate-store";
+          storeRateButton.textContent = "★ تقييم المتجر";
+          storeRateButton.addEventListener("click", () => {
+            const storeProduct = allProducts.find((entry) => String(entry.store_id) === String(item.store_id) && entry.stores);
+            if (!storeProduct?.stores) {
+              toast("تعذر فتح صفحة المتجر حالياً. افتح المتجر من السوق ثم انتقل إلى تقييماته.");
+              return;
+            }
+            window.location.href = storeHref(storeProduct.stores);
+          });
+          details.append(storeRateButton);
         }
         itemsHost.append(row);
       });
