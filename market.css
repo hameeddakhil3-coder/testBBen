@@ -1229,3 +1229,6 @@ body{background:#faf8f5;color:var(--text)}
 
 .order-rate-store{display:inline-flex;align-items:center;gap:5px;margin:8px 0 0 6px;padding:7px 11px;border:1px solid #d9e4d8;border-radius:9px;background:#f3f8f2;color:#496b50;font:inherit;font-size:11px;font-weight:700;cursor:pointer}.order-rate-store:hover{background:#e8f1e6}.order-rate-store:focus-visible{outline:3px solid #8bab8d;outline-offset:2px}
 @media(max-width:600px){.order-rate-product,.order-rate-store{font-size:10px;padding:7px 9px;margin-left:0}.order-history-item{align-items:flex-start;gap:8px}.order-history-item-details{min-width:0;flex:1}.order-history-item-details>span{overflow-wrap:anywhere}}
+
+.market-card-body>.store-rating-summary{margin:0 0 4px;gap:5px}.market-card-body>.store-rating-summary .rating-stars{font-size:12px}.market-card-body>.store-rating-summary small{font-size:10px}
+.dialog-product-info>.store-rating-summary{margin:0 0 7px}
