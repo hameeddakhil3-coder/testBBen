@@ -1374,3 +1374,19 @@ body{background:#faf8f5;color:var(--text)}
  .category-icon{width:49px;height:49px;font-size:22px}
  .category-label{font-size:10px}
 }
+
+.market-card-bottom{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;align-items:stretch}
+.market-card-actions{display:block;width:100%}
+.market-card-actions .card-add-button{display:flex;align-items:center;justify-content:center;width:100%;min-height:37px;height:auto;padding:8px 9px;border-radius:9px;background:#059669;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}
+.market-card-actions .card-add-button:hover:not(:disabled){background:#047857}
+.market-card-actions .card-add-button:disabled{opacity:.45}
+.mobile-bottom-nav{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+.mobile-bottom-nav button{color:#526b5c}
+.mobile-bottom-nav button:active,.mobile-bottom-nav button:focus-visible{background:#d1fae5;color:#047857}
+@media(max-width:700px){
+ .market-card-bottom{gap:7px}
+ .market-card-actions .card-add-button{min-height:34px;padding:7px 5px;font-size:10px}
+ .market-card-body{padding:10px}
+ .market-card-title{min-height:2.7em}
+ .mobile-bottom-nav button{min-height:47px}
+}
