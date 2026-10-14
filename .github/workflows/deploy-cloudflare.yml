@@ -127,23 +127,15 @@ jobs:
           )
 
           worker = worker.replace(
-              "const ADMIN_HTML = ",
-              "const ADMIN_HTML = ",
+              "export default { async fetch(request, env) {",
+              "const CUSTOMER_HTML = " + json.dumps(customer_html, ensure_ascii=False) + ";\\n"
+              "export default { async fetch(request, env) {",
               1,
           )
           worker = worker.replace(
-              "export default { async fetch(request, env) {\\n"
-              "  const url = new URL(request.url);\\n"
+              "  if (url.pathname === '/admin.html') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\\n",
               "  if (url.pathname === '/admin.html') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\\n"
-              "  return env.ASSETS.fetch(request);\\n"
-              "} };\\n",
-              "const CUSTOMER_HTML = " + json.dumps(customer_html, ensure_ascii=False) + ";\\n"
-              "export default { async fetch(request, env) {\\n"
-              "  const url = new URL(request.url);\\n"
-              "  if (url.pathname === '/admin.html') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\\n"
-              "  if (url.pathname === '/customer-profile.html') return new Response(CUSTOMER_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\\n"
-              "  return env.ASSETS.fetch(request);\\n"
-              "} };\\n",
+              "  if (url.pathname === '/customer-profile.html') return new Response(CUSTOMER_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\\n",
               1,
           )
           Path("worker.generated.js").write_text(worker)
