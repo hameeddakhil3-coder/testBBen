@@ -985,3 +985,10 @@ body{background:#faf8f5;color:var(--text)}
 /* Buyer marketplace: city filter */
 .city-filter-control select{max-width:150px;min-width:100px}
 @media(max-width:560px){.product-tools{flex-wrap:wrap;justify-content:flex-start;gap:8px}.city-filter-control{order:3}.city-filter-control select{max-width:130px}}
+
+
+/* Fix buyer chat composer sizing on tablets and narrow screens. */
+.chat-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:stretch;gap:8px;width:100%;direction:rtl;box-sizing:border-box}
+.chat-compose textarea{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;flex:none}
+.chat-compose .primary-market-button{display:block;width:auto;min-width:82px;max-width:100%;box-sizing:border-box;white-space:nowrap;flex:none}
+@media(max-width:520px){.chat-compose .primary-market-button{min-width:70px;width:auto}}
