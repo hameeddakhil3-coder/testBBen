@@ -992,3 +992,17 @@ body{background:#faf8f5;color:var(--text)}
 .chat-compose textarea{display:block;width:100%;min-width:0;max-width:100%;box-sizing:border-box;flex:none}
 .chat-compose .primary-market-button{display:block;width:auto;min-width:82px;max-width:100%;box-sizing:border-box;white-space:nowrap;flex:none}
 @media(max-width:520px){.chat-compose .primary-market-button{min-width:70px;width:auto}}
+
+/* Buyer phase 2: store discovery cards */
+.market-stores-section{margin:0 0 44px}
+.market-store-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.market-store-card{display:flex;align-items:center;gap:13px;min-width:0;padding:15px;border:1px solid var(--border);border-radius:15px;background:linear-gradient(135deg,#fff 55%,#fbf7f2);transition:transform .16s,border-color .16s,box-shadow .16s}
+.market-store-card:hover{transform:translateY(-2px);border-color:#d7c1ad;box-shadow:0 9px 24px #39271e0a}
+.market-store-logo{display:grid;place-items:center;flex:0 0 62px;width:62px;height:62px;overflow:hidden;border:1px solid #eadfd5;border-radius:16px;background:#f5eee7;color:var(--brown);font-size:27px}
+.market-store-logo img{display:block;width:100%;height:100%;object-fit:cover}
+.market-store-copy{min-width:0;flex:1}
+.market-store-copy strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--brown);font-size:13px}
+.market-store-copy small{display:block;margin-top:5px;color:var(--muted);font-size:10px;line-height:1.6}
+.market-store-visit{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px 10px;border-radius:9px;background:var(--brown-soft);color:var(--brown);font-size:10px;font-weight:700;white-space:nowrap}
+@media(max-width:900px){.market-store-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.market-stores-section{margin-bottom:30px}.market-store-grid{grid-template-columns:1fr;gap:9px}.market-store-card{padding:12px;gap:11px}.market-store-logo{flex-basis:54px;width:54px;height:54px;border-radius:14px}.market-store-copy strong{font-size:12px}.market-store-visit{padding:8px 9px}}
