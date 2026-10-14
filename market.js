@@ -1107,7 +1107,7 @@ async function initMarket() {
     (reviewResult.data || []).forEach((review) => { const entry = ratingMap.get(review.product_id) || { count: 0, sum: 0 }; entry.count++; entry.sum += Number(review.rating); ratingMap.set(review.product_id, entry); });
     allProducts.forEach((product) => { const entry = ratingMap.get(product.id); product.review_count = entry?.count || 0; product.review_average = entry ? entry.sum / entry.count : 0; });
     renderStores();
-    if (isStorePage) $("#public-store-products-count").textContent = allProducts.length + " منتج متاح";
+    if (isStorePage) { $("#public-store-products-count").textContent = allProducts.length + " منتج متاح"; if (publicStore && $("#public-store-rating")) { $("#public-store-rating").replaceChildren(storeRatingSummary(publicStore)); loadStoreReviews(publicStore, $("#public-store-rating")); } }
     renderCategories(); renderCities(); renderProducts(); await loadCart();
     if (window.location.hash === "#orders" && currentRole === "customer") await openOrderHistory();
   } catch (error) {
