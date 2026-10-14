@@ -1191,7 +1191,7 @@ $("#mobile-nav-browse")?.addEventListener("click", () => window.scrollTo({ top: 
 $("#mobile-nav-orders")?.addEventListener("click", openOrderHistory);
 $("#mobile-nav-cart")?.addEventListener("click", openCart);
 $("#mobile-nav-account")?.addEventListener("click", () => { window.location.href = currentUser && currentRole === "customer" ? "customer-profile.html" : "index.html"; });
-$("#favorites-page-button")?.addEventListener("click", () => { window.location.href = "favorites.html"; });
+$("#favorites-page-button")?.addEventListener("click", () => { window.location.href = "market.html?view=favorites"; });
 $("#account-button").addEventListener("click", async () => {
   if (currentUser && currentRole === "customer") { window.location.href = "customer-profile.html"; return; }
   window.location.href = "index.html";
