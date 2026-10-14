@@ -173,7 +173,7 @@ function renderProducts() {
   message.textContent = ""; message.classList.add("hidden"); message.classList.remove("error");
   items.forEach((product) => {
     const card = document.createElement("article"); card.className = "market-card";
-    const image = document.createElement("div"); image.className = "market-card-image"; image.setAttribute("aria-label", "صورة " + product.name);
+    const image = document.createElement("div"); image.className = "market-card-image";
     image.append(imageOrPlaceholder(product.image_url, product.name));
     const storeBadge = document.createElement("span"); storeBadge.className = "store-badge";
     if (product.stores?.logo_url) {
