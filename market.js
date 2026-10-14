@@ -173,7 +173,7 @@ function renderProducts() {
   message.textContent = ""; message.classList.add("hidden"); message.classList.remove("error");
   items.forEach((product) => {
     const card = document.createElement("article"); card.className = "market-card";
-    const image = document.createElement("div"); image.className = "market-card-image"; image.setAttribute("role", "button"); image.setAttribute("tabindex", "0"); image.setAttribute("aria-label", "عرض تفاصيل " + product.name);
+    const image = document.createElement("div"); image.className = "market-card-image"; image.setAttribute("aria-label", "صورة " + product.name);
     image.append(imageOrPlaceholder(product.image_url, product.name));
     const storeBadge = document.createElement("span"); storeBadge.className = "store-badge";
     if (product.stores?.logo_url) {
@@ -181,7 +181,6 @@ function renderProducts() {
     }
     const storeName = document.createElement("span"); storeName.textContent = product.stores?.name || "متجر BBen"; storeBadge.append(storeName); image.append(storeBadge);
     image.addEventListener("click", (event) => { if (event.target.closest(".card-favorite-button")) return; showProductDetails(product); });
-    image.addEventListener("keydown", (event) => { if ((event.key === "Enter" || event.key === " ") && event.target === image) { event.preventDefault(); showProductDetails(product); } });
     const body = document.createElement("div"); body.className = "market-card-body";
     const category = document.createElement("span"); category.className = "market-card-category"; category.textContent = product.categories?.name || "أخرى";
     const title = document.createElement("strong"); title.className = "market-card-title"; title.textContent = product.name;
