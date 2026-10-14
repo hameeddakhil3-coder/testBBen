@@ -1194,3 +1194,16 @@ body{background:#faf8f5;color:var(--text)}
 .order-rate-product{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:7px 11px;border:1px solid #e6d5c6;border-radius:9px;background:#faf4ed;color:#65432f;font:inherit;font-size:11px;font-weight:700;cursor:pointer}.order-rate-product:hover{background:#f1e5d8}.order-rate-product:focus-visible{outline:3px solid #b58c66;outline-offset:2px}
 
 .store-reviews-section{margin-top:22px;padding-top:18px;border-top:1px solid #eee5dc}.store-rating-summary{margin:7px 0 0}.market-store-copy .store-rating-summary{gap:5px;margin-top:6px}.market-store-copy .store-rating-summary .rating-stars{font-size:12px}.market-store-copy .store-rating-summary small{font-size:10px}.store-rating-public{display:flex;align-items:center;min-height:25px}.store-rating-public .product-rating-summary{margin:0}
+
+/* Public store rating panel: separated from store metadata for a clean page layout */
+.store-rating-panel{display:block;width:100%;margin:0 0 30px;padding:clamp(18px,3vw,28px);border:1px solid #eaded3;border-radius:20px;background:#fffdfb;box-shadow:0 10px 28px #39271e08;box-sizing:border-box}
+.store-rating-panel.hidden{display:none}
+.store-rating-panel .store-reviews-section{margin:0;padding:0;border:0}
+.store-rating-panel .reviews-heading{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:16px}
+.store-rating-panel .reviews-heading h3{font-size:clamp(17px,2vw,21px)}
+.store-rating-panel .reviews-overview{padding:9px 13px}
+.store-rating-panel .product-review-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));align-items:start;margin-top:16px}
+.store-rating-panel .product-review{height:100%;box-sizing:border-box}
+.store-rating-panel .product-review-form{max-width:680px;margin:20px auto 0;padding:20px;background:#faf6f1}
+.store-rating-panel .review-eligibility-note{margin:14px 0 0;padding:12px 14px;border-radius:10px;background:#faf6f1}
+@media(max-width:600px){.store-rating-panel{margin-bottom:22px;padding:15px;border-radius:15px}.store-rating-panel .reviews-heading{align-items:flex-start;flex-direction:column;gap:8px}.store-rating-panel .product-review-form{padding:13px;margin-top:15px}.store-rating-panel .product-review-list{grid-template-columns:1fr}}
