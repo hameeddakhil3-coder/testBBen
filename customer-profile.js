@@ -9,7 +9,8 @@ function showMessage(text, type = "") {
 }
 function fillForm() {
   $("#customer-name").value = currentProfile?.full_name || "";
-  $("#customer-phone").value = currentProfile?.phone || "";\n  $("#customer-address").value = currentProfile?.default_shipping_address || "";
+  $("#customer-phone").value = currentProfile?.phone || "";
+  $("#customer-address").value = currentProfile?.default_shipping_address || "";
   $("#customer-email").value = currentUser?.email || "";
 }
 $("#back-market").addEventListener("click", () => { window.location.href = "market.html"; });
@@ -23,12 +24,14 @@ $("#customer-profile-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!db || !currentUser || !currentProfile) { showMessage("تعذر الاتصال بالحساب. أعد تحميل الصفحة وحاول مجدداً.", "error"); return; }
   const fullName = $("#customer-name").value.trim();
-  const phone = $("#customer-phone").value.trim();\n  const defaultShippingAddress = $("#customer-address").value.trim();
-  if (fullName.length < 2) { showMessage("اكتب الاسم الكامل (حرفين على الأقل).", "error"); $("#customer-name").focus(); return; }\n  if (defaultShippingAddress.length > 500) { showMessage("عنوان التوصيل طويل جداً؛ اختصره إلى 500 حرف.", "error"); $("#customer-address").focus(); return; }
+  const phone = $("#customer-phone").value.trim();
+  const defaultShippingAddress = $("#customer-address").value.trim();
+  if (fullName.length < 2) { showMessage("اكتب الاسم الكامل (حرفين على الأقل).", "error"); $("#customer-name").focus(); return; }
+  if (defaultShippingAddress.length > 500) { showMessage("عنوان التوصيل طويل جداً؛ اختصره إلى 500 حرف.", "error"); $("#customer-address").focus(); return; }
   const button = $("#save-customer-profile"); button.disabled = true; button.textContent = "جارٍ الحفظ..."; showMessage("");
   try {
-    const { data, error } = await db.from("profiles").update({ full_name: fullName, phone: phone || null })
-      .eq("id", currentUser.id).eq("role", "customer").select("id,full_name,phone,role").single();
+    const { data, error } = await db.from("profiles").update({ full_name: fullName, phone: phone || null, default_shipping_address: defaultShippingAddress || null })
+      .eq("id", currentUser.id).eq("role", "customer").select("id,full_name,phone,default_shipping_address,role").single();
     if (error) throw error;
     currentProfile = data; fillForm(); showMessage("تم حفظ معلومات حسابك بنجاح.", "success");
   } catch (error) {
