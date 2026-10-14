@@ -96,6 +96,7 @@
       <label for="product-price">السعر بالدينار العراقي</label><input id="product-price" name="productPrice" type="number" required min="1" step="1" placeholder="45000" />
       <label for="product-category">التصنيف</label><select id="product-category" name="productCategory"><option>إلكترونيات</option><option>أزياء</option><option>منزل ومطبخ</option><option>إكسسوارات</option><option>أحذية</option><option>أخرى</option></select>
       <label for="product-stock">الكمية المتوفرة</label><input id="product-stock" name="productStock" type="number" required min="0" step="1" placeholder="10" />
+      <label for="product-status">حالة المنتج</label><select id="product-status" name="productStatus"><option value="active">نشط — ظاهر في السوق</option><option value="draft">مسودة — غير ظاهر في السوق</option><option value="archived">مؤرشف — غير ظاهر في السوق</option></select>
       <label for="product-image">صورة المنتج (اختياري، حتى 5 ميغابايت)</label><input id="product-image" name="productImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
       <img id="product-image-preview" class="image-preview hidden" alt="معاينة صورة المنتج" />
       <p class="dialog-error" id="dialog-error" aria-live="polite"></p>
