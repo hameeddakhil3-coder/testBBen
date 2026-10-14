@@ -11,6 +11,7 @@ const views = {
   overview: null,
   products: document.querySelector("#products-view"),
   orders: document.querySelector("#orders-view"),
+  chat: document.querySelector("#chat-view"),
   analytics: document.querySelector("#analytics-view")
 };
 let products = [];
@@ -31,7 +32,7 @@ function showToast(text) {
 }
 
 function showView(view, options = {}) {
-  const titles = {overview:"نظرة عامة",products:"إدارة المنتجات",orders:"إدارة الطلبات",analytics:"المبيعات والتقارير"};
+  const titles = {overview:"نظرة عامة",products:"إدارة المنتجات",orders:"إدارة الطلبات",chat:"رسائل الزبائن",analytics:"المبيعات والتقارير"};
   const isOverview = view === "overview";
   if (view === "products") activeProductsOnly = options.activeOnly === true;
   if (view === "orders") orderFilter = options.pendingOnly === true ? "pending" : "all";
@@ -61,6 +62,7 @@ function showView(view, options = {}) {
     if (currentStore) loadMerchantOrders();
   }
   if (view === "analytics") updateOrderSummary();
+  if (view === "chat" && currentStore) loadMerchantChats();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -515,6 +517,158 @@ async function updateMerchantOrderStatus(order, select) {
   }
 }
 
+
+let activeMerchantConversationId = null;
+let merchantChatBusy = false;
+
+async function loadMerchantChats() {
+  if (!currentStore) return;
+  const host = document.querySelector("#merchant-chat-list");
+  host.replaceChildren();
+  const loading = document.createElement("p");
+  loading.className = "notice-box";
+  loading.textContent = "جارٍ تحميل المحادثات...";
+  host.append(loading);
+  try {
+    const { data, error } = await db.from("chat_conversations")
+      .select("id,customer_id,product_id,last_message_at")
+      .eq("store_id", currentStore.id)
+      .order("last_message_at", { ascending: false });
+    if (error) throw error;
+    const conversations = data || [];
+    host.replaceChildren();
+    if (!conversations.length) {
+      const empty = document.createElement("p");
+      empty.className = "notice-box";
+      empty.textContent = "لا توجد رسائل بعد. ستظهر هنا محادثات الزبائن عند مراسلة متجرك.";
+      host.append(empty);
+      return;
+    }
+    const customerIds = [...new Set(conversations.map((item) => item.customer_id))];
+    const productIds = [...new Set(conversations.map((item) => item.product_id).filter(Boolean))];
+    const [profilesResult, productsResult] = await Promise.all([
+      db.from("profiles").select("id,full_name").in("id", customerIds),
+      productIds.length ? db.from("products").select("id,name").in("id", productIds) : Promise.resolve({data:[],error:null})
+    ]);
+    if (profilesResult.error) throw profilesResult.error;
+    if (productsResult.error) throw productsResult.error;
+    const names = new Map((profilesResult.data || []).map((row) => [row.id, row.full_name || "زبون"]));
+    const productNames = new Map((productsResult.data || []).map((row) => [row.id, row.name || "منتج"]));
+    conversations.forEach((conversation) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "merchant-chat-list-item" + (conversation.id === activeMerchantConversationId ? " active" : "");
+      const title = document.createElement("strong");
+      title.textContent = names.get(conversation.customer_id) || "زبون";
+      const product = document.createElement("small");
+      product.textContent = productNames.get(conversation.product_id) || "استفسار عن المتجر";
+      const date = document.createElement("time");
+      const parsed = new Date(conversation.last_message_at);
+      date.textContent = Number.isNaN(parsed.getTime()) ? "" : parsed.toLocaleString("ar-IQ", {dateStyle:"short",timeStyle:"short"});
+      button.append(title, product, date);
+      button.addEventListener("click", () => openMerchantConversation(conversation, names.get(conversation.customer_id) || "زبون", productNames.get(conversation.product_id) || "استفسار عن المتجر"));
+      host.append(button);
+    });
+    if (activeMerchantConversationId && !conversations.some((item) => item.id === activeMerchantConversationId)) {
+      activeMerchantConversationId = null;
+      document.querySelector("#merchant-chat-context").textContent = "اختر محادثة من القائمة لقراءة الرسائل والرد عليها.";
+      document.querySelector("#merchant-chat-messages").replaceChildren();
+      setMerchantChatComposer(false);
+    }
+  } catch (error) {
+    host.replaceChildren();
+    const message = document.createElement("p");
+    message.className = "notice-box";
+    message.textContent = "تعذر تحميل المحادثات. " + (error.message || "حاول مجدداً.");
+    host.append(message);
+    console.error("Merchant chat load failed:", error);
+  }
+}
+
+function setMerchantChatComposer(enabled) {
+  document.querySelector("#merchant-chat-input").disabled = !enabled;
+  document.querySelector("#merchant-chat-form button[type='submit']").disabled = !enabled;
+}
+
+async function openMerchantConversation(conversation, customerName, productName) {
+  activeMerchantConversationId = conversation.id;
+  document.querySelector("#merchant-chat-context").textContent = customerName + " · " + productName;
+  setMerchantChatComposer(true);
+  await loadMerchantChatMessages();
+  document.querySelectorAll(".merchant-chat-list-item").forEach((button) => button.classList.remove("active"));
+  const active = [...document.querySelectorAll(".merchant-chat-list-item")].find((button) => button.querySelector("strong")?.textContent === customerName && button.querySelector("small")?.textContent === productName);
+  active?.classList.add("active");
+}
+
+async function loadMerchantChatMessages() {
+  if (!activeMerchantConversationId) return;
+  const host = document.querySelector("#merchant-chat-messages");
+  host.replaceChildren();
+  const loading = document.createElement("p");
+  loading.className = "notice-box";
+  loading.textContent = "جارٍ تحميل الرسائل...";
+  host.append(loading);
+  const { data, error } = await db.from("chat_messages")
+    .select("id,sender_id,body,created_at")
+    .eq("conversation_id", activeMerchantConversationId)
+    .order("created_at", {ascending:true});
+  if (error) throw error;
+  host.replaceChildren();
+  if (!data?.length) {
+    const empty = document.createElement("p");
+    empty.className = "notice-box";
+    empty.textContent = "ابدأ الرد على استفسار الزبون.";
+    host.append(empty);
+    return;
+  }
+  data.forEach((message) => {
+    const bubble = document.createElement("article");
+    bubble.className = "merchant-chat-bubble " + (message.sender_id === currentUser.id ? "mine" : "customer");
+    const sender = document.createElement("small");
+    sender.textContent = message.sender_id === currentUser.id ? "أنا" : "الزبون";
+    const body = document.createElement("p"); body.textContent = message.body;
+    const time = document.createElement("time");
+    const parsed = new Date(message.created_at);
+    time.textContent = Number.isNaN(parsed.getTime()) ? "" : parsed.toLocaleString("ar-IQ", {dateStyle:"short",timeStyle:"short"});
+    bubble.append(sender, body, time); host.append(bubble);
+  });
+  host.scrollTop = host.scrollHeight;
+}
+
+async function sendMerchantChatMessage(event) {
+  event.preventDefault();
+  const input = document.querySelector("#merchant-chat-input");
+  const body = input.value.trim();
+  if (!body || !activeMerchantConversationId || merchantChatBusy) return;
+  merchantChatBusy = true;
+  setMerchantChatComposer(false);
+  try {
+    const { error } = await db.from("chat_messages").insert({
+      conversation_id: activeMerchantConversationId,
+      sender_id: currentUser.id,
+      body
+    });
+    if (error) throw error;
+    input.value = "";
+    await loadMerchantChatMessages();
+    await loadMerchantChats();
+  } catch (error) {
+    showToast("تعذر إرسال الرد: " + (error.message || "حاول مجدداً."));
+  } finally {
+    merchantChatBusy = false;
+    setMerchantChatComposer(Boolean(activeMerchantConversationId));
+  }
+}
+
+document.querySelector("#refresh-merchant-chats")?.addEventListener("click", async () => {
+  await loadMerchantChats();
+  if (activeMerchantConversationId) {
+    try { await loadMerchantChatMessages(); }
+    catch (error) { showToast("تعذر تحديث الرسائل: " + (error.message || "حاول مجدداً.")); }
+  }
+});
+document.querySelector("#merchant-chat-form")?.addEventListener("submit", sendMerchantChatMessage);
+
 function renderProductCards() {
   const grid = document.querySelector("#products-grid");
   if (!grid) return;
@@ -622,9 +776,8 @@ async function initSeller() {
   renderProductCards();
   await loadMerchantOrders();
   // Deep-link from the public store's order button directly to merchant order management.
-  if (new URLSearchParams(window.location.search).get("view") === "orders") {
-    showView("orders");
-  }
+  const requestedView = new URLSearchParams(window.location.search).get("view");
+  if (requestedView === "orders" || requestedView === "chat") showView(requestedView);
 }
 
 initSeller();
