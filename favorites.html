@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#563b2c">
+  <title>BBen | منتجاتي المفضلة</title>
+  <link rel="stylesheet" href="market.css?rev=20261014-21">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="supabase-client.js"></script>
+  <script src="market.js?rev=20261014-21" defer></script>
+</head>
+<body>
+  <header class="market-header">
+    <a class="market-brand" href="market.html" aria-label="BBen السوق">B<span>Ben</span></a>
+    <div class="market-search"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="ابحث عن منتج أو متجر..." aria-label="ابحث عن منتج أو متجر"><button id="clear-search" type="button" aria-label="مسح البحث" hidden>×</button></div>
+    <div class="market-header-actions">
+      <button class="header-action favorites-page-link" id="favorites-page-button" type="button"><span aria-hidden="true">♥</span><span>المفضلة</span></button>
+      <button class="header-action" id="orders-button" type="button"><span aria-hidden="true">📦</span><span>طلباتي</span></button>
+      <button class="header-action" id="cart-button" type="button"><span aria-hidden="true">🛒</span><span>السلة</span><b id="cart-count">0</b></button>
+      <button class="header-action account-action" id="account-button" type="button"><span aria-hidden="true">♙</span><span id="account-label">تسجيل الدخول</span></button>
+    </div>
+  </header>
+  <main class="market-main">
+    <section class="store-public-hero hidden" id="store-public-hero">
+      <div class="store-public-identity">
+        <div class="store-public-logo" id="public-store-logo">🏪</div>
+        <div><p class="hero-eyebrow">متجر على BBen</p><h1 id="public-store-name">جارٍ تحميل المتجر...</h1><p id="public-store-location" class="store-public-location"></p></div>
+      </div>
+      <p id="public-store-description" class="store-public-description">جارٍ تحميل معلومات المتجر ومنتجاته.</p>
+      <div class="store-public-meta"><span id="public-store-products-count">جارٍ تحميل المنتجات...</span><span id="public-store-delivery-fee" class="store-public-delivery-fee"></span><a id="public-store-phone" class="store-public-phone" hidden></a><a class="store-back-link" href="market.html">العودة إلى السوق ←</a></div>
+      <button id="public-store-browse-button" class="hero-button" type="button">تصفح المنتجات ↓</button>
+    </section>
+    <section id="public-store-rating" class="store-rating-panel hidden" aria-label="تقييمات المتجر"></section>
+    <section class="market-hero">
+      <div class="hero-copy"><p class="hero-eyebrow">أهلاً بك في BBen</p><h1>اكتشف منتجات<br><span>تستحقها</span></h1><p>تسوّق من متاجر متنوعة، وقارن المنتجات والأسعار بسهولة.</p><button id="browse-button" class="hero-button" type="button">اكتشف المنتجات <span aria-hidden="true">←</span></button></div>
+      <div class="hero-art" aria-hidden="true"><div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div><div class="hero-bag">🛍️</div><div class="hero-floating float-one">✨</div><div class="hero-floating float-two">📦</div><div class="hero-caption">اختياراتك تبدأ من هنا</div></div>
+    </section>
+    <aside class="market-promo-strip" id="market-promo-strip" aria-label="اكتشف السوق">
+      <span class="promo-strip-icon" aria-hidden="true">✦</span>
+      <div><strong>تسوّق من متاجر قريبة منك</strong><small>تصفّح المنتجات المتاحة والأسعار والكميات مباشرة من السوق.</small></div>
+      <button id="promo-strip-browse-button" type="button">تصفّح الآن <span aria-hidden="true">←</span></button>
+    </aside>
+    <section class="market-categories">
+      <div class="section-heading"><div><p class="section-eyebrow">تسوّق حسب ما تحب</p><h2>التصنيفات</h2></div><button class="text-action" id="show-all-categories" type="button">عرض الكل ←</button></div>
+      <div id="category-list" class="category-list"><button class="category-chip active" data-category="">الكل</button></div>
+    </section>
+    <section class="market-stores-section" id="market-stores-section">
+      <div class="section-heading">
+        <div><p class="section-eyebrow">تسوّق من المصدر</p><h2>اكتشف المتاجر</h2><p class="section-description">تعرّف على المتاجر النشطة وتصفّح منتجات كل متجر.</p></div>
+      </div>
+      <div id="store-grid" class="market-store-grid"></div>
+      <p id="stores-empty-message" class="market-message hidden">ستظهر المتاجر هنا عندما تتوفر منتجات منشورة للبيع.</p>
+    </section>
+    <section class="market-products" id="products-section">
+      <div class="section-heading product-heading"><div><p class="section-eyebrow">اختيرت لك</p><h2>منتجات المتاجر</h2><p class="section-description" id="results-summary">جارٍ تحميل المنتجات...</p></div><div class="product-tools"><button id="favorite-filter-button" class="favorite-filter-button" type="button" aria-pressed="false">♡ المفضلة</button><label class="sort-control city-filter-control">المدينة <select id="city-filter" aria-label="تصفية حسب المدينة"><option value="">كل المدن</option></select></label><label class="sort-control">ترتيب حسب <select id="sort-select"><option value="newest">الأحدث</option><option value="price-asc">السعر: الأقل أولاً</option><option value="price-desc">السعر: الأعلى أولاً</option><option value="name">الاسم</option></select></label></div></div>
+      <div id="market-message" class="market-message" role="status" aria-live="polite">جارٍ تحميل المنتجات...</div>
+      <div id="product-grid" class="market-product-grid"></div>
+    </section>
+    <section class="market-benefits"><div><span>🔒</span><strong>تجربة آمنة</strong><small>حسابات محمية</small></div><div><span>🏪</span><strong>متاجر متنوعة</strong><small>اكتشف منتجات مختلفة</small></div><div><span>📦</span><strong>معلومات واضحة</strong><small>السعر والكمية متاحان</small></div></section>
+    <footer class="market-footer"><a class="market-brand" href="market.html">B<span>Ben</span></a><p>تجربة تسوّق أقرب إليك</p><span>© BBen 2026</span></footer>
+  </main>
+  <dialog id="product-dialog" class="product-dialog">
+    <button id="close-product-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button>
+    <div id="dialog-product-content"></div>
+  </dialog>
+  <dialog id="cart-dialog" class="cart-dialog">
+    <div class="cart-dialog-head"><div><p class="section-eyebrow">قائمة مشترياتك</p><h2>سلة التسوق</h2></div><button id="close-cart-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button></div>
+    <div id="cart-content"></div>
+    <div class="cart-total" id="cart-total"></div>
+    <p class="cart-note">راجع المنتجات والكميات قبل تأكيد الطلب. الدفع الإلكتروني غير مفعّل حالياً.</p>
+    <button id="checkout-button" class="primary-market-button" type="button" disabled>إتمام الطلب · الدفع عند الاستلام</button>
+    <button id="continue-shopping" class="secondary-market-button" type="button">متابعة التسوق</button>
+  </dialog>
+  <dialog id="order-history-dialog" class="cart-dialog order-history-dialog">
+    <div class="cart-dialog-head"><div><p class="section-eyebrow">متابعة مشترياتك</p><h2>طلباتي</h2></div><button id="close-orders-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button></div>
+    <p class="cart-note">تظهر هنا الطلبات المسجلة بحسابك وحالتها الحالية. حدّث القائمة لمراجعة آخر المستجدات.</p>
+    <button id="refresh-orders-button" class="secondary-market-button refresh-orders-button" type="button">تحديث الطلبات ↻</button>
+    <div id="order-history-list" class="order-history-list"><p class="market-message">جارٍ تحميل الطلبات...</p></div>
+  </dialog>
+  <dialog id="checkout-dialog" class="cart-dialog checkout-dialog">
+    <div class="cart-dialog-head"><div><p class="section-eyebrow">الخطوة الأخيرة</p><h2>بيانات التوصيل</h2></div><button id="close-checkout-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button></div>
+    <form id="checkout-form" class="checkout-form">
+      <label for="checkout-name">اسم المستلم</label>
+      <input id="checkout-name" name="customerName" required minlength="2" autocomplete="name" placeholder="الاسم الكامل">
+      <label for="checkout-phone">رقم الهاتف</label>
+      <input id="checkout-phone" name="customerPhone" type="tel" required autocomplete="tel" inputmode="tel" placeholder="07xxxxxxxxx">
+      <label for="checkout-address">عنوان التوصيل بالتفصيل</label>
+      <textarea id="checkout-address" name="shippingAddress" required minlength="6" autocomplete="street-address" rows="3" placeholder="المحافظة، المنطقة، أقرب نقطة دالة"></textarea>
+      <label for="checkout-notes">ملاحظات للسائق (اختياري)</label>
+      <textarea id="checkout-notes" name="notes" rows="2" placeholder="تفاصيل إضافية للتوصيل"></textarea>
+      <div id="checkout-cost-summary" class="checkout-cost-summary" aria-live="polite"></div>
+      <p class="cart-note">سيُسجّل الطلب بحالة «قيد الانتظار». أجرة التوصيل تُحتسب مرة واحدة لكل متجر في الطلب. لا يتم تحصيل أي مبلغ إلكتروني في هذه المرحلة.</p>
+      <p id="checkout-error" class="checkout-error" role="alert" aria-live="polite"></p>
+      <button id="confirm-order-button" class="primary-market-button" type="submit">تأكيد الطلب</button>
+    </form>
+    <div id="checkout-success" class="checkout-success" hidden>
+      <div class="checkout-success-icon">✓</div>
+      <h2>تم تسجيل طلبك بنجاح</h2>
+      <p id="checkout-success-number"></p>
+      <p id="checkout-success-total" class="checkout-success-total"></p>
+      <p class="cart-note">احتفظ برقم الطلب للمتابعة مع المتجر. الدفع الإلكتروني غير مفعّل حالياً.</p>
+      <button id="view-orders-after-checkout" class="secondary-market-button" type="button">عرض طلباتي</button>
+      <button id="finish-checkout" class="primary-market-button" type="button">العودة إلى السوق</button>
+    </div>
+  </dialog>
+
+  <dialog id="chat-dialog" class="cart-dialog chat-dialog">
+    <div class="cart-dialog-head">
+      <div><p class="section-eyebrow">تواصل مباشر</p><h2>الدردشة مع التاجر</h2></div>
+      <button id="close-chat-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button>
+    </div>
+    <div class="chat-context" id="chat-context">استفسارك عن المنتج والمتجر سيظهر هنا.</div>
+    <button id="chat-refresh-button" class="secondary-market-button chat-refresh-button" type="button">تحديث الرسائل ↻</button>
+    <div class="chat-messages" id="chat-messages" aria-live="polite">
+      <div class="chat-placeholder">
+        <span aria-hidden="true">💬</span>
+        <strong>ابدأ محادثتك مع التاجر</strong>
+        <p>اسأل عن توفر المنتج أو المقاسات أو أجرة التوصيل.</p>
+      </div>
+    </div>
+    <form id="chat-form" class="chat-compose">
+      <label class="sr-only" for="chat-message-input">رسالتك</label>
+      <textarea id="chat-message-input" rows="2" maxlength="1000" placeholder="اكتب رسالتك هنا..." required></textarea>
+      <button class="primary-market-button" type="submit" aria-label="إرسال الرسالة">إرسال ↗</button>
+    </form>
+    <p class="cart-note">رسائلك محفوظة ضمن محادثة خاصة بينك وبين المتجر المرتبط بالمنتج.</p>
+  </dialog>
+  <nav class="mobile-bottom-nav" aria-label="التنقل السريع">
+    <button type="button" id="mobile-nav-browse"><span aria-hidden="true">⌂</span><small>السوق</small></button>
+    <button type="button" id="mobile-nav-orders"><span aria-hidden="true">▤</span><small>طلباتي</small></button>
+    <button type="button" id="mobile-nav-cart"><span aria-hidden="true">🛒</span><small>السلة</small></button>
+    <button type="button" id="mobile-nav-account"><span aria-hidden="true">♙</span><small>حسابي</small></button>
+  </nav>
+  <div class="market-toast" id="market-toast" role="status" aria-live="polite"></div>
+</body>
+</html>
