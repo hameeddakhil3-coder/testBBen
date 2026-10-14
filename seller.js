@@ -20,7 +20,7 @@ let currentStore = null;
 let merchantOrders = [];
 let orderFilter = "all";
 let activeProductsOnly = false;
-const db = window.bbenSupabase;
+const db = globalThis.bbenSupabase;
 let toastTimer;
 let merchantChatRefreshTimer = null;
 let merchantChatRealtimeChannel = null;
@@ -91,7 +91,7 @@ function showView(view, options = {}) {
   } else {
     stopMerchantChatAutoRefresh();
   }
-  window.scrollTo({top:0,behavior:"smooth"});
+  globalThis.scrollTo({top:0,behavior:"smooth"});
 }
 
 document.querySelectorAll("[data-view]").forEach((button) => button.addEventListener("click", () => showView(button.dataset.view)));
@@ -115,9 +115,9 @@ menuToggle.addEventListener("click", () => sidebar.classList.toggle("open"));
 document.querySelector("#notification-button").addEventListener("click", async () => { await loadMerchantNotifications(); document.querySelector("#merchant-notifications-dialog").showModal(); });
 document.querySelector("#close-merchant-notifications").addEventListener("click", () => document.querySelector("#merchant-notifications-dialog").close());
 document.querySelector("#refresh-orders-button").addEventListener("click", loadMerchantOrders);
-document.querySelector("#profile-button").addEventListener("click", () => { window.location.href = "merchant-profile.html"; });
-document.querySelector("#view-public-store").addEventListener("click", () => { if (currentStore?.id) window.location.href = "market.html?store_id=" + encodeURIComponent(currentStore.id); else showToast("تعذر تحديد متجر حسابك."); });
-document.querySelector("#logout-button").addEventListener("click", async () => { if (db) await db.auth.signOut(); window.location.href = "index.html"; });
+document.querySelector("#profile-button").addEventListener("click", () => { globalThis.location.href = "merchant-profile.html"; });
+document.querySelector("#view-public-store").addEventListener("click", () => { if (currentStore?.id) globalThis.location.href = "market.html?store_id=" + encodeURIComponent(currentStore.id); else showToast("تعذر تحديد متجر حسابك."); });
+document.querySelector("#logout-button").addEventListener("click", async () => { if (db) await db.auth.signOut(); globalThis.location.href = "index.html"; });
 document.querySelector("#help-button").addEventListener("click", () => showToast("مركز المساعدة قيد التجهيز."));
 
 const dialog = document.querySelector("#product-dialog");
@@ -211,7 +211,7 @@ document.querySelector("#cancel-dialog").addEventListener("click", () => dialog.
 
 async function handleDeleteProduct(product, button) {
   if (!currentStore || !db) return;
-  const confirmed = window.confirm('هل تريد حذف المنتج «' + product.name + '»؟ إذا كان مرتبطاً بطلبات أو محادثات أو سلال شراء، فسيتم أرشفته بدلاً من حذفه للحفاظ على السجلات السابقة.');
+  const confirmed = globalThis.confirm('هل تريد حذف المنتج «' + product.name + '»؟ إذا كان مرتبطاً بطلبات أو محادثات أو سلال شراء، فسيتم أرشفته بدلاً من حذفه للحفاظ على السجلات السابقة.');
   if (!confirmed) return;
   button.disabled = true;
   try {
@@ -619,7 +619,7 @@ async function updateMerchantOrderStatus(order, select) {
   const previous = order.status;
   const next = select.value;
   if (next === previous) return;
-  if (next === "cancelled" && !window.confirm("هل تريد إلغاء الطلب #" + order.order_number + "؟ ستُعاد الكميات الخاصة بمتجرك إلى المخزون.")) {
+  if (next === "cancelled" && !globalThis.confirm("هل تريد إلغاء الطلب #" + order.order_number + "؟ ستُعاد الكميات الخاصة بمتجرك إلى المخزون.")) {
     select.value = previous;
     return;
   }
@@ -660,7 +660,7 @@ let merchantChatMessagesLoading = false;
 
 function startMerchantChatAutoRefresh() {
   stopMerchantChatAutoRefresh();
-  merchantChatRefreshTimer = window.setInterval(async () => {
+  merchantChatRefreshTimer = globalThis.setInterval(async () => {
     if (document.querySelector("#chat-view").classList.contains("hidden")) return;
     try {
       await loadMerchantChats();
@@ -674,7 +674,7 @@ function startMerchantChatAutoRefresh() {
 }
 
 function stopMerchantChatAutoRefresh() {
-  if (merchantChatRefreshTimer !== null) window.clearInterval(merchantChatRefreshTimer);
+  if (merchantChatRefreshTimer !== null) globalThis.clearInterval(merchantChatRefreshTimer);
   merchantChatRefreshTimer = null;
   if (merchantChatRealtimeChannel && db) {
     db.removeChannel(merchantChatRealtimeChannel);
@@ -919,20 +919,20 @@ function renderProductCards() {
 
 async function initSeller() {
   if (!db) {
-    window.location.href = "index.html";
+    globalThis.location.href = "index.html";
     return;
   }
   const { data: sessionData, error: sessionError } = await db.auth.getSession();
   currentUser = sessionData?.session?.user;
   if (sessionError || !currentUser) {
-    window.location.href = "index.html";
+    globalThis.location.href = "index.html";
     return;
   }
 
   const { data: profile, error: profileError } = await db.from("profiles").select("id,full_name,role,phone").eq("id", currentUser.id).single();
   if (profileError || profile?.role !== "merchant") {
     await db.auth.signOut();
-    window.location.href = "index.html";
+    globalThis.location.href = "index.html";
     return;
   }
 
@@ -997,7 +997,7 @@ async function initSeller() {
   renderProductCards();
   await loadMerchantOrders();
   // Deep-link from the public store's order button directly to merchant order management.
-  const requestedView = new URLSearchParams(window.location.search).get("view");
+  const requestedView = new URLSearchParams(globalThis.location.search).get("view");
   if (requestedView === "orders" || requestedView === "chat") showView(requestedView);
 }
 
