@@ -770,7 +770,7 @@ async function openCheckout() {
   $("#checkout-form").hidden = false;
   $("#checkout-success").hidden = true;
   if (!$("#checkout-name").value.trim()) $("#checkout-name").value = currentProfile?.full_name || "";
-  if (!$("#checkout-phone").value.trim()) $("#checkout-phone").value = currentProfile?.phone || "";
+  if (!$("#checkout-phone").value.trim()) $("#checkout-phone").value = currentProfile?.phone || "";\n  if (!$("#checkout-address").value.trim()) $("#checkout-address").value = currentProfile?.default_shipping_address || "";
   renderPricingBreakdown($("#checkout-cost-summary"), getCartPricing(), "الإجمالي المتوقع");
   $("#checkout-dialog").showModal();
 }
@@ -815,7 +815,7 @@ async function initMarket() {
     const sessionResult = await db.auth.getSession();
     currentUser = sessionResult.data?.session?.user || null;
     if (currentUser) {
-      const profileResult = await db.from("profiles").select("role,full_name,phone").eq("id", currentUser.id).maybeSingle();
+      const profileResult = await db.from("profiles").select("role,full_name,phone,default_shipping_address").eq("id", currentUser.id).maybeSingle();
       currentRole = profileResult.data?.role || null;
       currentProfile = profileResult.data || null;
       if (currentRole === "merchant" && !isStorePage) { window.location.href = "seller.html"; return; }
