@@ -26,6 +26,26 @@ let merchantChatRefreshTimer = null;
 let merchantChatRealtimeChannel = null;
 let merchantMessagesRealtimeChannel = null;
 
+
+async function loadMerchantNotifications(){
+ const host=document.querySelector("#merchant-notifications-list");
+ host.replaceChildren();
+ if(!currentUser){const p=document.createElement("p");p.textContent="سجّل الدخول لعرض الإشعارات.";host.append(p);return;}
+ const {data,error}=await db.from("notifications").select("id,title,body,target_url,created_at,read_at,user_id,target_role").or("user_id.eq."+currentUser.id+",and(user_id.is.null,target_role.eq.merchant)").order("created_at",{ascending:false}).limit(50);
+ if(error){const p=document.createElement("p");p.textContent="تعذر تحميل الإشعارات.";host.append(p);return;}
+ if(!data?.length){const p=document.createElement("p");p.textContent="لا توجد إشعارات حالياً.";host.append(p);return;}
+ data.forEach(n=>{
+  const card=document.createElement("article");card.className="notice-box"+(n.read_at?"":" notification-unread");
+  const title=document.createElement("strong");title.textContent=n.title;
+  const body=document.createElement("p");body.textContent=n.body||"";
+  const time=document.createElement("small");time.textContent=new Date(n.created_at).toLocaleString("ar-IQ",{dateStyle:"medium",timeStyle:"short"});
+  card.append(title,body,time);
+  if(!n.read_at){const button=document.createElement("button");button.type="button";button.className="secondary-button";button.textContent="تحديد كمقروء";button.addEventListener("click",async()=>{button.disabled=true;const {error:updateError}=await db.from("notifications").update({read_at:new Date().toISOString()}).eq("id",n.id);if(updateError){showToast("تعذر تحديث الإشعار.");button.disabled=false;return;}button.remove();card.classList.remove("notification-unread");});card.append(button);}
+  if(n.target_url&&!/^(?:https?:)?\/\//i.test(n.target_url)&&!n.target_url.startsWith("..")&&!/^javascript:/i.test(n.target_url)){const link=document.createElement("a");link.href=n.target_url;link.textContent="فتح";card.append(link);}
+  host.append(card);
+ });
+}
+
 function showToast(text) {
   const toast = document.querySelector("#toast");
   toast.textContent = text;
@@ -92,7 +112,8 @@ document.querySelectorAll("[data-stat-target]").forEach((card) => {
 document.querySelector("#clear-order-filter-button").addEventListener("click", () => showView("orders", { pendingOnly: false }));
 document.querySelector("#clear-product-filter-button").addEventListener("click", () => showView("products", { activeOnly: false }));
 menuToggle.addEventListener("click", () => sidebar.classList.toggle("open"));
-document.querySelector("#notification-button").addEventListener("click", () => showToast("لا توجد إشعارات جديدة."));
+document.querySelector("#notification-button").addEventListener("click", async () => { await loadMerchantNotifications(); document.querySelector("#merchant-notifications-dialog").showModal(); });
+document.querySelector("#close-merchant-notifications").addEventListener("click", () => document.querySelector("#merchant-notifications-dialog").close());
 document.querySelector("#refresh-orders-button").addEventListener("click", loadMerchantOrders);
 document.querySelector("#profile-button").addEventListener("click", () => { window.location.href = "merchant-profile.html"; });
 document.querySelector("#view-public-store").addEventListener("click", () => { if (currentStore?.id) window.location.href = "market.html?store_id=" + encodeURIComponent(currentStore.id); else showToast("تعذر تحديد متجر حسابك."); });
