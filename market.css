@@ -1192,3 +1192,5 @@ body{background:#faf8f5;color:var(--text)}
 .delete-product-review{margin-top:9px;border:1px solid #ecd4d0;border-radius:8px;background:#fff8f7;color:#a33127;padding:7px 10px;font:inherit;font-size:10px;font-weight:700}.delete-product-review:disabled{opacity:.5}
 
 .order-rate-product{display:inline-flex;align-items:center;gap:5px;margin-top:8px;padding:7px 11px;border:1px solid #e6d5c6;border-radius:9px;background:#faf4ed;color:#65432f;font:inherit;font-size:11px;font-weight:700;cursor:pointer}.order-rate-product:hover{background:#f1e5d8}.order-rate-product:focus-visible{outline:3px solid #b58c66;outline-offset:2px}
+
+.store-reviews-section{margin-top:22px;padding-top:18px;border-top:1px solid #eee5dc}.store-rating-summary{margin:7px 0 0}.market-store-copy .store-rating-summary{gap:5px;margin-top:6px}.market-store-copy .store-rating-summary .rating-stars{font-size:12px}.market-store-copy .store-rating-summary small{font-size:10px}.store-rating-public{display:flex;align-items:center;min-height:25px}.store-rating-public .product-rating-summary{margin:0}
