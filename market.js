@@ -17,6 +17,7 @@ let cartItems = [];
 let toastTimer;
 let showFavoritesOnly = isFavoritesPage;
 let favoriteIds = new Set();
+let appliedCoupon = null;
 try {
   const savedFavorites = JSON.parse(window.localStorage.getItem("bben_favorite_products") || "[]");
   if (Array.isArray(savedFavorites)) favoriteIds = new Set(savedFavorites.map(String));
@@ -1131,6 +1132,80 @@ async function openOrderHistory() {
   await loadOrderHistory();
   $("#order-history-dialog").showModal();
 }
+ 
+function renderCheckoutPricing() {
+  const pricing = getCartPricing();
+  const host = $("#checkout-cost-summary");
+  const rows = [];
+  const add = (label, amount, total=false) => rows.push({label, amount, total});
+  add("مجموع المنتجات", pricing.subtotal);
+  if (appliedCoupon) add("الخصم · " + appliedCoupon.code, -appliedCoupon.discount);
+  pricing.stores.forEach(store => add("أجرة التوصيل — " + store.name, store.fee));
+  add("الإجمالي المتوقع", pricing.total - (appliedCoupon?.discount || 0), true);
+  host.replaceChildren(); host.classList.add("cart-total-breakdown");
+  rows.forEach(item => {
+    const row=document.createElement("div"); row.className="checkout-cost-row"+(item.total?" is-total":"");
+    const label=document.createElement("span"); label.textContent=item.label;
+    const amount=document.createElement("strong"); amount.textContent=(item.amount<0?"− ":"")+money(Math.abs(item.amount));
+    row.append(label,amount);host.append(row);
+  });
+}
+async function applyCheckoutCoupon() {
+  const input=$("#checkout-coupon-code"), message=$("#coupon-message"), button=$("#apply-coupon-button");
+  const code=String(input.value||"").trim().toUpperCase();
+  appliedCoupon=null;
+  if(!code){message.textContent="أدخل كود الكوبون أولاً.";renderCheckoutPricing();return;}
+  button.disabled=true;button.textContent="جارٍ التحقق...";
+  try {
+    const {data,error}=await db.from("coupons").select("id,code,description,discount_type,discount_value,max_discount,min_subtotal,funding_source,starts_at,ends_at,is_active,total_usage_limit,usage_count,per_customer_limit").eq("code",code).maybeSingle();
+    if(error)throw error;
+    if(!data||!data.is_active)throw new Error("الكوبون غير متاح.");
+    const now=Date.now();
+    if(data.starts_at&&new Date(data.starts_at).getTime()>now)throw new Error("لم يبدأ موعد هذا الكوبون بعد.");
+    if(data.ends_at&&new Date(data.ends_at).getTime()<=now)throw new Error("انتهت صلاحية الكوبون.");
+    const pricing=getCartPricing();
+    if(pricing.subtotal<Number(data.min_subtotal||0))throw new Error("قيمة المنتجات أقل من الحد الأدنى للكوبون.");
+    if(data.total_usage_limit!=null&&Number(data.usage_count)>=Number(data.total_usage_limit))throw new Error("اكتمل عدد مرات استخدام الكوبون.");
+    const {data:sessionData}=await db.auth.getSession();
+    const userId=sessionData?.session?.user?.id;
+    if(!userId)throw new Error("سجّل الدخول بحساب مشتري لاستخدام الكوبون.");
+    const {count,error:countError}=await db.from("coupon_redemptions").select("id",{count:"exact",head:true}).eq("coupon_id",data.id).eq("customer_id",userId);
+    if(countError)throw countError;
+    if(Number(count||0)>=Number(data.per_customer_limit||1))throw new Error("لقد استخدمت هذا الكوبون بالحد المسموح.");
+    let discount=data.discount_type==="percent"?pricing.subtotal*Number(data.discount_value)/100:Number(data.discount_value);
+    if(data.max_discount!=null)discount=Math.min(discount,Number(data.max_discount));
+    discount=Math.min(pricing.subtotal,Math.max(0,Math.round(discount*100)/100));
+    appliedCoupon={id:data.id,code:data.code,discount,funding_source:data.funding_source};
+    message.textContent="تم التحقق من الكوبون. الخصم المتوقع "+money(discount)+" · "+(data.funding_source==="platform"?"بتمويل BBen":"بتمويل التاجر")+". سيُعاد التحقق عند تأكيد الطلب.";
+  } catch(error) {
+    message.textContent=error.message||"تعذر التحقق من الكوبون.";
+  } finally {
+    button.disabled=false;button.textContent="تطبيق";renderCheckoutPricing();
+  }
+}
+async function loadNotifications() {
+  const host=$("#notifications-list"); if(!host)return;
+  if(!currentUser){host.replaceChildren();const p=document.createElement("p");p.className="market-message";p.textContent="سجّل الدخول لعرض إشعاراتك.";host.append(p);return;}
+  host.replaceChildren();const loading=document.createElement("p");loading.className="market-message";loading.textContent="جارٍ تحميل الإشعارات...";host.append(loading);
+  try {
+    const {data,error}=await db.from("notifications").select("id,title,body,notification_type,target_url,created_at,read_at,user_id,target_role").or("user_id.eq."+currentUser.id+",and(user_id.is.null,target_role.eq."+currentRole+")").order("created_at",{ascending:false}).limit(50);
+    if(error)throw error;host.replaceChildren();
+    if(!data?.length){const p=document.createElement("p");p.className="market-message";p.textContent="لا توجد إشعارات حالياً.";host.append(p);return;}
+    data.forEach(n=>{
+      const card=document.createElement("article");card.className="order-history-card notification-card"+(n.read_at?"":" notification-unread");
+      const title=document.createElement("strong");title.textContent=n.title;
+      const body=document.createElement("p");body.textContent=n.body||"";
+      const time=document.createElement("small");time.textContent=new Date(n.created_at).toLocaleString("ar-IQ",{dateStyle:"medium",timeStyle:"short"});
+      card.append(title,body,time);
+      if(!n.read_at){const read=document.createElement("button");read.type="button";read.className="secondary-market-button";read.textContent="تحديد كمقروء";
+        read.addEventListener("click",async()=>{read.disabled=true;const {error:updateError}=await db.from("notifications").update({read_at:new Date().toISOString()}).eq("id",n.id);if(updateError){toast("تعذر تحديث الإشعار.");read.disabled=false;return;}n.read_at=new Date().toISOString();card.classList.remove("notification-unread");read.remove();});card.append(read);}
+      if(n.target_url){const link=document.createElement("a");link.href=safeNotificationTarget(n.target_url);link.textContent="فتح";card.append(link);}
+      host.append(card);
+    });
+  }catch(error){host.replaceChildren();const p=document.createElement("p");p.className="market-message error";p.textContent="تعذر تحميل الإشعارات.";host.append(p);console.warn("Notifications failed:",error);}
+}
+function safeNotificationTarget(value){const target=String(value||"").trim();return target&&!/^(?:https?:)?\/\//i.test(target)&&!target.startsWith("..")&&!/^javascript:/i.test(target)&&!/[\r\n]/.test(target)?target:"market.html";}
+
 async function openCheckout() {
   if (!(await ensureCustomer())) return;
   await loadCart();
@@ -1144,7 +1219,10 @@ async function openCheckout() {
   if (!$("#checkout-name").value.trim()) $("#checkout-name").value = currentProfile?.full_name || "";
   if (!$("#checkout-phone").value.trim()) $("#checkout-phone").value = currentProfile?.phone || "";
   if (!$("#checkout-address").value.trim()) $("#checkout-address").value = currentProfile?.default_shipping_address || "";
-  renderPricingBreakdown($("#checkout-cost-summary"), getCartPricing(), "الإجمالي المتوقع");
+  appliedCoupon = null;
+  $("#checkout-coupon-code").value = "";
+  $("#coupon-message").textContent = "";
+  renderCheckoutPricing();
   $("#checkout-dialog").showModal();
 }
 async function submitCheckout(event) {
@@ -1161,12 +1239,13 @@ async function submitCheckout(event) {
       p_customer_name: String(form.get("customerName") || "").trim(),
       p_customer_phone: String(form.get("customerPhone") || "").trim(),
       p_shipping_address: String(form.get("shippingAddress") || "").trim(),
-      p_notes: String(form.get("notes") || "").trim() || null
+      p_notes: String(form.get("notes") || "").trim() || null,
+      p_coupon_code: String(form.get("couponCode") || "").trim().toUpperCase() || null
     });
     if (error) throw error;
     if (!data || !Array.isArray(data.orders) || !data.orders.length) throw new Error("لم تصلنا بيانات تأكيد الطلب. تحقق من الطلبات قبل إعادة المحاولة.");
     $("#checkout-success-number").textContent = "رقم الطلب: " + data.orders.map((order) => "#BB-" + order.order_number).join("، ");
-    $("#checkout-success-total").textContent = "الإجمالي الكلي: " + money(data.total);
+    $("#checkout-success-total").textContent = "الإجمالي الكلي: " + money(data.total) + (Number(data.discount_amount || 0) > 0 ? " · الخصم: " + money(data.discount_amount) : "");
     $("#checkout-form").hidden = true;
     $("#checkout-success").hidden = false;
     await initMarket();
@@ -1329,6 +1408,10 @@ $("#checkout-button").addEventListener("click", openCheckout);
 $("#checkout-form").addEventListener("submit", submitCheckout);
 $("#close-checkout-dialog").addEventListener("click", () => $("#checkout-dialog").close());
 $("#finish-checkout").addEventListener("click", () => $("#checkout-dialog").close());
+$("#apply-coupon-button").addEventListener("click", applyCheckoutCoupon);
+$("#checkout-coupon-code").addEventListener("keydown", event => { if(event.key==="Enter"){event.preventDefault();applyCheckoutCoupon();} });
+$("#notifications-button").addEventListener("click", async () => { await loadNotifications(); $("#notifications-dialog").showModal(); });
+$("#close-notifications-dialog").addEventListener("click", () => $("#notifications-dialog").close());
 $("#close-product-dialog").addEventListener("click", () => $("#product-dialog").close());
 $("#close-chat-dialog").addEventListener("click", () => { stopChatAutoRefresh(); $("#chat-dialog").close(); });
 $("#chat-dialog").addEventListener("close", stopChatAutoRefresh);
