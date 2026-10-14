@@ -1069,7 +1069,7 @@ async function initMarket() {
       $("#public-store-location").textContent = publicStore.city || "";
       $("#public-store-description").textContent = publicStore.description || "مرحباً بك في متجرنا. تصفح المنتجات المتاحة واختر ما يناسبك.";
       $("#public-store-delivery-fee").textContent = "أجرة التوصيل: " + money(publicStore.delivery_fee || 0);
-      const storeReviewSlot = document.createElement("div"); storeReviewSlot.id = "public-store-rating"; storeReviewSlot.className = "store-rating-public"; $("#public-store-products-count").parentElement.insertBefore(storeReviewSlot, $("#public-store-products-count").nextSibling);
+
       if (publicStore.logo_url) {
         const logo = document.createElement("img");
         logo.src = publicStore.logo_url; logo.alt = "شعار " + publicStore.name;
@@ -1107,7 +1107,7 @@ async function initMarket() {
     (reviewResult.data || []).forEach((review) => { const entry = ratingMap.get(review.product_id) || { count: 0, sum: 0 }; entry.count++; entry.sum += Number(review.rating); ratingMap.set(review.product_id, entry); });
     allProducts.forEach((product) => { const entry = ratingMap.get(product.id); product.review_count = entry?.count || 0; product.review_average = entry ? entry.sum / entry.count : 0; });
     renderStores();
-    if (isStorePage) { $("#public-store-products-count").textContent = allProducts.length + " منتج متاح"; if (publicStore && $("#public-store-rating")) { $("#public-store-rating").replaceChildren(storeRatingSummary(publicStore)); loadStoreReviews(publicStore, $("#public-store-rating")); } }
+    if (isStorePage) { $("#public-store-products-count").textContent = allProducts.length + " منتج متاح"; if (publicStore && $("#public-store-rating")) { $("#public-store-rating").classList.remove("hidden"); $("#public-store-rating").replaceChildren(storeRatingSummary(publicStore)); loadStoreReviews(publicStore, $("#public-store-rating")); } }
     renderCategories(); renderCities(); renderProducts(); await loadCart();
     if (window.location.hash === "#orders" && currentRole === "customer") await openOrderHistory();
   } catch (error) {
