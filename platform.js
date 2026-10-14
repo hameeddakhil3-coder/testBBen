@@ -119,7 +119,7 @@ function renderCampaigns(){
   });
   const del=document.createElement("button");del.type="button";del.className="store-action danger";del.textContent="حذف";
   del.addEventListener("click",async()=>{
-   if(!confirm("هل تريد حذف الحملة «"+c.title+"»؟"))return;
+   if(!globalThis.confirm("هل تريد حذف الحملة «"+c.title+"»؟"))return;
    del.disabled=true;
    try{const {error}=await db.from("marketing_campaigns").delete().eq("id",c.id);if(error)throw error;await loadCampaigns();if($("#campaign-id").value===c.id)resetCampaignForm();}
    catch(error){alert("تعذر حذف الحملة: "+(error.message||"حاول مجدداً."));del.disabled=false;}
