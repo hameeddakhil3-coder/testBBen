@@ -77,3 +77,12 @@
 .merchant-chat-compose textarea{width:100%;min-height:55px;resize:vertical;padding:11px;border:1px solid var(--border,#e7dfd8);border-radius:10px;font:inherit;font-size:12px;background:#fff}
 .merchant-chat-compose button{margin:0;white-space:nowrap}.merchant-chat-compose button:disabled{opacity:.55;cursor:not-allowed}
 @media(max-width:760px){.merchant-chat-layout{grid-template-columns:1fr}.merchant-chat-list{max-height:230px}.merchant-chat-messages{height:300px}.merchant-chat-compose{grid-template-columns:minmax(0,1fr) 100px}.merchant-chat-compose button{padding-inline:10px;font-size:11px}}
+
+/* Multi-image product gallery in merchant editor */
+.product-images-help{display:block;margin-top:-4px;color:var(--muted,#81776f);font-size:11px;line-height:1.7}
+.product-images-preview{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin:12px 0}
+.product-image-preview-item{position:relative;min-width:0;aspect-ratio:1/1;border:1px solid var(--border,#e7dfd8);border-radius:10px;overflow:hidden;background:#f7f2ed}
+.product-image-preview-item img{display:block;width:100%;height:100%;object-fit:contain;padding:4px;box-sizing:border-box}
+.product-image-preview-item small{position:absolute;right:5px;bottom:5px;padding:3px 6px;border-radius:6px;background:#493126;color:white;font-size:10px}
+.remove-product-image{position:absolute;top:5px;left:5px;display:grid;place-items:center;width:25px;height:25px;border:0;border-radius:50%;background:#fff;color:#a33127;font-size:19px;line-height:1;box-shadow:0 2px 8px #0002;cursor:pointer}
+@media(max-width:460px){.product-images-preview{grid-template-columns:repeat(3,minmax(0,1fr))}}
