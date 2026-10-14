@@ -16,3 +16,26 @@ body{margin:0;background:#f7f5f2;color:#302720;font-family:Tahoma,Arial,sans-ser
 
 .store-filter-label{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:14px 0;color:#6f5c4f;font-size:13px}
 #store-status-filter{min-width:170px}
+
+/* Campaign management and green BBen theme */
+:root{--brown:#059669;--brown-dark:#064e3b;--brown-soft:#d1fae5;--cream:#f0fdf4;--text:#17231d;--muted:#64756b;--border:#dce8df;--green:#047857}
+.campaign-admin-panel{border-top:3px solid #059669}
+.campaign-form{display:grid;gap:14px;margin:18px 0 24px;padding:18px;border:1px solid #dce8df;border-radius:15px;background:#f7fdf8}
+.campaign-form>label,.campaign-form-row>label{display:grid;gap:7px;color:#365b49;font-size:12px;font-weight:700;min-width:0}
+.campaign-form input:not([type=checkbox]){width:100%;min-width:0;min-height:42px;padding:10px 12px;border:1px solid #d0e3d6;border-radius:9px;background:#fff;color:#17231d;outline:none}
+.campaign-form input:focus{border-color:#059669;box-shadow:0 0 0 3px rgba(5,150,105,.12)}
+.campaign-form-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.campaign-active-label{display:flex!important;align-items:center;gap:9px!important;width:fit-content}
+.campaign-active-label input{accent-color:#059669;width:18px;height:18px}
+.campaign-form-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.campaign-form-message{min-height:20px;margin:0;color:#047857;font-size:12px}
+.campaign-table-subtitle{display:block;margin-top:4px;color:#64756b;font-size:11px}
+.status.campaign-active{background:#d1fae5;color:#065f46}
+.status.campaign-inactive{background:#f3f4f6;color:#4b5563}
+.campaign-admin-panel .store-actions{flex-wrap:wrap}
+.campaign-admin-panel .store-action{min-height:34px}
+@media(max-width:700px){
+ .campaign-form{padding:12px}
+ .campaign-form-row{grid-template-columns:1fr}
+ .campaign-admin-panel table{min-width:720px}
+}
