@@ -597,3 +597,56 @@ body{background:#faf7f3}
   .market-promo{margin-top:20px}
   .market-hero{margin-top:12px}
 }
+
+
+/* Buyer experience refresh: compact promotion, mobile-first tools, and favorites */
+.market-hero{
+  min-height:220px!important;margin:18px 0 18px!important;padding:24px clamp(20px,3vw,42px)!important;
+  grid-template-columns:minmax(0,1.35fr) minmax(160px,.65fr)!important;border-radius:22px!important;
+}
+.hero-copy h1{font-size:clamp(28px,3.4vw,43px)!important;line-height:1.2!important;margin:8px 0!important}
+.hero-copy>p:not(.hero-eyebrow){font-size:13px!important;line-height:1.75!important;margin:8px 0 13px!important}
+.hero-art{height:190px!important;min-height:190px!important}
+.hero-bag{width:112px!important;height:112px!important;font-size:58px!important;border-radius:32px!important}
+.hero-orbit{width:170px!important;height:170px!important}.orbit-two{width:130px!important;height:130px!important}
+.hero-caption{bottom:0!important}
+.market-promo-strip{display:flex;align-items:center;gap:14px;margin:0 0 34px;padding:13px 17px;border:1px solid #e7d8c9;border-radius:16px;background:linear-gradient(100deg,#fffdf9,#f4e8db);color:var(--text);box-shadow:0 5px 16px #3f2a2008}
+.promo-strip-icon{display:grid;place-items:center;flex:0 0 38px;height:38px;border-radius:12px;background:#3f2a20;color:#e7bd94;font-size:20px}
+.market-promo-strip>div{display:grid;gap:3px;min-width:0;flex:1}
+.market-promo-strip strong{font-size:13px}.market-promo-strip small{color:var(--muted);font-size:11px;line-height:1.6}
+.market-promo-strip button{flex:0 0 auto;border:0;border-radius:999px;background:#3f2a20;color:#fff;padding:10px 14px;font:inherit;font-size:11px;font-weight:700;cursor:pointer}
+.product-tools{display:flex;align-items:center;gap:12px}
+.favorite-filter-button{min-height:39px;padding:8px 14px;border:1px solid #e4d8cd;border-radius:11px;background:#fffdfb;color:#5c3925;font:inherit;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .16s,border-color .16s}
+.favorite-filter-button.active{background:#3f2a20;border-color:#3f2a20;color:#fff}
+.card-favorite-button{display:grid;place-items:center;width:38px;height:38px;border-radius:12px;border:1px solid #e7dbd0;background:#fffaf5;color:#805b42;font-size:20px;cursor:pointer;transition:transform .15s,background .15s,color .15s}
+.card-favorite-button:hover{transform:translateY(-1px);background:#f5e8df}
+.card-favorite-button.is-favorite{color:#b13c4a;background:#fff0f1;border-color:#f0cbd0}
+.market-card-actions{gap:7px}
+@media(max-width:760px){
+ .market-hero{grid-template-columns:1fr .48fr!important;min-height:0!important;padding:20px 17px!important;margin:14px 0!important}
+ .hero-copy h1{font-size:clamp(25px,6vw,34px)!important}
+ .hero-art{height:140px!important;min-height:140px!important}
+ .hero-bag{width:82px!important;height:82px!important;font-size:43px!important}
+ .hero-orbit{width:125px!important;height:125px!important}.orbit-two{width:95px!important;height:95px!important}
+ .hero-floating{width:30px!important;height:30px!important;font-size:14px!important}
+ .market-promo-strip{margin-bottom:27px;padding:11px 12px;gap:9px}
+ .promo-strip-icon{flex-basis:32px;height:32px;border-radius:10px}
+ .market-promo-strip strong{font-size:11px}.market-promo-strip small{font-size:10px}
+ .market-promo-strip button{padding:9px 10px;font-size:10px}
+ .product-tools{width:100%;justify-content:space-between;gap:8px}
+ .favorite-filter-button{min-height:38px;padding:8px 11px}
+}
+@media(max-width:480px){
+ .market-hero{grid-template-columns:1fr!important;padding:19px 17px 8px!important}
+ .hero-copy h1{font-size:31px!important}
+ .hero-art{height:100px!important;min-height:100px!important;margin-top:0!important}
+ .hero-bag{width:66px!important;height:66px!important;font-size:35px!important;border-radius:21px!important}
+ .hero-orbit{width:100px!important;height:100px!important}.orbit-two{width:76px!important;height:76px!important}
+ .hero-floating{width:25px!important;height:25px!important;font-size:12px!important}
+ .hero-caption{font-size:9px!important}
+ .product-heading{gap:10px!important}.product-tools{align-items:center}
+ .sort-control{gap:7px;font-size:10px}.sort-control select{max-width:160px;min-height:38px}
+ .card-favorite-button{width:32px;height:32px;border-radius:9px;font-size:17px}
+ .card-icon-button,.card-add-button{width:32px;height:32px}
+}
+@media(prefers-reduced-motion:reduce){.market-card,.card-favorite-button{transition:none!important}}
