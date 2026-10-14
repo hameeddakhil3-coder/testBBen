@@ -141,7 +141,8 @@ jobs:
           Path("worker.generated.js").write_text(worker)
           config = json.loads(Path("wrangler.jsonc").read_text())
           config["main"] = "worker.generated.js"
-          config["assets"]["run_worker_first"] = ["/admin.html", "/customer-profile.html"]
+          # Run the Worker before static asset lookup so explicit HTML routes cannot be shadowed by asset handling.
+          config["assets"]["run_worker_first"] = True
           Path("wrangler.deploy.jsonc").write_text(json.dumps(config, indent=2))
           print("Built self-contained /admin.html and /customer-profile.html entry points.")
           PY
