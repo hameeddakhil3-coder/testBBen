@@ -92,6 +92,7 @@ jobs:
               "const ADMIN_HTML = " + json.dumps(html, ensure_ascii=False) + ";\n"
               "export default { async fetch(request, env) {\n"
               "  const url = new URL(request.url);\n"
+              "  if (url.pathname === '/platform' || url.pathname === '/platform/') { url.pathname = '/platform/index.html'; return env.ASSETS.fetch(new Request(url, request)); }\n"
               "  if (url.pathname === '/admin.html') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\n"
               "  return env.ASSETS.fetch(request);\n"
               "} };\n"
