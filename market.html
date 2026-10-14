@@ -21,6 +21,12 @@
     </div>
   </header>
   <main class="market-main">
+    <aside class="market-promo" id="market-promo" aria-label="رسالة تسويقية">
+      <span class="market-promo-icon" aria-hidden="true">✦</span>
+      <p><strong>اكتشف اختيارات جديدة</strong><span>تصفّح منتجات المتاجر المتاحة على BBen.</span></p>
+      <button id="promo-browse-button" type="button">تسوّق الآن <span aria-hidden="true">←</span></button>
+      <button id="dismiss-promo" class="promo-dismiss" type="button" aria-label="إخفاء الرسالة">×</button>
+    </aside>
     <section class="store-public-hero hidden" id="store-public-hero">
       <div class="store-public-identity">
         <div class="store-public-logo" id="public-store-logo">🏪</div>
@@ -90,6 +96,12 @@
       <button id="finish-checkout" class="primary-market-button" type="button">العودة إلى السوق</button>
     </div>
   </dialog>
+  <nav class="mobile-bottom-nav" aria-label="التنقل السريع">
+    <button type="button" id="mobile-nav-browse"><span aria-hidden="true">⌂</span><small>السوق</small></button>
+    <button type="button" id="mobile-nav-orders"><span aria-hidden="true">▤</span><small>طلباتي</small></button>
+    <button type="button" id="mobile-nav-cart"><span aria-hidden="true">🛒</span><small>السلة</small></button>
+    <button type="button" id="mobile-nav-account"><span aria-hidden="true">♙</span><small>حسابي</small></button>
+  </nav>
   <div class="market-toast" id="market-toast" role="status" aria-live="polite"></div>
 </body>
 </html>
