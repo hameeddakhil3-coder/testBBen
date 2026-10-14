@@ -1129,3 +1129,59 @@ body{background:#faf8f5;color:var(--text)}
 .dialog-gallery-thumb img{display:block;width:100%;height:100%;object-fit:contain}
 .dialog-gallery-thumb.active{border:2px solid #a66e43;background:#f8f0e8}
 @media(max-width:700px){.dialog-gallery-main{min-height:180px;max-height:240px}.dialog-gallery-main>img{max-height:240px}.dialog-gallery-main .image-placeholder{min-height:180px}.dialog-gallery-thumb{flex-basis:55px;width:55px;height:55px}}
+
+
+/* Product details redesign — balanced gallery, readable information, responsive layout */
+.product-dialog{
+  width:min(940px,calc(100vw - 40px));max-width:940px;max-height:min(86vh,820px);
+  padding:26px;border:1px solid #e9e0d7;border-radius:24px;background:#fffdfb;
+  box-shadow:0 28px 90px #20150f38;overflow:auto;overscroll-behavior:contain
+}
+.product-dialog>.dialog-close{
+  position:sticky;top:0;z-index:3;margin:0 0 12px auto;width:40px;height:40px;
+  border-radius:50%;background:#fff;border-color:#e8ded5;font-size:24px;
+  box-shadow:0 3px 12px #39271e0c
+}
+.dialog-product-layout{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:30px;align-items:start}
+.dialog-product-image{height:auto;min-width:0;display:flex;flex-direction:column;gap:12px;overflow:visible;background:transparent;border-radius:0}
+.dialog-gallery-main{width:100%;height:clamp(260px,34vw,390px);display:grid;place-items:center;overflow:hidden;border-radius:19px;background:#f7f2ec;border:1px solid #eee5dc}
+.dialog-gallery-main img{display:block;width:100%;height:100%;object-fit:contain;padding:18px}
+.dialog-gallery-main .image-placeholder{width:100%;height:100%;display:grid;place-items:center}
+.dialog-gallery-thumbnails{width:100%;display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin}
+.dialog-gallery-thumb{flex:0 0 76px;width:76px;height:76px;padding:5px;border:1px solid #e9dfd6;border-radius:12px;background:#fff;overflow:hidden}
+.dialog-gallery-thumb.active{border:2px solid #9b7658;box-shadow:0 0 0 3px #9b76581c}
+.dialog-gallery-thumb img{display:block;width:100%;height:100%;object-fit:contain;border-radius:7px}
+.dialog-product-info{min-width:0;padding:8px 0 4px}
+.dialog-product-info .market-card-category{display:inline-flex;align-items:center;margin:0 0 13px;padding:6px 11px;border-radius:999px;background:#f4ece4;color:#886344;font-size:11px}
+.dialog-product-info h2{font-size:clamp(23px,2.4vw,30px);line-height:1.45;margin:0 0 13px;overflow-wrap:anywhere;color:#30251f}
+.dialog-product-price{font-size:clamp(23px,2.5vw,30px);line-height:1.4;color:#563b2c;font-weight:800;letter-spacing:-.3px}
+.dialog-product-info>p{font-size:13px;line-height:1.9;margin:15px 0;color:#766b63}
+.dialog-store{padding:12px;margin:16px 0;border:1px solid #eee5dc;border-radius:13px;background:#fff;font-size:12px;line-height:1.7;color:#65564b}
+.dialog-store img{width:38px;height:38px;flex:0 0 38px}
+.dialog-product-info .dialog-store span{overflow-wrap:anywhere}
+.dialog-product-info>p:has(+.dialog-add){padding:10px 12px;margin:12px 0 0;border-radius:11px;background:#f8f5f1;color:#5d6c55;font-weight:600}
+.dialog-add{min-height:52px;width:100%;margin-top:18px;border-radius:13px;font-size:14px;box-shadow:0 8px 18px #563b2c18}
+.dialog-chat-button{min-height:48px;margin-top:10px;border-radius:13px;font-size:13px;background:#fff}
+.dialog-add:focus-visible,.dialog-chat-button:focus-visible,.dialog-gallery-thumb:focus-visible,.product-dialog>.dialog-close:focus-visible{outline:3px solid #b58c66;outline-offset:3px}
+@media(min-width:701px) and (max-width:1000px){
+ .product-dialog{width:min(850px,calc(100vw - 32px));padding:22px}
+ .dialog-product-layout{gap:22px}
+ .dialog-gallery-main{height:clamp(250px,36vw,330px)}
+ .dialog-gallery-thumb{flex-basis:66px;width:66px;height:66px}
+}
+@media(max-width:700px){
+ .product-dialog{width:calc(100vw - 20px);max-height:90dvh;padding:15px;border-radius:20px}
+ .product-dialog>.dialog-close{width:36px;height:36px;margin-bottom:8px}
+ .dialog-product-layout{grid-template-columns:minmax(0,1fr);gap:18px}
+ .dialog-product-image{gap:9px}
+ .dialog-gallery-main{height:clamp(210px,58vw,300px);border-radius:15px}
+ .dialog-gallery-main img{padding:12px}
+ .dialog-gallery-thumb{flex-basis:62px;width:62px;height:62px;border-radius:10px}
+ .dialog-product-info{padding:0 2px 4px}
+ .dialog-product-info .market-card-category{margin-bottom:8px}
+ .dialog-product-info h2{font-size:22px;margin-bottom:8px}
+ .dialog-product-price{font-size:24px}
+ .dialog-product-info>p{font-size:12px;margin:10px 0}
+ .dialog-store{margin:12px 0;padding:10px}
+ .dialog-add{margin-top:12px;min-height:49px}
+}
