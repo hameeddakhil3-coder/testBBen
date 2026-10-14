@@ -109,7 +109,8 @@
       <button id="close-chat-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button>
     </div>
     <div class="chat-context" id="chat-context">استفسارك عن المنتج والمتجر سيظهر هنا.</div>
-    <div class="chat-messages" aria-live="polite">
+    <button id="chat-refresh-button" class="secondary-market-button chat-refresh-button" type="button">تحديث الرسائل ↻</button>
+    <div class="chat-messages" id="chat-messages" aria-live="polite">
       <div class="chat-placeholder">
         <span aria-hidden="true">💬</span>
         <strong>ابدأ محادثتك مع التاجر</strong>
@@ -121,7 +122,7 @@
       <textarea id="chat-message-input" rows="2" maxlength="1000" placeholder="اكتب رسالتك هنا..." required></textarea>
       <button class="primary-market-button" type="submit" aria-label="إرسال الرسالة">إرسال ↗</button>
     </form>
-    <p class="cart-note">واجهة الدردشة قيد التجهيز؛ لن تُرسل الرسالة أو تُحفظ حتى يتم تفعيل خدمة المحادثات.</p>
+    <p class="cart-note">رسائلك محفوظة ضمن محادثة خاصة بينك وبين المتجر المرتبط بالمنتج.</p>
   </dialog>
   <nav class="mobile-bottom-nav" aria-label="التنقل السريع">
     <button type="button" id="mobile-nav-browse"><span aria-hidden="true">⌂</span><small>السوق</small></button>
