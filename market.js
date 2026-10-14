@@ -1177,7 +1177,8 @@ async function initMarket() {
       $("#account-label").textContent = profileResult.data?.full_name || "حسابي";
       $("#account-button").title = "الملف الشخصي";
     }
-    await loadFavoriteIds();\n    await loadCampaigns();
+    await loadFavoriteIds();
+    await loadCampaigns();
     if (isFavoritesPage) {
       document.body.classList.add("favorites-page");
       document.title = "BBen | منتجاتي المفضلة";
@@ -1279,7 +1280,9 @@ $("#search-input").addEventListener("input", renderProducts);
 $("#clear-search").addEventListener("click", () => { $("#search-input").value = ""; renderProducts(); $("#search-input").focus(); });
 $("#sort-select").addEventListener("change", renderProducts);
 $("#city-filter")?.addEventListener("change", () => { activeCity = $("#city-filter").value; renderProducts(); });
-$("#browse-button").addEventListener("click", openCampaignTarget);\n$("#campaign-prev")?.addEventListener("click", () => { if (marketCampaigns.length > 1) { renderCampaign((activeCampaignIndex - 1 + marketCampaigns.length) % marketCampaigns.length); restartCampaignTimer(); } });\n$("#campaign-next")?.addEventListener("click", () => { if (marketCampaigns.length > 1) { renderCampaign((activeCampaignIndex + 1) % marketCampaigns.length); restartCampaignTimer(); } });
+$("#browse-button").addEventListener("click", openCampaignTarget);
+$("#campaign-prev")?.addEventListener("click", () => { if (marketCampaigns.length > 1) { renderCampaign((activeCampaignIndex - 1 + marketCampaigns.length) % marketCampaigns.length); restartCampaignTimer(); } });
+$("#campaign-next")?.addEventListener("click", () => { if (marketCampaigns.length > 1) { renderCampaign((activeCampaignIndex + 1) % marketCampaigns.length); restartCampaignTimer(); } });
 $("#show-all-categories").addEventListener("click", () => { activeCategory = ""; renderCategories(); renderProducts(); });
 $("#favorite-filter-button").addEventListener("click", () => {
   if (isFavoritesPage) { window.location.href = "market.html"; return; }
