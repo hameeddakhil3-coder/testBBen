@@ -4,6 +4,7 @@ let currentProfile = null;
 const pageParams = new URLSearchParams(window.location.search);
 const requestedStoreId = pageParams.get("store_id") || (window.location.pathname.endsWith("/store.html") || window.location.pathname === "store.html" ? pageParams.get("id") : null);
 const isStorePage = Boolean(requestedStoreId);
+const isFavoritesPage = /(?:^|\/)favorites\.html$/.test(window.location.pathname);
 let publicStore = null;
 const storeHref = (store) => store?.id ? "market.html?store_id=" + encodeURIComponent(store.id) : "market.html";
 let allProducts = [];
@@ -14,7 +15,7 @@ let currentUser = null;
 let currentRole = null;
 let cartItems = [];
 let toastTimer;
-let showFavoritesOnly = false;
+let showFavoritesOnly = isFavoritesPage;
 let favoriteIds = new Set();
 try {
   const savedFavorites = JSON.parse(window.localStorage.getItem("bben_favorite_products") || "[]");
@@ -1075,6 +1076,19 @@ async function initMarket() {
       $("#account-button").title = "الملف الشخصي";
     }
     await loadFavoriteIds();
+    if (isFavoritesPage) {
+      document.body.classList.add("favorites-page");
+      document.title = "BBen | منتجاتي المفضلة";
+      $(".market-hero").classList.add("hidden");
+      $(".market-categories").classList.add("hidden");
+      $("#market-stores-section").classList.add("hidden");
+      $("#market-promo-strip").classList.add("hidden");
+      $(".market-benefits").classList.add("hidden");
+      $("#products-section h2").textContent = "منتجاتي المفضلة";
+      $(".product-heading .section-eyebrow").textContent = "محفوظة لك";
+      $("#favorite-filter-button").textContent = "← العودة إلى السوق";
+      $("#favorite-filter-button").classList.add("favorites-back-button");
+    }
     if (isStorePage) {
       $("#market-stores-section").classList.add("hidden");
       $("#market-promo-strip").classList.add("hidden");
@@ -1166,6 +1180,7 @@ $("#city-filter")?.addEventListener("change", () => { activeCity = $("#city-filt
 $("#browse-button").addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth" }));
 $("#show-all-categories").addEventListener("click", () => { activeCategory = ""; renderCategories(); renderProducts(); });
 $("#favorite-filter-button").addEventListener("click", () => {
+  if (isFavoritesPage) { window.location.href = "market.html"; return; }
   showFavoritesOnly = !showFavoritesOnly;
   renderProducts();
   if (showFavoritesOnly) $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -1176,6 +1191,7 @@ $("#mobile-nav-browse")?.addEventListener("click", () => window.scrollTo({ top: 
 $("#mobile-nav-orders")?.addEventListener("click", openOrderHistory);
 $("#mobile-nav-cart")?.addEventListener("click", openCart);
 $("#mobile-nav-account")?.addEventListener("click", () => { window.location.href = currentUser && currentRole === "customer" ? "customer-profile.html" : "index.html"; });
+$("#favorites-page-button")?.addEventListener("click", () => { window.location.href = "favorites.html"; });
 $("#account-button").addEventListener("click", async () => {
   if (currentUser && currentRole === "customer") { window.location.href = "customer-profile.html"; return; }
   window.location.href = "index.html";
