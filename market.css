@@ -1006,3 +1006,25 @@ body{background:#faf8f5;color:var(--text)}
 .market-store-visit{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;padding:8px 10px;border-radius:9px;background:var(--brown-soft);color:var(--brown);font-size:10px;font-weight:700;white-space:nowrap}
 @media(max-width:900px){.market-store-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.market-stores-section{margin-bottom:30px}.market-store-grid{grid-template-columns:1fr;gap:9px}.market-store-card{padding:12px;gap:11px}.market-store-logo{flex-basis:54px;width:54px;height:54px;border-radius:14px}.market-store-copy strong{font-size:12px}.market-store-visit{padding:8px 9px}}
+
+
+/* Buyer chat */
+.chat-dialog{width:min(650px,calc(100vw - 24px));padding:clamp(16px,3vw,28px)}
+.chat-context{padding:12px 14px;margin-bottom:10px;border-radius:11px;background:var(--brown-soft);color:#6f5b4b;font-size:12px;line-height:1.8}
+.chat-refresh-button{margin:0 0 10px;padding:8px 12px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--brown);font-size:11px}
+.chat-messages{height:min(36vh,360px);min-height:210px;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:14px;border:1px solid var(--border);border-radius:13px;background:#fcfaf8;scroll-behavior:smooth}
+.chat-placeholder{margin:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;min-height:170px;text-align:center;color:var(--muted)}
+.chat-placeholder>span{font-size:34px}.chat-placeholder strong{color:#59483c;font-size:13px}.chat-placeholder p{margin:0;font-size:11px;line-height:1.8}
+.chat-state{margin:auto;text-align:center;color:var(--muted);font-size:12px;line-height:1.8}.chat-state-error{color:#a33127}
+.chat-message-bubble{max-width:86%;display:flex;flex-direction:column;gap:5px;padding:10px 12px;border-radius:13px;font-size:12px;line-height:1.8;overflow-wrap:anywhere}
+.chat-message-bubble.is-mine{align-self:flex-start;background:#563b2c;color:#fff;border-bottom-right-radius:4px}
+.chat-message-bubble.is-theirs{align-self:flex-end;background:#f0e7de;color:var(--text);border-bottom-left-radius:4px}
+.chat-message-bubble small{font-size:10px;font-weight:700;opacity:.8}
+.chat-message-bubble p{margin:0;white-space:pre-wrap}
+.chat-message-bubble time{align-self:flex-end;font-size:9px;opacity:.72}
+.chat-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:stretch;margin-top:12px}
+.chat-compose textarea{width:100%;min-height:58px;max-height:130px;resize:vertical;border:1px solid var(--border);border-radius:11px;padding:12px;background:#fff;color:var(--text);font:inherit;font-size:12px;outline:none}
+.chat-compose textarea:focus{border-color:#a17b5c;box-shadow:0 0 0 3px #a17b5c20}
+.chat-compose .primary-market-button{min-width:88px;margin:0;padding:0 15px}
+.chat-compose button:disabled,.chat-refresh-button:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:480px){.chat-dialog{max-height:92vh;padding:14px}.chat-messages{height:35vh;min-height:180px;padding:10px}.chat-compose{grid-template-columns:minmax(0,1fr) 76px;gap:7px}.chat-compose .primary-market-button{min-width:0;padding:0 8px;font-size:11px}.chat-message-bubble{max-width:92%}}
