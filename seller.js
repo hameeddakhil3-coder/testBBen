@@ -128,22 +128,26 @@ function renderProductImagePreviews() {
     const item = document.createElement("div"); item.className = "product-image-preview-item is-new";
     const img = document.createElement("img"); img.src = URL.createObjectURL(file); img.alt = "صورة جديدة " + (index + 1);
     const label = document.createElement("small"); label.textContent = "جديدة";
-    item.append(img, label); productImagesPreview.append(item);
+    const remove = document.createElement("button"); remove.type = "button"; remove.className = "remove-product-image";
+    remove.textContent = "×"; remove.setAttribute("aria-label", "إزالة الصورة الجديدة");
+    remove.addEventListener("click", () => { selectedProductFiles.splice(index, 1); renderProductImagePreviews(); });
+    item.append(img, label, remove); productImagesPreview.append(item);
   });
   productImagesPreview.classList.toggle("hidden", !keptImages.length && !selectedProductFiles.length);
 }
+document.querySelector("#add-more-product-images").addEventListener("click", () => productImage.click());
 productImage.addEventListener("change", () => {
   const files = [...(productImage.files || [])];
+  productImage.value = "";
   if (files.some((file) => !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024)) {
-    productImage.value = ""; selectedProductFiles = []; renderProductImagePreviews();
     showToast("يجب أن تكون كل صورة صالحة وألا يتجاوز حجمها 5 ميغابايت."); return;
   }
   const keptCount = existingProductImages.filter((image) => !removedProductImageIds.has(image.id)).length;
-  if (keptCount + files.length > 8) {
-    productImage.value = ""; selectedProductFiles = []; renderProductImagePreviews();
+  if (keptCount + selectedProductFiles.length + files.length > 8) {
     showToast("يمكن للمنتج أن يحتوي على 8 صور كحد أقصى."); return;
   }
-  selectedProductFiles = files; renderProductImagePreviews();
+  selectedProductFiles = [...selectedProductFiles, ...files];
+  renderProductImagePreviews();
 });
 async function uploadImage(file, folder) {
   if (!file) return null;
