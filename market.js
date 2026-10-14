@@ -76,6 +76,63 @@ function renderCities() {
   activeCity = cities.includes(currentValue) ? currentValue : "";
   select.value = activeCity;
 }
+function renderStores() {
+  const grid = $("#store-grid");
+  const emptyMessage = $("#stores-empty-message");
+  if (!grid || !emptyMessage) return;
+  grid.replaceChildren();
+
+  const stores = new Map();
+  allProducts.forEach((product) => {
+    const store = product.stores;
+    if (!store?.id) return;
+    if (!stores.has(store.id)) stores.set(store.id, { ...store, productCount: 0 });
+    stores.get(store.id).productCount += 1;
+  });
+
+  const availableStores = [...stores.values()].sort((a, b) =>
+    String(a.name || "").localeCompare(String(b.name || ""), "ar")
+  );
+  emptyMessage.classList.toggle("hidden", availableStores.length > 0);
+
+  availableStores.forEach((store) => {
+    const link = document.createElement("a");
+    link.className = "market-store-card";
+    link.href = storeHref(store);
+    link.setAttribute("aria-label", "تصفح منتجات متجر " + (store.name || "BBen"));
+
+    const logo = document.createElement("div");
+    logo.className = "market-store-logo";
+    if (store.logo_url) {
+      const image = document.createElement("img");
+      image.src = store.logo_url;
+      image.alt = "شعار " + (store.name || "المتجر");
+      image.loading = "lazy";
+      image.addEventListener("error", () => {
+        logo.replaceChildren();
+        logo.textContent = "🏪";
+      }, { once: true });
+      logo.append(image);
+    } else {
+      logo.textContent = "🏪";
+    }
+
+    const copy = document.createElement("div");
+    copy.className = "market-store-copy";
+    const name = document.createElement("strong");
+    name.textContent = store.name || "متجر BBen";
+    const details = document.createElement("small");
+    details.textContent = [store.city, store.productCount + " منتج متاح"].filter(Boolean).join(" · ");
+    copy.append(name, details);
+
+    const visit = document.createElement("span");
+    visit.className = "market-store-visit";
+    visit.textContent = "زيارة المتجر ←";
+    link.append(logo, copy, visit);
+    grid.append(link);
+  });
+}
+
 function visibleProducts() {
   const query = $("#search-input").value.trim().toLocaleLowerCase("ar");
   let items = allProducts.filter((p) => {
@@ -598,6 +655,7 @@ async function initMarket() {
       $("#account-button").title = "الملف الشخصي";
     }
     if (isStorePage) {
+      $("#market-stores-section").classList.add("hidden");
       $("#market-promo-strip").classList.add("hidden");
       $("#store-public-hero").classList.remove("hidden");
       document.querySelector(".market-hero").classList.add("hidden");
@@ -649,7 +707,7 @@ async function initMarket() {
     const [categoryResult, productQuery] = await Promise.all([
       db.from("categories").select("id,name,slug").order("name"),
       (() => {
-        let query = db.from("products").select("id,name,description,price,currency,stock_quantity,image_url,status,category_id,store_id,created_at,categories(name),stores(id,name,slug,description,logo_url,phone,city,status)").eq("status","active").gt("stock_quantity",0).order("created_at",{ascending:false});
+        let query = db.from("products").select("id,name,description,price,currency,stock_quantity,image_url,status,category_id,store_id,created_at,categories(name),stores(id,name,slug,description,logo_url,phone,city,status,delivery_fee)").eq("status","active").gt("stock_quantity",0).order("created_at",{ascending:false});
         if (isStorePage) query = query.eq("store_id", requestedStoreId);
         return query;
       })()
@@ -658,6 +716,7 @@ async function initMarket() {
     if (productQuery.error) throw productQuery.error;
     allCategories = categoryResult.data || [];
     allProducts = (productQuery.data || []).filter((p) => p.stores?.status === "active");
+    renderStores();
     if (isStorePage) $("#public-store-products-count").textContent = allProducts.length + " منتج متاح";
     renderCategories(); renderCities(); renderProducts(); await loadCart();
     if (window.location.hash === "#orders" && currentRole === "customer") await openOrderHistory();
