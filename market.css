@@ -136,3 +136,98 @@
 .checkout-cost-row.is-total strong{font-size:16px}
 .checkout-cost-summary{padding:12px;border:1px solid var(--border);border-radius:11px;background:#fcfaf7}
 .store-public-delivery-fee{display:inline-flex;align-items:center;padding:7px 10px;border-radius:9px;background:#f3ece6;color:var(--brown);font-weight:700;font-size:11px}
+
+
+/* BBen market UI polish — CSS-only; keeps existing markup and behavior intact */
+:root{
+  --market-shadow:0 12px 34px rgba(57,39,30,.07);
+  --market-shadow-hover:0 18px 42px rgba(57,39,30,.12);
+}
+html{scroll-behavior:smooth;scroll-padding-top:100px}
+.market-header{
+  background:rgba(255,255,255,.94);
+  backdrop-filter:saturate(140%) blur(14px);
+  -webkit-backdrop-filter:saturate(140%) blur(14px);
+  box-shadow:0 4px 18px rgba(57,39,30,.035);
+}
+.market-search{
+  transition:border-color .18s ease,box-shadow .18s ease,background .18s ease;
+}
+.market-search:focus-within{
+  background:#fff;
+  border-color:#c9ad96;
+  box-shadow:0 0 0 4px rgba(181,140,102,.13);
+}
+.market-hero{
+  position:relative;
+  isolation:isolate;
+  border:1px solid rgba(181,140,102,.18);
+  box-shadow:var(--market-shadow);
+}
+.market-hero:after{
+  content:"";
+  position:absolute;
+  z-index:-1;
+  width:250px;
+  height:250px;
+  left:-105px;
+  top:-135px;
+  border:1px solid rgba(155,107,72,.16);
+  border-radius:50%;
+  box-shadow:0 0 0 28px rgba(255,255,255,.16),0 0 0 58px rgba(255,255,255,.12);
+  pointer-events:none;
+}
+.hero-button,.primary-market-button,.secondary-market-button{
+  transition:transform .16s ease,box-shadow .16s ease,background-color .16s ease;
+}
+.hero-button:hover,.primary-market-button:hover:not(:disabled){
+  background:var(--brown-dark);
+  box-shadow:0 8px 18px rgba(57,39,30,.16);
+  transform:translateY(-1px);
+}
+.category-chip{transition:color .16s ease,background .16s ease,border-color .16s ease,transform .16s ease}
+.category-chip:hover{transform:translateY(-1px)}
+.market-card{
+  box-shadow:0 2px 8px rgba(57,39,30,.025);
+  transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;
+}
+.market-card:hover{
+  border-color:#d8c5b5;
+  box-shadow:var(--market-shadow-hover);
+  transform:translateY(-4px);
+}
+.market-card-image img{transition:transform .35s ease}
+.market-card:hover .market-card-image img{transform:scale(1.035)}
+.card-icon-button,.card-add-button,.header-action{
+  transition:background .16s ease,color .16s ease,border-color .16s ease,transform .16s ease;
+}
+.card-icon-button:hover{background:var(--brown-soft);border-color:#d8c5b5}
+.card-add-button:hover:not(:disabled){background:var(--brown-dark);transform:translateY(-1px)}
+.header-action:hover{background:var(--cream);border-color:#d8c5b5}
+.market-benefits>div{
+  padding:14px 12px;
+  border:1px solid transparent;
+  border-radius:14px;
+  transition:background .18s ease,border-color .18s ease;
+}
+.market-benefits>div:hover{background:#fcfaf7;border-color:var(--border)}
+.market-benefits>div>span{transition:transform .18s ease}
+.market-benefits>div:hover>span{transform:translateY(-2px)}
+.product-dialog,.cart-dialog{
+  box-shadow:0 28px 90px rgba(32,21,15,.28);
+}
+button:focus-visible,a:focus-visible,select:focus-visible{
+  outline:3px solid rgba(181,140,102,.65);
+  outline-offset:3px;
+}
+@media(max-width:700px){
+  .market-header{box-shadow:0 3px 14px rgba(57,39,30,.05)}
+  .market-hero{box-shadow:0 8px 24px rgba(57,39,30,.06)}
+  .market-hero:after{width:170px;height:170px;left:-95px;top:-90px;box-shadow:0 0 0 20px rgba(255,255,255,.15),0 0 0 42px rgba(255,255,255,.1)}
+  .market-card:hover{transform:translateY(-2px)}
+  .market-benefits>div{padding:10px 4px}
+}
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
+}
