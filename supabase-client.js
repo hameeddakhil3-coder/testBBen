@@ -3,9 +3,9 @@
 (() => {
   const SUPABASE_URL = "https://cbzqbqqecnhijqvpvtzd.supabase.co";
   const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_z1XLZ4eEisrtPmIAid6EBg_XbDg6VZc";
-  if (!window.supabase || typeof window.supabase.createClient !== "function") {
+  if (!globalThis.supabase || typeof globalThis.supabase.createClient !== "function") {
     console.error("Supabase JS client failed to load.");
     return;
   }
-  window.bbenSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  globalThis.bbenSupabase = globalThis.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 })();
