@@ -493,3 +493,107 @@ body{background:#faf7f3}
  .market-benefits small{font-size:9px}
  .market-footer{flex-wrap:wrap}
 }
+
+
+/* Buyer mobile-first polish: compact promotion, tighter hero and thumb-friendly navigation. */
+.market-promo{
+  display:flex;align-items:center;gap:12px;min-height:66px;margin:16px 0 0;padding:10px 14px;
+  border:1px solid #eadfd4;border-radius:14px;background:linear-gradient(100deg,#fbf7f2,#f3e8dc);
+  color:var(--brown);position:relative
+}
+.market-promo-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:12px;background:#fff9f2;color:#a77d58;font-size:22px}
+.market-promo p{display:grid;gap:3px;min-width:0;flex:1;margin:0;line-height:1.5}
+.market-promo p strong{font-size:12px}
+.market-promo p span{font-size:10px;color:#817164}
+.market-promo>button:not(.promo-dismiss){min-height:38px;padding:0 13px;border:0;border-radius:9px;background:var(--brown);color:#fff;font-size:11px;font-weight:800;white-space:nowrap}
+.market-promo .promo-dismiss{display:grid;place-items:center;align-self:flex-start;flex:0 0 25px;width:25px;height:25px;padding:0;border:0;border-radius:7px;background:transparent;color:#8e7b6b;font-size:20px}
+.market-promo .promo-dismiss:hover{background:#ffffffa8}
+.market-hero{min-height:250px;margin-top:14px;margin-bottom:38px;padding:25px clamp(22px,4vw,42px);border-radius:21px}
+.hero-copy h1{font-size:clamp(31px,3.8vw,43px)}
+.hero-art{height:205px;min-height:205px}
+.hero-bag{width:118px;height:118px;border-radius:31px;font-size:61px}
+.hero-orbit{width:195px;height:195px}
+.orbit-two{width:145px;height:145px}
+.market-categories,.market-products{margin-bottom:38px}
+.market-product-grid{gap:15px}
+.market-card-image{height:clamp(155px,16vw,205px)}
+.market-card-body{padding:13px}
+.market-card-title{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;min-height:2.9em;overflow:hidden}
+.market-card-store{margin-bottom:10px}
+.market-card-actions button{min-width:40px;min-height:40px}
+.market-message{margin-top:12px}
+.mobile-bottom-nav{display:none}
+@media(max-width:760px){
+  .market-main{padding-bottom:calc(82px + env(safe-area-inset-bottom))}
+  .market-promo{min-height:60px;margin-top:10px;padding:8px 9px;gap:8px;border-radius:12px}
+  .market-promo-icon{width:32px;height:32px;flex-basis:32px;border-radius:10px;font-size:18px}
+  .market-promo p strong{font-size:11px}
+  .market-promo p span{font-size:9px}
+  .market-promo>button:not(.promo-dismiss){min-height:36px;padding:0 9px;font-size:10px}
+  .market-promo .promo-dismiss{flex-basis:22px;width:22px;height:22px}
+  .market-hero{grid-template-columns:minmax(0,1fr) 100px;align-items:center;gap:5px;min-height:unset;margin:12px 0 29px;padding:19px 15px;border-radius:17px}
+  .hero-copy h1{font-size:clamp(25px,5.8vw,32px);line-height:1.35;letter-spacing:-.6px}
+  .hero-copy>p:not(.hero-eyebrow){font-size:11px;line-height:1.8}
+  .hero-eyebrow{font-size:10px}
+  .hero-copy .hero-button{min-height:39px;margin-top:12px;padding-inline:12px;font-size:10px}
+  .hero-art{height:125px;min-height:125px;margin:0}
+  .hero-bag{width:72px;height:72px;border-radius:22px;font-size:39px}
+  .hero-orbit{width:105px;height:105px}
+  .orbit-two{width:82px;height:82px}
+  .hero-floating,.hero-caption{display:none}
+  .market-categories,.market-products{margin-bottom:29px}
+  .section-heading{gap:10px;margin-bottom:14px}
+  .section-heading h2{font-size:19px}
+  .category-list{display:flex;flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-inline:contain;scrollbar-width:none;padding:2px 1px 8px}
+  .category-list::-webkit-scrollbar{display:none}
+  .category-chip{flex:0 0 auto;min-height:39px;padding:8px 14px}
+  .product-heading{gap:12px}
+  .sort-control{gap:10px}
+  .sort-control select{min-height:42px;max-width:65%;font-size:11px}
+  .market-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .market-card{border-radius:14px}
+  .market-card-image{height:clamp(125px,36vw,175px)}
+  .market-card-body{padding:10px}
+  .market-card-title{font-size:12px;line-height:1.65;min-height:2.8em}
+  .market-card-store{font-size:9px}
+  .market-price{font-size:12px}
+  .market-card-bottom{align-items:center;flex-direction:row;gap:5px}
+  .market-card-actions{width:auto;gap:5px}
+  .market-card-actions button{width:36px;min-width:36px;height:38px;min-height:38px;border-radius:10px}
+  .stock-label{font-size:9px}
+  .market-benefits{padding-top:16px;padding-bottom:24px}
+  .mobile-bottom-nav{
+    position:fixed;z-index:30;right:0;bottom:0;left:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));
+    padding:7px 8px calc(7px + env(safe-area-inset-bottom));border-top:1px solid #e8dfd7;
+    background:#ffffffed;backdrop-filter:blur(16px);box-shadow:0 -8px 26px #39271e0b
+  }
+  .mobile-bottom-nav button{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:3px;min-width:0;min-height:48px;padding:3px;border:0;border-radius:10px;background:transparent;color:#796b60}
+  .mobile-bottom-nav button:active{background:var(--brown-soft)}
+  .mobile-bottom-nav button>span{font-size:19px;line-height:1.2}
+  .mobile-bottom-nav button small{font-size:10px;font-weight:700}
+  .mobile-bottom-nav button:hover{color:var(--brown)}
+  .market-toast{bottom:calc(76px + env(safe-area-inset-bottom))}
+}
+@media(max-width:420px){
+  .market-header{padding:10px 12px;gap:9px}
+  .market-header-actions{gap:4px}
+  .header-action{padding:7px 6px}
+  .market-main{padding-inline:12px}
+  .market-promo{gap:6px}
+  .market-promo p span{max-width:150px}
+  .market-hero{grid-template-columns:minmax(0,1fr) 74px;padding:17px 12px}
+  .hero-copy h1{font-size:25px}
+  .hero-art{height:100px;min-height:100px}
+  .hero-bag{width:62px;height:62px;font-size:33px;border-radius:18px}
+  .hero-orbit{width:88px;height:88px}
+  .orbit-two{width:68px;height:68px}
+  .market-card-image{height:clamp(112px,34vw,145px)}
+  .market-card-body{padding:9px}
+  .market-card-bottom{gap:4px}
+  .market-card-actions{gap:4px}
+  .market-card-actions button{width:33px;min-width:33px;height:36px;min-height:36px}
+}
+@media(min-width:761px){
+  .market-promo{margin-top:20px}
+  .market-hero{margin-top:12px}
+}
