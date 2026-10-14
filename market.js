@@ -4,7 +4,7 @@ let currentProfile = null;
 const pageParams = new URLSearchParams(window.location.search);
 const requestedStoreId = pageParams.get("store_id") || (window.location.pathname.endsWith("/store.html") || window.location.pathname === "store.html" ? pageParams.get("id") : null);
 const isStorePage = Boolean(requestedStoreId);
-const isFavoritesPage = /(?:^|\/)favorites\.html$/.test(window.location.pathname);
+const isFavoritesPage = /(?:^|\/)favorites\.html$/.test(window.location.pathname) || pageParams.get("view") === "favorites";
 let publicStore = null;
 const storeHref = (store) => store?.id ? "market.html?store_id=" + encodeURIComponent(store.id) : "market.html";
 let allProducts = [];
