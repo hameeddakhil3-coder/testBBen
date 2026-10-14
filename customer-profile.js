@@ -13,7 +13,7 @@ function fillForm() {
   $("#customer-email").value = currentUser?.email || "";
 }
 $("#back-market").addEventListener("click", () => { window.location.href = "market.html"; });
-$("#customer-orders").addEventListener("click", () => { window.location.href = "market.html"; });
+$("#customer-orders").addEventListener("click", () => { window.location.href = "market.html#orders"; });
 $("#reset-customer-profile").addEventListener("click", () => { fillForm(); showMessage(""); });
 $("#customer-logout").addEventListener("click", async () => {
   const button = $("#customer-logout"); button.disabled = true;
