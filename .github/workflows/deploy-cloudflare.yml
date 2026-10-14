@@ -103,7 +103,7 @@ jobs:
           customer_app = Path("customer-profile.js").read_text()
 
           customer_html, n_css = re.subn(
-              r'<link rel="stylesheet" href="seller\.css">',
+              r'<link rel="stylesheet" href="seller\.css(?:\?[^"]*)?">',
               lambda _: "<style>\n" + seller_css + "\n</style>",
               customer_html,
               count=1,
