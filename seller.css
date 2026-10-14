@@ -58,3 +58,22 @@
 .merchant-order-history li span{font-size:10px;color:var(--text);line-height:1.7}
 .merchant-order-history li time{flex-shrink:0;font-size:9px;color:var(--muted);line-height:1.7}
 @media(max-width:520px){.merchant-order-history li{flex-direction:column;gap:2px}.merchant-order-history li time{font-size:8px}}
+
+
+/* Merchant inbox for buyer conversations */
+.merchant-chat-layout{display:grid;grid-template-columns:minmax(220px,.75fr) minmax(0,1.5fr);gap:16px;min-height:420px}
+.merchant-chat-list{display:flex;flex-direction:column;gap:8px;min-width:0;max-height:620px;overflow:auto}
+.merchant-chat-list-item{display:flex;flex-direction:column;align-items:flex-start;gap:5px;width:100%;padding:13px;border:1px solid var(--border,#e7dfd8);border-radius:12px;background:#fff;text-align:right;color:var(--text,#28231f)}
+.merchant-chat-list-item.active{border-color:var(--brown,#563b2c);background:#f7f0e9;box-shadow:inset -3px 0 var(--brown,#563b2c)}
+.merchant-chat-list-item strong{font-size:13px}.merchant-chat-list-item small,.merchant-chat-list-item time{font-size:10px;color:var(--muted,#81776f)}
+.merchant-chat-list-item time{align-self:flex-start}
+.merchant-chat-thread{display:flex;flex-direction:column;gap:10px;min-width:0}
+.merchant-chat-messages{height:350px;overflow:auto;display:flex;flex-direction:column;gap:10px;padding:13px;border:1px solid var(--border,#e7dfd8);border-radius:12px;background:#fcfaf8}
+.merchant-chat-bubble{max-width:86%;display:flex;flex-direction:column;gap:5px;padding:10px 12px;border-radius:12px;font-size:12px;line-height:1.8;overflow-wrap:anywhere}
+.merchant-chat-bubble.mine{align-self:flex-start;background:#563b2c;color:#fff}
+.merchant-chat-bubble.customer{align-self:flex-end;background:#f0e7de;color:#28231f}
+.merchant-chat-bubble small{font-size:10px;font-weight:700;opacity:.8}.merchant-chat-bubble p{margin:0;white-space:pre-wrap}.merchant-chat-bubble time{font-size:9px;opacity:.72;align-self:flex-end}
+.merchant-chat-compose{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:9px;align-items:stretch}
+.merchant-chat-compose textarea{width:100%;min-height:55px;resize:vertical;padding:11px;border:1px solid var(--border,#e7dfd8);border-radius:10px;font:inherit;font-size:12px;background:#fff}
+.merchant-chat-compose button{margin:0;white-space:nowrap}.merchant-chat-compose button:disabled{opacity:.55;cursor:not-allowed}
+@media(max-width:760px){.merchant-chat-layout{grid-template-columns:1fr}.merchant-chat-list{max-height:230px}.merchant-chat-messages{height:300px}.merchant-chat-compose{grid-template-columns:minmax(0,1fr) 100px}.merchant-chat-compose button{padding-inline:10px;font-size:11px}}
