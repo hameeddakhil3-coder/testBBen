@@ -900,7 +900,7 @@ async function loadOrderHistory() {
   host.append(loading);
   try {
     const { data, error } = await db.from("orders")
-      .select("id,order_number,status,subtotal,delivery_fee,total,customer_name,customer_phone,shipping_address,notes,created_at,order_items(id,store_id,product_id,product_name,unit_price,quantity,line_total)")
+      .select("id,order_number,status,subtotal,original_subtotal,discount_amount,coupon_code,discount_funding_source,delivery_fee,total,customer_name,customer_phone,shipping_address,notes,created_at,order_items(id,store_id,product_id,product_name,unit_price,quantity,line_total)")
       .eq("customer_id", currentUser.id)
       .order("created_at", { ascending: false });
     if (error) throw error;
@@ -1064,12 +1064,16 @@ async function loadOrderHistory() {
       const address = document.createElement("span");
       address.textContent = "عنوان التوصيل: " + (order.shipping_address || "غير مسجل");
       const subtotalLabel = document.createElement("span");
-      subtotalLabel.textContent = "مجموع المنتجات: " + money(order.subtotal == null ? total : order.subtotal);
+      subtotalLabel.textContent = "مجموع المنتجات: " + money(order.original_subtotal == null ? (order.subtotal == null ? total : order.subtotal) + Number(order.discount_amount || 0) : order.original_subtotal);
+      const netSubtotalLabel = document.createElement("span");
+      netSubtotalLabel.textContent = "قيمة المنتجات بعد الخصم: " + money(order.subtotal == null ? total : order.subtotal);
+      const discountLabel = document.createElement("span");
+      discountLabel.textContent = "الخصم" + (order.coupon_code ? " (" + order.coupon_code + ")" : "") + ": " + money(order.discount_amount || 0);
       const deliveryLabel = document.createElement("span");
       deliveryLabel.textContent = "أجرة التوصيل: " + money(order.delivery_fee || 0);
       const totalLabel = document.createElement("strong");
       totalLabel.textContent = "الإجمالي: " + money(order.total == null ? total + Number(order.delivery_fee || 0) : order.total);
-      footer.append(address, subtotalLabel, deliveryLabel, totalLabel);
+      footer.append(address, subtotalLabel); if (Number(order.discount_amount || 0) > 0) footer.append(discountLabel); footer.append(netSubtotalLabel, deliveryLabel, totalLabel);
       card.append(head, progress, itemsHost, footer);
       if (order.notes) {
         const note = document.createElement("p");
