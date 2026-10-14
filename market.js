@@ -9,6 +9,7 @@ const storeHref = (store) => store?.id ? "market.html?store_id=" + encodeURIComp
 let allProducts = [];
 let allCategories = [];
 let activeCategory = "";
+let activeCity = "";
 let currentUser = null;
 let currentRole = null;
 let cartItems = [];
@@ -60,13 +61,29 @@ function renderCategories() {
     host.append(button);
   });
 }
+function renderCities() {
+  const select = $("#city-filter");
+  if (!select) return;
+  const currentValue = activeCity;
+  const cities = [...new Set(allProducts.map((product) => String(product.stores?.city || "").trim()).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "ar"));
+  select.replaceChildren();
+  const allOption = document.createElement("option");
+  allOption.value = ""; allOption.textContent = "كل المدن"; select.append(allOption);
+  cities.forEach((city) => {
+    const option = document.createElement("option"); option.value = city; option.textContent = city; select.append(option);
+  });
+  activeCity = cities.includes(currentValue) ? currentValue : "";
+  select.value = activeCity;
+}
 function visibleProducts() {
   const query = $("#search-input").value.trim().toLocaleLowerCase("ar");
   let items = allProducts.filter((p) => {
     const categoryMatch = !activeCategory || p.category_id === activeCategory;
+    const cityMatch = !activeCity || String(p.stores?.city || "").trim() === activeCity;
     const favoriteMatch = !showFavoritesOnly || favoriteIds.has(String(p.id));
     const haystack = [p.name, p.description, p.categories?.name, p.stores?.name, p.stores?.city].filter(Boolean).join(" ").toLocaleLowerCase("ar");
-    return categoryMatch && favoriteMatch && (!query || haystack.includes(query));
+    return categoryMatch && cityMatch && favoriteMatch && (!query || haystack.includes(query));
   });
   const sort = $("#sort-select").value;
   if (sort === "price-asc") items.sort((a,b) => Number(a.price)-Number(b.price));
@@ -642,7 +659,7 @@ async function initMarket() {
     allCategories = categoryResult.data || [];
     allProducts = (productQuery.data || []).filter((p) => p.stores?.status === "active");
     if (isStorePage) $("#public-store-products-count").textContent = allProducts.length + " منتج متاح";
-    renderCategories(); renderProducts(); await loadCart();
+    renderCategories(); renderCities(); renderProducts(); await loadCart();
     if (window.location.hash === "#orders" && currentRole === "customer") await openOrderHistory();
   } catch (error) {
     console.error("Market load failed:", error);
@@ -653,6 +670,7 @@ async function initMarket() {
 $("#search-input").addEventListener("input", renderProducts);
 $("#clear-search").addEventListener("click", () => { $("#search-input").value = ""; renderProducts(); $("#search-input").focus(); });
 $("#sort-select").addEventListener("change", renderProducts);
+$("#city-filter")?.addEventListener("change", () => { activeCity = $("#city-filter").value; renderProducts(); });
 $("#browse-button").addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth" }));
 $("#show-all-categories").addEventListener("click", () => { activeCategory = ""; renderCategories(); renderProducts(); });
 $("#favorite-filter-button").addEventListener("click", () => {
