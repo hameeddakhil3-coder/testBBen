@@ -525,10 +525,10 @@ function renderProducts() {
       finally { favoriteButton.disabled = false; }
     });
     image.append(favoriteButton);
-    const addButton = document.createElement("button"); addButton.type = "button"; addButton.className = "card-add-button"; addButton.textContent = "+"; addButton.setAttribute("aria-label", "أضف إلى السلة");
+    const addButton = document.createElement("button"); addButton.type = "button"; addButton.className = "card-add-button"; addButton.textContent = "🛒 أضف إلى السلة"; addButton.setAttribute("aria-label", "أضف إلى السلة");
     addButton.disabled = Number(product.stock_quantity) <= 0; addButton.title = addButton.disabled ? "نفدت الكمية" : "أضف إلى السلة";
     addButton.addEventListener("click", () => addToCart(product));
-    actions.append(detailButton, addButton); bottom.append(price, actions);
+    actions.append(addButton); bottom.append(price, actions);
     const stock = document.createElement("div"); stock.className = "stock-label" + (Number(product.stock_quantity) <= 0 ? " out" : "");
     stock.textContent = Number(product.stock_quantity) > 0 ? "متوفر · " + product.stock_quantity + " قطعة" : "نفدت الكمية";
     body.append(category, title, store, storeRatingSummary(product.stores), ratingSummary(product), bottom, stock); card.append(image, body); grid.append(card);
@@ -1312,7 +1312,8 @@ $("#favorite-filter-button").addEventListener("click", () => {
 $("#promo-strip-browse-button")?.addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" }));
 $("#dismiss-promo")?.addEventListener("click", () => { $("#market-promo").hidden = true; });
 $("#mobile-nav-browse")?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
-$("#mobile-nav-orders")?.addEventListener("click", openOrderHistory);
+$("#mobile-nav-categories")?.addEventListener("click", () => $("#market-categories").scrollIntoView({ behavior: "smooth", block: "start" }));
+$("#mobile-nav-favorites")?.addEventListener("click", () => { window.location.href = "market.html?view=favorites"; });
 $("#mobile-nav-cart")?.addEventListener("click", openCart);
 $("#mobile-nav-account")?.addEventListener("click", () => { window.location.href = currentUser && currentRole === "customer" ? "customer-profile.html" : "index.html"; });
 $("#favorites-page-button")?.addEventListener("click", () => { window.location.href = "market.html?view=favorites"; });
