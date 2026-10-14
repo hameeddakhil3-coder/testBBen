@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#563b2c" />
   <title>BBen | لوحة التاجر</title>
-  <link rel="stylesheet" href="seller.css" />
+  <link rel="stylesheet" href="seller.css?rev=20261014-9" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="seller.js?rev=20261014-8" defer></script>
+  <script src="seller.js?rev=20261014-9" defer></script>
 </head>
 <body>
   <div class="seller-app">
@@ -99,8 +99,9 @@
       <label for="product-category">التصنيف</label><select id="product-category" name="productCategory"><option>إلكترونيات</option><option>أزياء</option><option>منزل ومطبخ</option><option>إكسسوارات</option><option>أحذية</option><option>أخرى</option></select>
       <label for="product-stock">الكمية المتوفرة</label><input id="product-stock" name="productStock" type="number" required min="0" step="1" placeholder="10" />
       <label for="product-status">حالة المنتج</label><select id="product-status" name="productStatus"><option value="active">نشط — ظاهر في السوق</option><option value="draft">مسودة — غير ظاهر في السوق</option><option value="archived">مؤرشف — غير ظاهر في السوق</option></select>
-      <label for="product-image">صورة المنتج (اختياري، حتى 5 ميغابايت)</label><input id="product-image" name="productImage" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
-      <img id="product-image-preview" class="image-preview hidden" alt="معاينة صورة المنتج" />
+      <label for="product-image">صور المنتج (حتى 8 صور، 5 ميغابايت للصورة)</label><input id="product-image" name="productImages" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple />
+      <small class="product-images-help">يمكنك تحديد عدة صور معاً. الصورة الأولى هي الصورة الرئيسية، ويمكنك إزالة الصور المحفوظة أثناء تعديل المنتج.</small>
+      <div id="product-images-preview" class="product-images-preview hidden" aria-live="polite"></div>
       <p class="dialog-error" id="dialog-error" aria-live="polite"></p>
       <div class="dialog-actions"><button type="button" class="secondary-button" id="cancel-dialog">إلغاء</button><button type="submit" class="primary-button">حفظ المنتج</button></div>
     </form>
