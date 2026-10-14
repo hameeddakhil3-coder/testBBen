@@ -35,7 +35,51 @@ async function load(){
  document.querySelector("#eligible-count").textContent=d.eligible_completed_orders+" طلب مكتمل مؤهل";
  document.querySelector("#delivery-fees").textContent=money(d.completed_delivery_fees);
  document.querySelector("#delivered-count").textContent=d.delivered_order_count+" طلب مكتمل";
- storeRows=b.data||[];renderStores(storeRows);rows=c.data||[];renderLedger();await loadCampaigns();$("#connection-status").textContent="البيانات محدثة";
+ storeRows=b.data||[];renderStores(storeRows);rows=c.data||[];renderLedger();await Promise.all([loadCampaigns(),loadCoupons()]);$("#connection-status").textContent="البيانات محدثة";
+}
+
+
+async function loadCoupons(){
+ const body=$("#coupons-table");if(!body)return;
+ const {data,error}=await db.from("coupons").select("*").order("created_at",{ascending:false});
+ body.replaceChildren();
+ if(error){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.textContent="تعذر تحميل الكوبونات: "+(error.message||"");tr.append(td);body.append(tr);return;}
+ if(!data?.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=6;td.textContent="لا توجد كوبونات بعد.";tr.append(td);body.append(tr);return;}
+ data.forEach(c=>{
+  const tr=document.createElement("tr");
+  const code=document.createElement("td");const strong=document.createElement("strong");strong.textContent=c.code;const desc=document.createElement("small");desc.textContent=c.description||"";code.append(strong,desc);tr.append(code);
+  const discount=document.createElement("td");discount.textContent=(c.discount_type==="percent"?c.discount_value+"%":money(c.discount_value))+(c.max_discount? " · حد "+money(c.max_discount):"");tr.append(discount);
+  const funding=document.createElement("td");funding.textContent=c.funding_source==="platform"?"BBen":"التاجر";tr.append(funding);
+  const usage=document.createElement("td");usage.textContent=String(c.usage_count||0)+(c.total_usage_limit?"/"+c.total_usage_limit:"");tr.append(usage);
+  const statusCell=document.createElement("td");statusCell.textContent=c.is_active?"مفعّل":"متوقف";tr.append(statusCell);
+  const actionCell=document.createElement("td"),toggle=document.createElement("button");toggle.type="button";toggle.className="store-action "+(c.is_active?"danger":"primary");toggle.textContent=c.is_active?"إيقاف":"تفعيل";
+  toggle.addEventListener("click",async()=>{toggle.disabled=true;try{const {error}=await db.from("coupons").update({is_active:!c.is_active,updated_at:new Date().toISOString()}).eq("id",c.id);if(error)throw error;await loadCoupons();}catch(e){alert("تعذر تغيير حالة الكوبون: "+(e.message||""));toggle.disabled=false;}});
+  actionCell.append(toggle);tr.append(actionCell);body.append(tr);
+ });
+}
+async function saveCoupon(event){
+ event.preventDefault();const message=$("#coupon-form-message"),button=$("#coupon-save-button");
+ const code=$("#coupon-code-input").value.trim().toUpperCase();
+ const type=$("#coupon-type-input").value,value=Number($("#coupon-value-input").value),maxRaw=$("#coupon-max-input").value;
+ const starts=$("#coupon-start-input").value,ends=$("#coupon-end-input").value;
+ const startIso=starts?new Date(starts).toISOString():null,endIso=ends?new Date(ends).toISOString():null;
+ if(!/^[A-Z0-9_-]{2,40}$/.test(code)){message.textContent="استخدم أحرفاً إنجليزية وأرقاماً أو - أو _ فقط.";return;}
+ if(!(value>0)||(type==="percent"&&value>100)){message.textContent="تحقق من قيمة الخصم؛ النسبة لا تتجاوز 100%.";return;}
+ if(startIso&&endIso&&new Date(endIso)<=new Date(startIso)){message.textContent="تاريخ النهاية يجب أن يكون بعد البداية.";return;}
+ const payload={code,description:$("#coupon-description-input").value.trim(),discount_type:type,discount_value:value,max_discount:maxRaw?Number(maxRaw):null,min_subtotal:Math.max(0,Number($("#coupon-min-input").value)||0),funding_source:$("#coupon-funding-input").value,starts_at:startIso,ends_at:endIso,total_usage_limit:$("#coupon-total-limit-input").value?Number($("#coupon-total-limit-input").value):null,per_customer_limit:Math.max(1,Number($("#coupon-user-limit-input").value)||1),is_active:$("#coupon-active-input").checked,created_by:currentAdminId};
+ button.disabled=true;message.textContent="جارٍ إنشاء الكوبون...";
+ try{const {error}=await db.from("coupons").insert(payload);if(error)throw error;$("#coupon-form").reset();$("#coupon-user-limit-input").value="1";$("#coupon-min-input").value="0";message.textContent="تم إنشاء الكوبون.";await loadCoupons();}
+ catch(e){message.textContent="تعذر إنشاء الكوبون: "+(e.message||"تحقق من البيانات والصلاحيات.");}
+ finally{button.disabled=false;}
+}
+async function sendPlatformNotification(event){
+ event.preventDefault();const button=$("#notification-send-button"),message=$("#notification-form-message");
+ const target=$("#notification-url-input").value.trim();
+ if(target&&(target.startsWith("..")||/^(?:https?:)?\/\//i.test(target)||/^javascript:/i.test(target)||/[\r\n]/.test(target))){message.textContent="استخدم رابطاً داخلياً آمناً فقط.";return;}
+ button.disabled=true;
+ try{const {error}=await db.from("notifications").insert({target_role:$("#notification-role-input").value,title:$("#notification-title-input").value.trim(),body:$("#notification-body-input").value.trim(),target_url:target||null,notification_type:"platform",created_by:currentAdminId});if(error)throw error;$("#notification-form").reset();message.textContent="تم إرسال الإشعار.";}
+ catch(e){message.textContent="تعذر إرسال الإشعار: "+(e.message||"تحقق من الصلاحيات.");}
+ finally{button.disabled=false;}
 }
 
 function campaignDateInput(value){
@@ -227,5 +271,6 @@ function renderLedger(){
  const body=$("#ledger-table");body.replaceChildren();const filter=$("#ledger-filter").value;
  rows.filter(o=>filter==="all"||o.commission_state===filter).forEach(o=>{const tr=document.createElement("tr");["#BB-"+o.order_number,o.store_names,new Date(o.created_at).toLocaleDateString("ar-IQ"),money(o.subtotal),money(o.delivery_fee),Number(o.commission_rate)>0?money(o.commission_amount)+" (5%)":"—",({due:"عمولة مستحقة",pending:"بانتظار الاكتمال",legacy_exempt:"طلب سابق مسلّم معفى",no_commission_snapshot:"لا توجد عمولة مسجلة",cancelled:"ملغي"})[o.commission_state]||o.status].forEach(v=>{const td=document.createElement("td");td.textContent=v||"—";tr.append(td)});body.append(tr)});
 }
+$("#coupon-form").addEventListener("submit",saveCoupon);$("#notification-form").addEventListener("submit",sendPlatformNotification);
 $("#campaign-form").addEventListener("submit",saveCampaign);$("#campaign-cancel-edit").addEventListener("click",resetCampaignForm);
 $("#refresh").addEventListener("click",load);$("#store-search").addEventListener("input",()=>renderStores(storeRows));$("#store-status-filter").addEventListener("change",()=>renderStores(storeRows));$("#ledger-filter").addEventListener("change",renderLedger);$("#logout").addEventListener("click",async()=>{await db.auth.signOut();location.href="index.html"});start();
