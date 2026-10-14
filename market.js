@@ -31,6 +31,36 @@ function toast(text) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove("show"), 2500);
 }
+async function loadFavoriteIds() {
+  if (currentUser && currentRole === "customer") {
+    const result = await db.from("product_favorites").select("product_id").eq("customer_id", currentUser.id);
+    if (result.error) throw result.error;
+    favoriteIds = new Set((result.data || []).map((row) => String(row.product_id)));
+    try { window.localStorage.setItem("bben_favorite_products", JSON.stringify([...favoriteIds])); } catch {}
+  } else {
+    try {
+      const saved = JSON.parse(window.localStorage.getItem("bben_favorite_products") || "[]");
+      favoriteIds = new Set(Array.isArray(saved) ? saved.map(String) : []);
+    } catch { favoriteIds = new Set(); }
+  }
+}
+async function toggleFavorite(product) {
+  const id = String(product.id);
+  const removing = favoriteIds.has(id);
+  if (currentUser && currentRole === "customer") {
+    const result = removing
+      ? await db.from("product_favorites").delete().eq("customer_id", currentUser.id).eq("product_id", product.id)
+      : await db.from("product_favorites").insert({ customer_id: currentUser.id, product_id: product.id });
+    if (result.error) throw result.error;
+  } else if (currentUser && currentRole !== "customer") {
+    toast("المفضلة متاحة لحساب المشتري فقط.");
+    return;
+  }
+  if (removing) favoriteIds.delete(id); else favoriteIds.add(id);
+  try { window.localStorage.setItem("bben_favorite_products", JSON.stringify([...favoriteIds])); } catch {}
+  renderProducts();
+  toast(removing ? "أُزيل المنتج من المفضلة." : "أُضيف المنتج إلى المفضلة.");
+}
 function imageOrPlaceholder(url, name = "المنتج") {
   if (url) {
     const img = document.createElement("img");
@@ -365,15 +395,12 @@ function renderProducts() {
     favoriteButton.textContent = favoriteIds.has(String(product.id)) ? "♥" : "♡";
     favoriteButton.setAttribute("aria-label", favoriteIds.has(String(product.id)) ? "إزالة من المفضلة" : "حفظ في المفضلة");
     favoriteButton.setAttribute("aria-pressed", String(favoriteIds.has(String(product.id))));
-    favoriteButton.addEventListener("click", (event) => {
+    favoriteButton.addEventListener("click", async (event) => {
       event.stopPropagation();
-      const id = String(product.id);
-      if (favoriteIds.has(id)) favoriteIds.delete(id);
-      else favoriteIds.add(id);
-      try { window.localStorage.setItem("bben_favorite_products", JSON.stringify([...favoriteIds])); }
-      catch (error) { console.warn("Could not save favorites:", error); }
-      renderProducts();
-      toast(favoriteIds.has(id) ? "أُضيف المنتج إلى المفضلة." : "أُزيل المنتج من المفضلة.");
+      favoriteButton.disabled = true;
+      try { await toggleFavorite(product); }
+      catch (error) { toast("تعذر تحديث المفضلة: " + (error.message || "حاول مجدداً.")); }
+      finally { favoriteButton.disabled = false; }
     });
     image.append(favoriteButton);
     const addButton = document.createElement("button"); addButton.type = "button"; addButton.className = "card-add-button"; addButton.textContent = "+"; addButton.setAttribute("aria-label", "أضف إلى السلة");
@@ -1047,6 +1074,7 @@ async function initMarket() {
       $("#account-label").textContent = profileResult.data?.full_name || "حسابي";
       $("#account-button").title = "الملف الشخصي";
     }
+    await loadFavoriteIds();
     if (isStorePage) {
       $("#market-stores-section").classList.add("hidden");
       $("#market-promo-strip").classList.add("hidden");
