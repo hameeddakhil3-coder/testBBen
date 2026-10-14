@@ -593,6 +593,7 @@ async function initMarket() {
     allProducts = (productQuery.data || []).filter((p) => p.stores?.status === "active");
     if (isStorePage) $("#public-store-products-count").textContent = allProducts.length + " منتج متاح";
     renderCategories(); renderProducts(); await loadCart();
+    if (window.location.hash === "#orders" && currentRole === "customer") await openOrderHistory();
   } catch (error) {
     console.error("Market load failed:", error);
     $("#market-message").textContent = "تعذر تحميل المنتجات من قاعدة البيانات: " + (error.message || "خطأ غير معروف");
