@@ -22,6 +22,7 @@ let orderFilter = "all";
 let activeProductsOnly = false;
 const db = window.bbenSupabase;
 let toastTimer;
+let merchantChatRefreshTimer = null;
 
 function showToast(text) {
   const toast = document.querySelector("#toast");
@@ -62,7 +63,12 @@ function showView(view, options = {}) {
     if (currentStore) loadMerchantOrders();
   }
   if (view === "analytics") updateOrderSummary();
-  if (view === "chat" && currentStore) loadMerchantChats();
+  if (view === "chat" && currentStore) {
+    loadMerchantChats();
+    startMerchantChatAutoRefresh();
+  } else {
+    stopMerchantChatAutoRefresh();
+  }
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
@@ -520,15 +526,35 @@ async function updateMerchantOrderStatus(order, select) {
 
 let activeMerchantConversationId = null;
 let merchantChatBusy = false;
+let merchantChatMessagesLoading = false;
+
+function startMerchantChatAutoRefresh() {
+  stopMerchantChatAutoRefresh();
+  merchantChatRefreshTimer = window.setInterval(async () => {
+    if (document.querySelector("#chat-view").classList.contains("hidden")) return;
+    try {
+      await loadMerchantChats();
+      if (activeMerchantConversationId) await loadMerchantChatMessages();
+    } catch (error) {
+      console.warn("Merchant chat auto-refresh failed:", error);
+    }
+  }, 5000);
+}
+
+function stopMerchantChatAutoRefresh() {
+  if (merchantChatRefreshTimer !== null) window.clearInterval(merchantChatRefreshTimer);
+  merchantChatRefreshTimer = null;
+}
 
 async function loadMerchantChats() {
   if (!currentStore) return;
   const host = document.querySelector("#merchant-chat-list");
-  host.replaceChildren();
-  const loading = document.createElement("p");
-  loading.className = "notice-box";
-  loading.textContent = "جارٍ تحميل المحادثات...";
-  host.append(loading);
+  if (!host.children.length) {
+    const loading = document.createElement("p");
+    loading.className = "notice-box";
+    loading.textContent = "جارٍ تحميل المحادثات...";
+    host.append(loading);
+  }
   try {
     const { data, error } = await db.from("chat_conversations")
       .select("id,customer_id,product_id,last_message_at")
@@ -601,19 +627,23 @@ async function openMerchantConversation(conversation, customerName, productName)
 }
 
 async function loadMerchantChatMessages() {
-  if (!activeMerchantConversationId) return;
+  if (!activeMerchantConversationId || merchantChatMessagesLoading) return;
+  merchantChatMessagesLoading = true;
   const host = document.querySelector("#merchant-chat-messages");
-  host.replaceChildren();
-  const loading = document.createElement("p");
-  loading.className = "notice-box";
-  loading.textContent = "جارٍ تحميل الرسائل...";
-  host.append(loading);
-  const { data, error } = await db.from("chat_messages")
-    .select("id,sender_id,body,created_at")
-    .eq("conversation_id", activeMerchantConversationId)
-    .order("created_at", {ascending:true});
-  if (error) throw error;
-  host.replaceChildren();
+  const wasNearBottom = host.scrollHeight - host.scrollTop - host.clientHeight < 60;
+  if (!host.children.length) {
+    const loading = document.createElement("p");
+    loading.className = "notice-box";
+    loading.textContent = "جارٍ تحميل الرسائل...";
+    host.append(loading);
+  }
+  try {
+    const { data, error } = await db.from("chat_messages")
+      .select("id,sender_id,body,created_at")
+      .eq("conversation_id", activeMerchantConversationId)
+      .order("created_at", {ascending:true});
+    if (error) throw error;
+    host.replaceChildren();
   if (!data?.length) {
     const empty = document.createElement("p");
     empty.className = "notice-box";
@@ -632,7 +662,10 @@ async function loadMerchantChatMessages() {
     time.textContent = Number.isNaN(parsed.getTime()) ? "" : parsed.toLocaleString("ar-IQ", {dateStyle:"short",timeStyle:"short"});
     bubble.append(sender, body, time); host.append(bubble);
   });
-  host.scrollTop = host.scrollHeight;
+    if (wasNearBottom) host.scrollTop = host.scrollHeight;
+  } finally {
+    merchantChatMessagesLoading = false;
+  }
 }
 
 async function sendMerchantChatMessage(event) {
