@@ -22,4 +22,9 @@
 <div class="customer-field" style="grid-column:1/-1"><label for="customer-email">البريد الإلكتروني</label><input id="customer-email" class="customer-email" type="email" readonly aria-readonly="true"><small>البريد مرتبط بتسجيل الدخول ولا يمكن تغييره من هذه الصفحة.</small></div>
 </div><div class="customer-actions"><button class="primary-button" id="save-customer-profile" type="submit">حفظ التعديلات</button><button class="secondary-button" id="reset-customer-profile" type="button">إلغاء التغييرات</button></div><p id="customer-profile-message" class="customer-message" role="status" aria-live="polite"></p>
 </section><div class="customer-hint">نصيحة: احفظ عنواناً افتراضياً لتسريع الطلبات القادمة. يمكنك دائماً كتابة عنوان مختلف عند إتمام أي طلب.</div></form>
+<section class="customer-card" id="customer-orders-section">
+  <div class="order-toolbar"><div><h2>طلباتي السابقة</h2><p style="margin:6px 0 0;color:var(--muted);font-size:12px">تابع حالة طلباتك وراجع المنتجات والمبالغ وعنوان التوصيل لكل طلب.</p></div><div style="display:flex;align-items:center;gap:10px"><span id="customer-orders-count" class="order-count">جارٍ التحميل...</span><button class="secondary-button" id="refresh-customer-orders" type="button">تحديث</button></div></div>
+  <div id="customer-orders-list" class="customer-orders-list" aria-live="polite"><p class="customer-empty">جارٍ تحميل طلباتك...</p></div>
+  <p id="customer-orders-message" class="customer-message" role="status" aria-live="polite"></p>
+</section>
 </main></body></html>
