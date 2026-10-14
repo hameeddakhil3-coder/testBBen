@@ -94,6 +94,7 @@ const productForm = document.querySelector("#product-form");
 const productName = document.querySelector("#product-name");
 const productPrice = document.querySelector("#product-price");
 const productStock = document.querySelector("#product-stock");
+const productStatus = document.querySelector("#product-status");
 const productCategory = document.querySelector("#product-category");
 const dialogError = document.querySelector("#dialog-error");
 const productImage = document.querySelector("#product-image");
@@ -123,6 +124,7 @@ function openProductDialog(product = null) {
   editingProductId = product?.id || null;
   dialogError.textContent = "";
   productForm.reset();
+  productStatus.value = product?.status || "active";
   productImagePreview.classList.add("hidden");
   productImagePreview.removeAttribute("src");
   document.querySelector("#product-dialog-title").textContent = product ? "تعديل المنتج" : "إضافة منتج";
@@ -131,6 +133,7 @@ function openProductDialog(product = null) {
     productName.value = product.name || "";
     productPrice.value = product.price ?? "";
     productStock.value = product.stock_quantity ?? 0;
+    productStatus.value = product.status || "active";
     productCategory.value = product.categories?.name || "أخرى";
     if (product.image_url) { productImagePreview.src = product.image_url; productImagePreview.classList.remove("hidden"); }
   }
@@ -167,7 +170,8 @@ function renderProductList() {
     const name = document.createElement("strong");
     name.textContent = product.name;
     const detail = document.createElement("small");
-    detail.textContent = (product.categories?.name || "غير مصنف") + " · الكمية: " + product.stock_quantity;
+    const statusLabels = { active: "نشط", draft: "مسودة", archived: "مؤرشف" };
+    detail.textContent = (statusLabels[product.status] || "غير معروف") + " · " + (product.categories?.name || "غير مصنف") + " · الكمية: " + product.stock_quantity;
     info.append(name,detail);
     const price = document.createElement("span");
     price.className = "list-price";
@@ -199,7 +203,9 @@ productForm.addEventListener("submit", async (event) => {
     const existing = editingProductId ? products.find((item) => item.id === editingProductId) : null;
     let imageUrl = existing?.image_url || null;
     if (imageFile) imageUrl = await uploadImage(imageFile, "products");
-    const payload = { store_id: currentStore.id, category_id: category?.id || null, name, price, currency: "IQD", stock_quantity: stock, image_url: imageUrl, status: "active" };
+    const selectedStatus = productStatus.value;
+    if (!["active", "draft", "archived"].includes(selectedStatus)) throw new Error("اختر حالة صحيحة للمنتج.");
+    const payload = { store_id: currentStore.id, category_id: category?.id || null, name, price, currency: "IQD", stock_quantity: stock, image_url: imageUrl, status: selectedStatus };
     let saved;
     if (editingProductId) {
       const result = await db.from("products").update(payload).eq("id", editingProductId).eq("store_id", currentStore.id)
