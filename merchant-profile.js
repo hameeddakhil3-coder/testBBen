@@ -1,4 +1,4 @@
-const db = window.bbenSupabase;
+const db = globalThis.bbenSupabase;
 let currentUser = null;
 let currentProfile = null;
 let currentStore = null;
@@ -47,12 +47,12 @@ async function uploadStoreImage(file) {
   if (error) throw error;
   return db.storage.from("bben-images").getPublicUrl(path).data.publicUrl;
 }
-$("#back-dashboard").addEventListener("click", () => { window.location.href = "seller.html"; });
+$("#back-dashboard").addEventListener("click", () => { globalThis.location.href = "seller.html"; });
 $("#cancel-profile").addEventListener("click", () => { fillForm(); imageInput.value = ""; setMessage(""); });
 $("#profile-logout").addEventListener("click", async () => {
   $("#profile-logout").disabled = true;
   if (db) await db.auth.signOut();
-  window.location.href = "index.html";
+  globalThis.location.href = "index.html";
 });
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -86,12 +86,12 @@ form.addEventListener("submit", async (event) => {
 });
 
 async function initProfile() {
-  if (!db) { window.location.href = "index.html"; return; }
+  if (!db) { globalThis.location.href = "index.html"; return; }
   const { data, error } = await db.auth.getSession();
   currentUser = data?.session?.user;
-  if (error || !currentUser) { window.location.href = "index.html"; return; }
+  if (error || !currentUser) { globalThis.location.href = "index.html"; return; }
   const profileResult = await db.from("profiles").select("id,full_name,phone,role").eq("id", currentUser.id).single();
-  if (profileResult.error || profileResult.data?.role !== "merchant") { toast("هذه الصفحة مخصصة لحساب التاجر."); setTimeout(() => { window.location.href = "index.html"; }, 1400); return; }
+  if (profileResult.error || profileResult.data?.role !== "merchant") { toast("هذه الصفحة مخصصة لحساب التاجر."); setTimeout(() => { globalThis.location.href = "index.html"; }, 1400); return; }
   currentProfile = profileResult.data;
   const storeResult = await db.from("stores").select("id,owner_id,name,slug,description,logo_url,phone,city,delivery_fee").eq("owner_id", currentUser.id).maybeSingle();
   if (storeResult.error || !storeResult.data) { setMessage("تعذر تحميل بيانات المتجر: " + (storeResult.error?.message || "لم يتم العثور على متجر."), "error"); return; }
