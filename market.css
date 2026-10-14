@@ -285,3 +285,120 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   html{scroll-behavior:auto}
   *,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}
 }
+
+
+/* BBen buyer market refresh — visual redesign, functionality unchanged */
+:root{
+  --brown:#332319;--brown-dark:#21170f;--brown-soft:#efe3d6;--cream:#f8f4ee;
+  --text:#241d18;--muted:#76685c;--border:#e5d9cc;--green:#23734d;
+}
+body{background:#f8f5f0}
+.market-header{
+  min-height:78px;height:auto;background:#2f2118;color:#fff;border:0;
+  box-shadow:0 5px 22px #2f21181c;padding-block:13px
+}
+.market-brand{color:#fff;font-size:32px}
+.market-brand span{color:#d7b18c}
+.market-search{background:#fff;border-color:#fff;border-radius:999px;max-width:720px;height:48px}
+.market-search input{font-size:14px;color:#2b2119}
+.market-header-actions{gap:8px}
+.header-action{background:#3b2b20;color:#fff;border-color:#5b4636;border-radius:999px;padding:10px 14px}
+.header-action b{background:#d7b18c;color:#2f2118;border-radius:50%}
+.market-main{max-width:1500px}
+.market-hero{
+  position:relative;isolation:isolate;min-height:390px;margin:28px 0 52px;
+  padding:42px clamp(26px,5vw,72px);border-radius:28px;
+  background:radial-gradient(ellipse at 78% 28%,#72513a 0,transparent 38%),linear-gradient(115deg,#2c1d14 0%,#493020 62%,#65452f 100%);
+  color:#fff;box-shadow:0 20px 50px #39271e1b
+}
+.market-hero:after{content:"";position:absolute;z-index:-1;inset:16px;border:1px solid #ffffff20;border-radius:20px;pointer-events:none}
+.hero-eyebrow,.section-eyebrow{color:#b38761;letter-spacing:.15px}
+.hero-copy h1{font-size:clamp(38px,4.4vw,58px);line-height:1.32;color:#fff;letter-spacing:-1.2px}
+.hero-copy h1 span{color:#e0b991}
+.hero-copy>p:not(.hero-eyebrow){color:#e0d1c2;font-size:15px;line-height:2.1}
+.hero-button,.primary-market-button{background:#d8b28d;color:#2c1d14;border-radius:999px;min-height:48px;padding-inline:25px;font-size:13px;box-shadow:0 8px 20px #1d120d20;transition:transform .18s,background .18s}
+.hero-button:hover,.primary-market-button:hover:not(:disabled){background:#edcfaf;transform:translateY(-2px)}
+.hero-art{min-height:285px}
+.hero-bag{width:166px;height:166px;border-radius:48px;background:#f8e8d7;box-shadow:0 25px 70px #120b0750;font-size:86px;transform:rotate(-9deg)}
+.hero-orbit{border-color:#e6c9a25c}
+.hero-floating{background:#fff8ef;border:1px solid #fff;box-shadow:0 12px 32px #160e0830}
+.hero-caption{color:#e2c7ad;font-size:11px}
+.market-categories,.market-products{margin-bottom:56px}
+.section-heading{margin-bottom:22px}
+.section-heading h2{font-size:clamp(23px,2.5vw,29px);font-weight:800}
+.section-description{font-size:13px}
+.text-action{border:1px solid #dfd0c1;border-radius:999px;padding:10px 15px;background:#fffaf5}
+.category-list{gap:11px}
+.category-chip{padding:11px 20px;background:#fff;border-color:#e5d9cc;border-radius:999px;font-weight:600}
+.category-chip.active,.category-chip:hover{background:#332319;border-color:#332319;color:#fff;box-shadow:0 7px 16px #3323191f}
+.sort-control{font-size:12px}
+.sort-control select{background:#fffdf9;border-color:#e1d3c4;border-radius:999px;padding-inline:15px}
+.market-product-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}
+.market-card{border:1px solid #e7dbce;border-radius:20px;background:#fff;box-shadow:0 7px 24px #39271e08}
+.market-card:hover{transform:translateY(-6px);border-color:#cbb198;box-shadow:0 20px 40px #39271e16}
+.market-card-image{height:clamp(185px,19vw,245px);background:linear-gradient(145deg,#f8f0e7,#e9d9c8)}
+.market-card-image img{transition:transform .35s}
+.market-card:hover .market-card-image img{transform:scale(1.045)}
+.store-badge{top:12px;right:12px;padding:6px 10px;font-size:10px;border-radius:999px;box-shadow:0 4px 15px #2c1d1414}
+.market-card-body{padding:17px}
+.market-card-category{font-size:11px;color:#a47a54}
+.market-card-title{font-size:15px;font-weight:700;line-height:1.8;margin-bottom:5px}
+.market-card-store{font-size:11px;margin-bottom:14px}
+.market-card-bottom{align-items:center}
+.market-price{font-size:16px;color:#654329}
+.market-price small{font-size:10px}
+.card-icon-button,.card-add-button{width:40px;height:40px;border-radius:12px}
+.card-icon-button{background:#fffaf5}
+.card-add-button{background:#332319}
+.card-add-button:hover:not(:disabled){background:#6b4930}
+.stock-label{font-size:11px}
+.market-message{background:#fffdf9;border-color:#d9c7b5;border-radius:18px}
+.market-benefits{gap:16px;padding:30px 0 42px;border-top:0}
+.market-benefits>div{padding:19px;border:1px solid #e6d8ca;border-radius:19px;background:#fff;box-shadow:0 6px 20px #39271e07}
+.market-benefits>div>span{width:46px;height:46px;border-radius:15px;background:#f0e2d3}
+.market-benefits strong{font-size:14px}
+.market-benefits small{font-size:11px}
+.market-footer{padding:26px 0;border-top-color:#e4d8cc}
+.product-dialog,.cart-dialog{border:0;border-radius:24px}
+.dialog-close{border-radius:50%}
+@media(max-width:1050px){
+  .market-product-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+  .market-hero{min-height:350px}
+}
+@media(max-width:760px){
+  .market-header{background:#2f2118;padding:12px 15px;gap:10px}
+  .market-brand{font-size:28px}
+  .market-header-actions{gap:5px}
+  .header-action{padding:8px 10px;background:#3b2b20}
+  .market-search{border-radius:14px}
+  .market-main{padding-inline:15px}
+  .market-hero{margin:18px 0 38px;min-height:unset;padding:28px 23px;border-radius:23px;grid-template-columns:1fr .72fr}
+  .market-hero:after{inset:10px;border-radius:16px}
+  .hero-copy h1{font-size:clamp(30px,5.5vw,42px)}
+  .hero-copy>p:not(.hero-eyebrow){font-size:12px}
+  .hero-art{min-height:210px;height:210px}
+  .hero-bag{width:115px;height:115px;border-radius:33px;font-size:60px}
+  .hero-orbit{width:190px;height:190px}.orbit-two{width:145px;height:145px}
+  .market-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+  .market-card-image{height:clamp(150px,31vw,205px)}
+  .market-card-body{padding:12px}
+  .market-card-title{font-size:13px}
+  .market-price{font-size:14px}
+  .market-benefits>div{padding:13px 8px}
+}
+@media(max-width:480px){
+  .market-header{grid-template-columns:auto 1fr}
+  .header-action{border-radius:12px;padding:8px 7px}
+  .market-hero{grid-template-columns:1fr;padding:25px 21px}
+  .hero-copy h1{font-size:38px}
+  .hero-art{height:145px;min-height:145px;margin-top:10px}
+  .hero-bag{width:90px;height:90px;border-radius:26px;font-size:48px}
+  .hero-orbit{width:145px;height:145px}.orbit-two{width:112px;height:112px}
+  .market-product-grid{gap:10px}
+  .market-card{border-radius:15px}
+  .market-card-image{height:145px}
+  .market-card-body{padding:10px}
+  .market-card-title{font-size:12px}
+  .market-price{font-size:13px}
+  .card-icon-button,.card-add-button{width:34px;height:34px}
+}
