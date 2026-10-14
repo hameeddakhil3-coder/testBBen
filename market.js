@@ -809,6 +809,23 @@ async function loadOrderHistory() {
         details.className = "order-history-item-details";
         details.append(name, quantity);
         row.append(details, price);
+        if (order.status === "delivered" && item.product_id) {
+          const rateButton = document.createElement("button");
+          rateButton.type = "button";
+          rateButton.className = "order-rate-product";
+          rateButton.textContent = "★ تقييم المنتج";
+          rateButton.addEventListener("click", () => {
+            const product = allProducts.find((entry) => String(entry.id) === String(item.product_id));
+            if (!product) {
+              toast("هذا المنتج لم يعد منشوراً في السوق، ولا يمكن فتح صفحة تقييمه حالياً.");
+              return;
+            }
+            $("#order-history-dialog").close();
+            showProductDetails(product);
+            $("#product-dialog").scrollTop = 0;
+          });
+          details.append(rateButton);
+        }
         itemsHost.append(row);
       });
       const footer = document.createElement("div");
