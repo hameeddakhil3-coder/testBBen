@@ -876,7 +876,7 @@ async function loadOrderHistory() {
         details.className = "order-history-item-details";
         details.append(name, quantity);
         row.append(details, price);
-        if (order.status === "delivered" && item.product_id) {
+        if (currentUser && currentRole === "customer" && order.status === "delivered" && item.product_id) {
           const rateButton = document.createElement("button");
           rateButton.type = "button";
           rateButton.className = "order-rate-product";
@@ -893,7 +893,7 @@ async function loadOrderHistory() {
           });
           details.append(rateButton);
         }
-        if (order.status === "delivered" && item.store_id) {
+        if (currentUser && currentRole === "customer" && order.status === "delivered" && item.store_id) {
           const storeRateButton = document.createElement("button");
           storeRateButton.type = "button";
           storeRateButton.className = "order-rate-store";
