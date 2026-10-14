@@ -91,3 +91,11 @@
 /* Explicit multi-batch image selection on mobile */
 .add-more-images-button{display:flex;width:100%;margin-top:9px;align-items:center;justify-content:center;border-color:#d9c7b8;background:#faf6f1;color:var(--brown,#563b2c);font-weight:700}
 .add-more-images-button:active{background:#f0e5d9}
+
+
+/* Product row actions: edit and delete */
+.product-row-actions{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.delete-product-button{border:1px solid #f0d4d1;background:#fff8f7;border-radius:8px;padding:7px 10px;color:#a33127;font:inherit;font-size:10px;font-weight:700;white-space:nowrap}
+.delete-product-button:hover{background:#fdecea}
+.delete-product-button:disabled{opacity:.55;cursor:wait}
+@media(max-width:520px){.product-list-row{flex-wrap:wrap}.product-list-row .list-product-info{flex:1 1 calc(100% - 60px)}.product-row-actions{margin-right:auto}.product-row-actions button{padding:8px 12px}}
