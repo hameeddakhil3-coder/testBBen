@@ -182,9 +182,9 @@ async function openProductDialog(product = null) {
   if (typeof dialog.showModal === "function") dialog.showModal();
   else showToast("المتصفح لا يدعم نافذة الإضافة؛ جرّب متصفحاً أحدث.");
 }
-document.querySelector("#add-product-top").addEventListener("click", openProductDialog);
-document.querySelector("#quick-add-product").addEventListener("click", openProductDialog);
-document.querySelector("#add-product-view").addEventListener("click", openProductDialog);
+document.querySelector("#add-product-top").addEventListener("click", () => openProductDialog());
+document.querySelector("#quick-add-product").addEventListener("click", () => openProductDialog());
+document.querySelector("#add-product-view").addEventListener("click", () => openProductDialog());
 document.querySelector("#close-dialog").addEventListener("click", () => dialog.close());
 document.querySelector("#cancel-dialog").addEventListener("click", () => dialog.close());
 
