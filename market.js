@@ -50,7 +50,8 @@ function makePlaceholder() {
 }
 function renderCategories() {
   const host = $("#category-list"); host.replaceChildren();
-  const categories = [{ id: "", name: "الكل" }, ...allCategories];
+  const availableCategoryIds = new Set(allProducts.map((product) => product.category_id).filter(Boolean));
+  const categories = [{ id: "", name: "الكل" }, ...allCategories.filter((category) => availableCategoryIds.has(category.id))];
   categories.forEach((category) => {
     const button = document.createElement("button");
     button.type = "button"; button.className = "category-chip" + (activeCategory === category.id ? " active" : "");
