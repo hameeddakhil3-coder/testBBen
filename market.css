@@ -1057,3 +1057,24 @@ body{background:#faf8f5;color:var(--text)}
   .market-card-image{height:auto!important;aspect-ratio:1/1}
   .market-card-image>img{padding:5px}
 }
+
+
+/* Buyer product cards — approved visual refinement; functionality remains in market.js. */
+.market-product-grid{align-items:stretch;grid-auto-rows:1fr;gap:clamp(12px,1.7vw,20px)}
+.market-card{display:flex;flex-direction:column;height:100%;min-height:100%;border-radius:17px}
+.market-card-image{flex:0 0 auto;height:clamp(160px,17vw,218px);isolation:isolate;cursor:pointer;outline-offset:-4px}
+.market-card-image:focus-visible{outline:3px solid #b58c66;outline-offset:-5px}
+.market-card-image>img{position:relative;z-index:0}
+.market-card-image .store-badge{z-index:1;right:10px;left:auto;max-width:calc(100% - 62px)}
+.card-favorite-button{position:absolute;z-index:3;top:10px;left:10px;display:grid;place-items:center;width:36px;height:36px;padding:0;border:1px solid #ffffffd9;border-radius:50%;background:#ffffffed;color:var(--brown);font-size:21px;line-height:1;box-shadow:0 3px 12px #39271e1a;backdrop-filter:blur(8px);transition:transform .16s,background .16s,color .16s}
+.card-favorite-button:hover{transform:scale(1.06)}
+.card-favorite-button.is-favorite{background:#fff0f1;border-color:#f3cbd0;color:#b42336}
+.market-card-body{display:flex;flex:1;flex-direction:column;min-width:0;padding:13px}
+.market-card-category{min-height:16px;margin-bottom:5px}
+.market-card-title{display:-webkit-box;min-height:3.2em;margin-bottom:5px;overflow:hidden;white-space:normal;text-overflow:unset;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-height:1.6}
+.market-card-store{min-height:1.7em;margin-bottom:10px;overflow:hidden;text-overflow:ellipsis}
+.market-card-bottom{margin-top:auto;min-height:40px;align-items:center}
+.stock-label{min-height:17px;margin-top:7px}
+@media(max-width:1050px){.market-product-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.market-card-image{height:clamp(155px,20vw,200px)}}
+@media(max-width:760px){.market-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.market-card-image{height:clamp(130px,31vw,175px)}.market-card-body{padding:10px}.market-card-title{font-size:12px;min-height:3.2em}.market-card-store{font-size:10px}.market-card-bottom{gap:5px}.card-favorite-button{top:8px;left:8px;width:33px;height:33px;font-size:20px}.market-card-actions{gap:5px}.card-icon-button,.card-add-button{width:32px;height:32px}}
+@media(max-width:360px){.market-product-grid{gap:8px}.market-card-image{height:120px}.market-card-body{padding:8px}.market-card-bottom{flex-direction:row;align-items:center}.market-price{font-size:11px}.market-card-actions{gap:4px}.card-icon-button,.card-add-button{width:29px;height:29px}.card-favorite-button{width:31px;height:31px}}
