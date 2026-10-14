@@ -23,6 +23,8 @@ let activeProductsOnly = false;
 const db = window.bbenSupabase;
 let toastTimer;
 let merchantChatRefreshTimer = null;
+let merchantChatRealtimeChannel = null;
+let merchantMessagesRealtimeChannel = null;
 
 function showToast(text) {
   const toast = document.querySelector("#toast");
@@ -539,11 +541,68 @@ function startMerchantChatAutoRefresh() {
       console.warn("Merchant chat auto-refresh failed:", error);
     }
   }, 5000);
+  subscribeMerchantChatConversations();
+  subscribeMerchantChatMessages();
 }
 
 function stopMerchantChatAutoRefresh() {
   if (merchantChatRefreshTimer !== null) window.clearInterval(merchantChatRefreshTimer);
   merchantChatRefreshTimer = null;
+  if (merchantChatRealtimeChannel && db) {
+    db.removeChannel(merchantChatRealtimeChannel);
+    merchantChatRealtimeChannel = null;
+  }
+  if (merchantMessagesRealtimeChannel && db) {
+    db.removeChannel(merchantMessagesRealtimeChannel);
+    merchantMessagesRealtimeChannel = null;
+  }
+}
+
+function subscribeMerchantChatConversations() {
+  if (!db || !currentStore?.id) return;
+  if (merchantChatRealtimeChannel) db.removeChannel(merchantChatRealtimeChannel);
+  merchantChatRealtimeChannel = db
+    .channel("merchant-chat-list-" + currentStore.id)
+    .on("postgres_changes", {
+      event: "*",
+      schema: "public",
+      table: "chat_conversations",
+      filter: "store_id=eq." + currentStore.id
+    }, () => {
+      if (!document.querySelector("#chat-view").classList.contains("hidden")) {
+        loadMerchantChats().catch((error) => console.warn("Merchant chat list realtime update failed:", error));
+      }
+    })
+    .subscribe((status) => {
+      if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        console.warn("Merchant chat realtime unavailable; automatic polling remains enabled.");
+      }
+    });
+}
+
+function subscribeMerchantChatMessages() {
+  if (merchantMessagesRealtimeChannel && db) {
+    db.removeChannel(merchantMessagesRealtimeChannel);
+    merchantMessagesRealtimeChannel = null;
+  }
+  if (!db || !activeMerchantConversationId) return;
+  merchantMessagesRealtimeChannel = db
+    .channel("merchant-chat-messages-" + activeMerchantConversationId)
+    .on("postgres_changes", {
+      event: "INSERT",
+      schema: "public",
+      table: "chat_messages",
+      filter: "conversation_id=eq." + activeMerchantConversationId
+    }, () => {
+      if (!merchantChatMessagesLoading && !document.querySelector("#chat-view").classList.contains("hidden")) {
+        loadMerchantChatMessages().catch((error) => console.warn("Merchant realtime message update failed:", error));
+      }
+    })
+    .subscribe((status) => {
+      if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        console.warn("Merchant message realtime unavailable; automatic polling remains enabled.");
+      }
+    });
 }
 
 async function loadMerchantChats() {
@@ -618,6 +677,7 @@ function setMerchantChatComposer(enabled) {
 
 async function openMerchantConversation(conversation, customerName, productName) {
   activeMerchantConversationId = conversation.id;
+  subscribeMerchantChatMessages();
   document.querySelector("#merchant-chat-context").textContent = customerName + " · " + productName;
   setMerchantChatComposer(true);
   await loadMerchantChatMessages();
