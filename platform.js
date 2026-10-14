@@ -35,7 +35,131 @@ async function load(){
  document.querySelector("#eligible-count").textContent=d.eligible_completed_orders+" طلب مكتمل مؤهل";
  document.querySelector("#delivery-fees").textContent=money(d.completed_delivery_fees);
  document.querySelector("#delivered-count").textContent=d.delivered_order_count+" طلب مكتمل";
- storeRows=b.data||[];renderStores(storeRows);rows=c.data||[];renderLedger();$("#connection-status").textContent="البيانات محدثة";
+ storeRows=b.data||[];renderStores(storeRows);rows=c.data||[];renderLedger();await loadCampaigns();$("#connection-status").textContent="البيانات محدثة";
+}
+
+function campaignDateInput(value){
+ if(!value)return "";
+ const d=new Date(value);if(Number.isNaN(d.getTime()))return "";
+ return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+}
+function campaignDateLabel(value){
+ if(!value)return "بدون تحديد";
+ const d=new Date(value);return Number.isNaN(d.getTime())?"—":d.toLocaleString("ar-IQ",{dateStyle:"short",timeStyle:"short"});
+}
+function resetCampaignForm(){
+ $("#campaign-form").reset();
+ $("#campaign-id").value="";
+ $("#campaign-button-input").value="تسوّق الآن";
+ $("#campaign-target-input").value="market.html";
+ $("#campaign-order-input").value="0";
+ $("#campaign-save-button").textContent="حفظ الحملة";
+ $("#campaign-cancel-edit").hidden=true;
+ $("#campaign-form-message").textContent="";
+}
+async function loadCampaigns(){
+ const body=$("#campaigns-table");
+ if(!body)return;
+ const {data,error}=await db.from("marketing_campaigns").select("*").order("sort_order",{ascending:true}).order("created_at",{ascending:false});
+ if(error){
+  console.error("Could not load campaigns:",error);
+  body.replaceChildren();
+  const tr=document.createElement("tr"),td=document.createElement("td");
+  td.colSpan=5;td.textContent="تعذر تحميل الحملات: "+(error.message||"تحقق من صلاحيات المدير.");
+  tr.append(td);body.append(tr);return;
+ }
+ campaignRows=data||[];
+ renderCampaigns();
+}
+function renderCampaigns(){
+ const body=$("#campaigns-table");body.replaceChildren();
+ if(!campaignRows.length){
+  const tr=document.createElement("tr"),td=document.createElement("td");
+  td.colSpan=5;td.textContent="لا توجد حملات بعد. أنشئ أول حملة من النموذج أعلاه.";
+  tr.append(td);body.append(tr);return;
+ }
+ campaignRows.forEach(c=>{
+  const tr=document.createElement("tr");
+  const titleCell=document.createElement("td");
+  const title=document.createElement("strong");title.textContent=c.title;
+  const subtitle=document.createElement("small");subtitle.className="campaign-table-subtitle";subtitle.textContent=c.subtitle||"بدون وصف";
+  titleCell.append(title,subtitle);tr.append(titleCell);
+  const statusCell=document.createElement("td");
+  const now=Date.now(),started=!c.starts_at||new Date(c.starts_at).getTime()<=now,notEnded=!c.ends_at||new Date(c.ends_at).getTime()>now;
+  const status=document.createElement("span");status.className="status "+(c.is_active&&started&&notEnded?"campaign-active":"campaign-inactive");
+  status.textContent=c.is_active?(started&&notEnded?"مفعّلة":"مفعّلة خارج المدة"):"متوقفة";statusCell.append(status);tr.append(statusCell);
+  const order=document.createElement("td");order.textContent=String(c.sort_order??0);tr.append(order);
+  const period=document.createElement("td");period.textContent=campaignDateLabel(c.starts_at)+" — "+campaignDateLabel(c.ends_at);tr.append(period);
+  const actionsCell=document.createElement("td"),actions=document.createElement("div");actions.className="store-actions";
+  const edit=document.createElement("button");edit.type="button";edit.className="store-action details";edit.textContent="تعديل";
+  edit.addEventListener("click",()=>{
+   $("#campaign-id").value=c.id;
+   $("#campaign-title-input").value=c.title||"";
+   $("#campaign-subtitle-input").value=c.subtitle||"";
+   $("#campaign-image-input").value=c.image_url||"";
+   $("#campaign-button-input").value=c.button_label||"تسوّق الآن";
+   $("#campaign-target-input").value=c.target_url||"market.html";
+   $("#campaign-order-input").value=String(c.sort_order??0);
+   $("#campaign-start-input").value=campaignDateInput(c.starts_at);
+   $("#campaign-end-input").value=campaignDateInput(c.ends_at);
+   $("#campaign-active-input").checked=Boolean(c.is_active);
+   $("#campaign-save-button").textContent="حفظ التعديلات";
+   $("#campaign-cancel-edit").hidden=false;
+   $("#campaign-form-message").textContent="تعديل الحملة: "+c.title;
+   $("#campaign-form").scrollIntoView({behavior:"smooth",block:"center"});
+  });
+  const toggle=document.createElement("button");toggle.type="button";toggle.className="store-action "+(c.is_active?"danger":"primary");toggle.textContent=c.is_active?"إيقاف":"تفعيل";
+  toggle.addEventListener("click",async()=>{
+   toggle.disabled=true;
+   try{
+    const {error}=await db.from("marketing_campaigns").update({is_active:!c.is_active}).eq("id",c.id);
+    if(error)throw error;
+    await loadCampaigns();
+   }catch(error){alert("تعذر تغيير حالة الحملة: "+(error.message||"حاول مجدداً."));toggle.disabled=false;}
+  });
+  const del=document.createElement("button");del.type="button";del.className="store-action danger";del.textContent="حذف";
+  del.addEventListener("click",async()=>{
+   if(!confirm("هل تريد حذف الحملة «"+c.title+"»؟"))return;
+   del.disabled=true;
+   try{const {error}=await db.from("marketing_campaigns").delete().eq("id",c.id);if(error)throw error;await loadCampaigns();if($("#campaign-id").value===c.id)resetCampaignForm();}
+   catch(error){alert("تعذر حذف الحملة: "+(error.message||"حاول مجدداً."));del.disabled=false;}
+  });
+  actions.append(edit,toggle,del);actionsCell.append(actions);tr.append(actionsCell);body.append(tr);
+ });
+}
+async function saveCampaign(event){
+ event.preventDefault();
+ const message=$("#campaign-form-message"),button=$("#campaign-save-button");
+ const title=$("#campaign-title-input").value.trim();
+ const imageUrl=$("#campaign-image-input").value.trim();
+ const target=safeCampaignTargetAdmin($("#campaign-target-input").value);
+ if(!title){message.textContent="أدخل عنوان الحملة.";return;}
+ if(imageUrl){try{const url=new URL(imageUrl);if(!["https:","http:"].includes(url.protocol))throw new Error();}catch{message.textContent="رابط الصورة يجب أن يبدأ بـ https:// أو http://";return;}}
+ if(!target){message.textContent="وجهة الزر يجب أن تكون مساراً داخلياً مثل market.html أو #products-section.";return;}
+ const starts=$("#campaign-start-input").value,ends=$("#campaign-end-input").value;
+ const startIso=starts?new Date(starts).toISOString():null,endIso=ends?new Date(ends).toISOString():null;
+ if(startIso&&endIso&&new Date(endIso)<=new Date(startIso)){message.textContent="تاريخ نهاية الحملة يجب أن يكون بعد بدايتها.";return;}
+ const id=$("#campaign-id").value;
+ const payload={
+  title,subtitle:$("#campaign-subtitle-input").value.trim(),image_url:imageUrl||null,
+  button_label:$("#campaign-button-input").value.trim()||"تسوّق الآن",target_url:target,
+  sort_order:Math.max(0,Number($("#campaign-order-input").value)||0),
+  starts_at:startIso,ends_at:endIso,is_active:$("#campaign-active-input").checked
+ };
+ if(!id)payload.created_by=currentAdminId;
+ button.disabled=true;button.textContent="جارٍ الحفظ...";
+ try{
+  const result=id?await db.from("marketing_campaigns").update(payload).eq("id",id):await db.from("marketing_campaigns").insert(payload);
+  if(result.error)throw result.error;
+  message.textContent=id?"تم تحديث الحملة.":"تم إنشاء الحملة.";
+  resetCampaignForm();await loadCampaigns();
+ }catch(error){message.textContent="تعذر حفظ الحملة: "+(error.message||"تحقق من البيانات والصلاحيات.");}
+ finally{button.disabled=false;button.textContent=$("#campaign-id").value?"حفظ التعديلات":"حفظ الحملة";}
+}
+function safeCampaignTargetAdmin(value){
+ const target=String(value||"").trim();
+ if(!target||/^(?:https?:)?\/\//i.test(target)||/^javascript:/i.test(target)||target.startsWith("..")||target.includes(":")||/[\r\n\s]/.test(target))return "";
+ return /^(?:#[a-zA-Z][\w-]*|[a-zA-Z0-9_./?=&%-]+)$/.test(target)?target:"";
 }
 function renderStores(data){
  const body=$("#stores-table");body.replaceChildren();
@@ -103,4 +227,4 @@ function renderLedger(){
  const body=$("#ledger-table");body.replaceChildren();const filter=$("#ledger-filter").value;
  rows.filter(o=>filter==="all"||o.commission_state===filter).forEach(o=>{const tr=document.createElement("tr");["#BB-"+o.order_number,o.store_names,new Date(o.created_at).toLocaleDateString("ar-IQ"),money(o.subtotal),money(o.delivery_fee),Number(o.commission_rate)>0?money(o.commission_amount)+" (5%)":"—",({due:"عمولة مستحقة",pending:"بانتظار الاكتمال",legacy_exempt:"طلب سابق مسلّم معفى",no_commission_snapshot:"لا توجد عمولة مسجلة",cancelled:"ملغي"})[o.commission_state]||o.status].forEach(v=>{const td=document.createElement("td");td.textContent=v||"—";tr.append(td)});body.append(tr)});
 }
-$("#refresh").addEventListener("click",load);$("#store-search").addEventListener("input",()=>renderStores(storeRows));$("#store-status-filter").addEventListener("change",()=>renderStores(storeRows));$("#ledger-filter").addEventListener("change",renderLedger);$("#logout").addEventListener("click",async()=>{await db.auth.signOut();location.href="index.html"});start();
+$("#campaign-form").addEventListener("submit",saveCampaign);$("#campaign-cancel-edit").addEventListener("click",resetCampaignForm);\n$("#refresh").addEventListener("click",load);$("#store-search").addEventListener("input",()=>renderStores(storeRows));$("#store-status-filter").addEventListener("change",()=>renderStores(storeRows));$("#ledger-filter").addEventListener("change",renderLedger);$("#logout").addEventListener("click",async()=>{await db.auth.signOut();location.href="index.html"});start();
