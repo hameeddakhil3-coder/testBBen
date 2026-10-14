@@ -21,6 +21,13 @@
       <button class="header-action account-action" id="account-button" type="button"><span aria-hidden="true">♙</span><span id="account-label">تسجيل الدخول</span></button>
     </div>
   </header>
+  <nav class="market-nav" aria-label="روابط السوق الرئيسية">
+    <a class="active" href="market.html">الرئيسية</a>
+    <a href="#market-categories">التصنيفات</a>
+    <a href="#market-stores-section">المتاجر</a>
+    <a href="#products-section">المنتجات الجديدة</a>
+    <a href="#market-promo-strip">العروض</a>
+  </nav>
   <main class="market-main">
     <section class="store-public-hero hidden" id="store-public-hero">
       <div class="store-public-identity">
@@ -47,7 +54,7 @@
       <button class="campaign-arrow campaign-next" id="campaign-next" type="button" aria-label="الحملة التالية">›</button>
       <div class="campaign-pagination" id="campaign-pagination" aria-label="اختيار الحملة"></div>
     </section>
-    <section class="market-categories">
+    <section class="market-categories" id="market-categories">
       <div class="section-heading"><div><p class="section-eyebrow">تسوّق حسب ما تحب</p><h2>التصنيفات</h2></div><button class="text-action" id="show-all-categories" type="button">عرض الكل ←</button></div>
       <div id="category-list" class="category-list"><button class="category-chip active" data-category="">الكل</button></div>
     </section>
