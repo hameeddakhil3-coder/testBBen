@@ -31,12 +31,14 @@ jobs:
           test -f store.html
           test -f merchant-profile.html
           test -f merchant-profile.js
+      test -f customer-profile.html
+      test -f customer-profile.js
           test -f platform.html
           test -f platform.css
           test -f platform.js
           test -f platform/index.html
           mkdir -p public
-          cp index.html styles.css app.js supabase-client.js seller.html seller.css seller.js merchant-profile.html merchant-profile.js market.html market.css market.js store.html platform.html platform.css platform.js public/
+          cp index.html styles.css app.js supabase-client.js seller.html seller.css seller.js merchant-profile.html merchant-profile.js customer-profile.html customer-profile.js market.html market.css market.js store.html platform.html platform.css platform.js public/
           cp platform.html public/admin.html
           mkdir -p public/platform
           cp platform/index.html public/platform/index.html
@@ -47,6 +49,8 @@ jobs:
           test -s public/platform.js
           test -s public/platform/index.html
           test -s public/index.html
+          test -s public/customer-profile.html
+          test -s public/customer-profile.js
           echo "Verified required deployed assets:"
           find public -maxdepth 1 -type f -printf '%f (%s bytes)\n' | sort
 
