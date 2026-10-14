@@ -9,7 +9,7 @@ function showMessage(text, type = "") {
 }
 function fillForm() {
   $("#customer-name").value = currentProfile?.full_name || "";
-  $("#customer-phone").value = currentProfile?.phone || "";
+  $("#customer-phone").value = currentProfile?.phone || "";\n  $("#customer-address").value = currentProfile?.default_shipping_address || "";
   $("#customer-email").value = currentUser?.email || "";
 }
 $("#back-market").addEventListener("click", () => { window.location.href = "market.html"; });
@@ -23,8 +23,8 @@ $("#customer-profile-form").addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!db || !currentUser || !currentProfile) { showMessage("تعذر الاتصال بالحساب. أعد تحميل الصفحة وحاول مجدداً.", "error"); return; }
   const fullName = $("#customer-name").value.trim();
-  const phone = $("#customer-phone").value.trim();
-  if (fullName.length < 2) { showMessage("اكتب الاسم الكامل (حرفين على الأقل).", "error"); $("#customer-name").focus(); return; }
+  const phone = $("#customer-phone").value.trim();\n  const defaultShippingAddress = $("#customer-address").value.trim();
+  if (fullName.length < 2) { showMessage("اكتب الاسم الكامل (حرفين على الأقل).", "error"); $("#customer-name").focus(); return; }\n  if (defaultShippingAddress.length > 500) { showMessage("عنوان التوصيل طويل جداً؛ اختصره إلى 500 حرف.", "error"); $("#customer-address").focus(); return; }
   const button = $("#save-customer-profile"); button.disabled = true; button.textContent = "جارٍ الحفظ..."; showMessage("");
   try {
     const { data, error } = await db.from("profiles").update({ full_name: fullName, phone: phone || null })
@@ -41,7 +41,7 @@ async function initCustomerProfile() {
     const { data, error } = await db.auth.getSession(); if (error) throw error;
     currentUser = data?.session?.user || null;
     if (!currentUser) { window.location.href = "index.html"; return; }
-    const result = await db.from("profiles").select("id,full_name,phone,role").eq("id", currentUser.id).single();
+    const result = await db.from("profiles").select("id,full_name,phone,default_shipping_address,role").eq("id", currentUser.id).single();
     if (result.error) throw result.error;
     if (result.data?.role !== "customer") {
       if (result.data?.role === "merchant") window.location.href = "seller.html";
