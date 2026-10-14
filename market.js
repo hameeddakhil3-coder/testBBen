@@ -646,6 +646,12 @@ $("#favorite-filter-button").addEventListener("click", () => {
   if (showFavoritesOnly) $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 $("#promo-browse-button").addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" }));
+$("#promo-strip-browse-button")?.addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" }));
+$("#dismiss-promo")?.addEventListener("click", () => { $("#market-promo").hidden = true; });
+$("#mobile-nav-browse")?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+$("#mobile-nav-orders")?.addEventListener("click", openOrderHistory);
+$("#mobile-nav-cart")?.addEventListener("click", openCart);
+$("#mobile-nav-account")?.addEventListener("click", () => { window.location.href = currentUser && currentRole === "customer" ? "customer-profile.html" : "index.html"; });
 $("#account-button").addEventListener("click", async () => {
   if (currentUser && currentRole === "customer") { window.location.href = "customer-profile.html"; return; }
   window.location.href = "index.html";
