@@ -108,10 +108,10 @@ async function loadCampaigns() {
   restartCampaignTimer();
 }
 function restartCampaignTimer() {
-  if (campaignTimer !== null) window.clearInterval(campaignTimer);
+  if (campaignTimer !== null) globalThis.clearInterval(campaignTimer);
   campaignTimer = null;
   if (marketCampaigns.length < 2) return;
-  campaignTimer = window.setInterval(() => {
+  campaignTimer = globalThis.setInterval(() => {
     const section = $("#market-promo-strip");
     if (!section || section.hidden || document.hidden || section.matches(":hover") || section.contains(document.activeElement)) return;
     renderCampaign((activeCampaignIndex + 1) % marketCampaigns.length);
@@ -124,7 +124,7 @@ function openCampaignTarget() {
     if (element) element.scrollIntoView({ behavior: "smooth", block: "start" });
     return;
   }
-  window.location.href = target;
+  globalThis.location.href = target;
 }
 
 const safeText = (value) => String(value ?? "");
@@ -510,7 +510,6 @@ function renderProducts() {
     const bottom = document.createElement("div"); bottom.className = "market-card-bottom";
     const price = document.createElement("span"); price.className = "market-price"; price.textContent = money(product.price);
     const actions = document.createElement("div"); actions.className = "market-card-actions";
-    const detailButton = document.createElement("button"); detailButton.type = "button"; detailButton.className = "card-icon-button"; detailButton.textContent = "↗"; detailButton.setAttribute("aria-label", "تفاصيل المنتج"); detailButton.addEventListener("click", () => showProductDetails(product));
     const favoriteButton = document.createElement("button");
     favoriteButton.type = "button";
     favoriteButton.className = "card-favorite-button" + (favoriteIds.has(String(product.id)) ? " is-favorite" : "");
