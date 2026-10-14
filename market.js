@@ -43,6 +43,13 @@ function imageOrPlaceholder(url, name = "المنتج") {
   }
   return makePlaceholder();
 }
+function productImageUrls(product) {
+  const gallery = Array.isArray(product?.product_images) ? [...product.product_images].sort((a, b) => Number(a.sort_order || 0) - Number(b.sort_order || 0)).map((image) => image.image_url).filter(Boolean) : [];
+  const urls = [...gallery];
+  if (product?.image_url && !urls.includes(product.image_url)) urls.unshift(product.image_url);
+  return [...new Set(urls)];
+}
+function primaryProductImage(product) { return productImageUrls(product)[0] || null; }
 function makePlaceholder() {
   const box = document.createElement("div"); box.className = "image-placeholder";
   const emoji = document.createElement("b"); emoji.textContent = "📦";
@@ -178,7 +185,7 @@ function renderProducts() {
     image.setAttribute("role", "button");
     image.tabIndex = 0;
     image.setAttribute("aria-label", "عرض تفاصيل " + product.name);
-    image.append(imageOrPlaceholder(product.image_url, product.name));
+    image.append(imageOrPlaceholder(primaryProductImage(product), product.name));
     const storeBadge = document.createElement("span"); storeBadge.className = "store-badge";
     if (product.stores?.logo_url) {
       const logo = document.createElement("img"); logo.src = product.stores.logo_url; logo.alt = ""; storeBadge.append(logo);
@@ -402,7 +409,25 @@ async function sendChatMessage(event) {
 function showProductDetails(product) {
   const host = $("#dialog-product-content"); host.replaceChildren();
   const layout = document.createElement("div"); layout.className = "dialog-product-layout";
-  const image = document.createElement("div"); image.className = "dialog-product-image"; image.append(imageOrPlaceholder(product.image_url, product.name));
+  const image = document.createElement("div"); image.className = "dialog-product-image";
+  const imageUrls = productImageUrls(product);
+  const galleryMain = document.createElement("div"); galleryMain.className = "dialog-gallery-main";
+  galleryMain.append(imageOrPlaceholder(imageUrls[0], product.name)); image.append(galleryMain);
+  if (imageUrls.length > 1) {
+    const thumbnails = document.createElement("div"); thumbnails.className = "dialog-gallery-thumbnails";
+    imageUrls.forEach((url, index) => {
+      const thumb = document.createElement("button"); thumb.type = "button"; thumb.className = "dialog-gallery-thumb" + (index === 0 ? " active" : "");
+      thumb.setAttribute("aria-label", "عرض الصورة " + (index + 1));
+      const thumbImage = document.createElement("img"); thumbImage.src = url; thumbImage.alt = product.name + " - صورة " + (index + 1); thumbImage.loading = "lazy"; thumb.append(thumbImage);
+      thumb.addEventListener("click", () => {
+        galleryMain.replaceChildren(imageOrPlaceholder(url, product.name));
+        thumbnails.querySelectorAll(".dialog-gallery-thumb").forEach((button) => button.classList.remove("active"));
+        thumb.classList.add("active");
+      });
+      thumbnails.append(thumb);
+    });
+    image.append(thumbnails);
+  }
   const info = document.createElement("div"); info.className = "dialog-product-info";
   const category = document.createElement("span"); category.className = "market-card-category"; category.textContent = product.categories?.name || "أخرى";
   const title = document.createElement("h2"); title.textContent = product.name;
@@ -888,7 +913,7 @@ async function initMarket() {
     const [categoryResult, productQuery] = await Promise.all([
       db.from("categories").select("id,name,slug").order("name"),
       (() => {
-        let query = db.from("products").select("id,name,description,price,currency,stock_quantity,image_url,status,category_id,store_id,created_at,categories(name),stores(id,name,slug,description,logo_url,phone,city,status,delivery_fee)").eq("status","active").gt("stock_quantity",0).order("created_at",{ascending:false});
+        let query = db.from("products").select("id,name,description,price,currency,stock_quantity,image_url,status,category_id,store_id,created_at,categories(name),stores(id,name,slug,description,logo_url,phone,city,status,delivery_fee),product_images(id,image_url,sort_order)").eq("status","active").gt("stock_quantity",0).order("created_at",{ascending:false});
         if (isStorePage) query = query.eq("store_id", requestedStoreId);
         return query;
       })()
