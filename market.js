@@ -188,6 +188,23 @@ async function loadProductReviews(product, host) {
       const date=document.createElement("time");date.textContent=new Date(review.created_at).toLocaleDateString("ar-IQ");date.dateTime=review.created_at;
       top.append(who,rating,date);item.append(top);
       if(review.review_text){const body=document.createElement("p");body.textContent=review.review_text;item.append(body);}
+      if(currentUser&&review.customer_id===currentUser.id){
+        const remove=document.createElement("button");remove.type="button";remove.className="delete-product-review";remove.textContent="حذف تقييمي";
+        remove.addEventListener("click",async()=>{
+          if(!window.confirm("هل تريد حذف تقييمك لهذا المنتج؟"))return;
+          remove.disabled=true;
+          try{
+            const deleted=await db.from("product_reviews").delete().eq("id",review.id).eq("customer_id",currentUser.id);
+            if(deleted.error)throw deleted.error;
+            toast("تم حذف تقييمك.");
+            const refreshed=await db.from("product_reviews").select("rating").eq("product_id",product.id);
+            if(refreshed.error)throw refreshed.error;
+            const rows=refreshed.data||[];product.review_count=rows.length;product.review_average=rows.length?rows.reduce((sum,row)=>sum+Number(row.rating),0)/rows.length:0;
+            renderProducts();showProductDetails(product);
+          }catch(error){toast("تعذر حذف التقييم: "+(error.message||"حاول مجدداً."));remove.disabled=false;}
+        });
+        item.append(remove);
+      }
       reviewList.append(item);
     });
     section.append(reviewList);
