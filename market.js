@@ -156,6 +156,76 @@ function visibleProducts() {
   else items.sort((a,b) => new Date(b.created_at)-new Date(a.created_at));
   return items;
 }
+
+function ratingSummary(product) {
+  const count = Number(product.review_count || 0), average = Number(product.review_average || 0);
+  const row = document.createElement("div"); row.className = "product-rating-summary";
+  const stars = document.createElement("span"); stars.className = "rating-stars";
+  stars.textContent = count ? "★".repeat(Math.round(average)) + "☆".repeat(5-Math.round(average)) : "☆☆☆☆☆";
+  const label = document.createElement("small"); label.textContent = count ? average.toFixed(1) + " · " + count + " تقييم" : "لا توجد تقييمات";
+  row.append(stars,label); return row;
+}
+async function loadProductReviews(product, host) {
+  const section=document.createElement("section"); section.className="product-reviews-section";
+  section.innerHTML='<div class="reviews-heading"><h3>تقييمات المشترين</h3><span class="reviews-loading">جارٍ تحميل التقييمات...</span></div>';
+  host.append(section); const heading=section.querySelector(".reviews-heading");
+  try {
+    const result=await db.from("product_reviews").select("id,product_id,order_id,order_item_id,customer_id,rating,review_text,created_at,updated_at").eq("product_id",product.id).order("created_at",{ascending:false});
+    if(result.error) throw result.error;
+    const list=result.data||[]; heading.querySelector(".reviews-loading")?.remove();
+    const avg=list.length?list.reduce((sum,r)=>sum+Number(r.rating),0)/list.length:0;
+    const overview=document.createElement("div"); overview.className="reviews-overview";
+    const score=document.createElement("strong"); score.textContent=list.length?avg.toFixed(1):"—";
+    const stars=document.createElement("span"); stars.className="rating-stars"; stars.textContent=list.length?"★".repeat(Math.round(avg))+"☆".repeat(5-Math.round(avg)):"☆☆☆☆☆";
+    const count=document.createElement("small"); count.textContent=list.length+" تقييم"; overview.append(score,stars,count); heading.append(overview);
+    const reviewList=document.createElement("div"); reviewList.className="product-review-list";
+    if(!list.length){const empty=document.createElement("p");empty.className="reviews-empty";empty.textContent="لا توجد مراجعات لهذا المنتج بعد.";reviewList.append(empty);}
+    list.forEach(review=>{
+      const item=document.createElement("article");item.className="product-review";
+      const top=document.createElement("div");top.className="product-review-top";
+      const who=document.createElement("strong");who.textContent=currentUser&&review.customer_id===currentUser.id?"تقييمك":"مشتري";
+      const rating=document.createElement("span");rating.className="rating-stars";rating.textContent="★".repeat(Number(review.rating))+"☆".repeat(5-Number(review.rating));
+      const date=document.createElement("time");date.textContent=new Date(review.created_at).toLocaleDateString("ar-IQ");date.dateTime=review.created_at;
+      top.append(who,rating,date);item.append(top);
+      if(review.review_text){const body=document.createElement("p");body.textContent=review.review_text;item.append(body);}
+      reviewList.append(item);
+    });
+    section.append(reviewList);
+    if(currentUser&&currentRole==="customer"){
+      const eligibility=await db.from("order_items").select("id,order_id,orders!inner(id,status,customer_id)").eq("product_id",product.id).eq("orders.customer_id",currentUser.id).eq("orders.status","delivered");
+      if(eligibility.error)throw eligibility.error;
+      const eligible=eligibility.data||[];
+      const own=new Map(list.filter(r=>r.customer_id===currentUser.id).map(r=>[r.order_item_id,r]));
+      const target=eligible.find(i=>!own.has(i.id))||eligible.find(i=>own.has(i.id));
+      if(target){
+        const previous=own.get(target.id)||null, form=document.createElement("form");form.className="product-review-form";
+        const title=document.createElement("h4");title.textContent=previous?"تعديل تقييمك":"قيّم المنتج";
+        const label=document.createElement("label");label.textContent="تقييمك من 1 إلى 5 نجوم";
+        const select=document.createElement("select");select.required=true;select.setAttribute("aria-label","عدد النجوم");
+        for(let n=5;n>=1;n--){const option=document.createElement("option");option.value=String(n);option.textContent="★".repeat(n)+"☆".repeat(5-n)+" — "+n;if(Number(previous?.rating||5)===n)option.selected=true;select.append(option);}
+        const textLabel=document.createElement("label");textLabel.textContent="مراجعة مكتوبة (اختياري)";
+        const textarea=document.createElement("textarea");textarea.maxLength=1200;textarea.rows=3;textarea.placeholder="شارك تجربتك مع المنتج...";textarea.value=previous?.review_text||"";
+        const submit=document.createElement("button");submit.type="submit";submit.className="primary-market-button";submit.textContent=previous?"حفظ التعديل":"إرسال التقييم";
+        form.append(title,label,select,textLabel,textarea,submit);
+        form.addEventListener("submit",async event=>{
+          event.preventDefault();submit.disabled=true;submit.textContent="جارٍ الحفظ...";
+          try{
+            const payload={product_id:product.id,order_id:target.order_id,order_item_id:target.id,customer_id:currentUser.id,rating:Number(select.value),review_text:textarea.value.trim()||null};
+            const saved=previous?await db.from("product_reviews").update({rating:payload.rating,review_text:payload.review_text}).eq("id",previous.id).eq("customer_id",currentUser.id):await db.from("product_reviews").insert(payload);
+            if(saved.error)throw saved.error;
+            toast(previous?"تم تحديث تقييمك.":"تم إرسال تقييمك، شكراً لك.");
+            const refreshed=await db.from("product_reviews").select("rating").eq("product_id",product.id);
+            if(refreshed.error)throw refreshed.error;
+            const rows=refreshed.data||[];product.review_count=rows.length;product.review_average=rows.length?rows.reduce((sum,r)=>sum+Number(r.rating),0)/rows.length:0;
+            renderProducts();showProductDetails(product);
+          }catch(error){toast("تعذر حفظ التقييم: "+(error.message||"حاول مجدداً."));submit.disabled=false;submit.textContent=previous?"حفظ التعديل":"إرسال التقييم";}
+        });
+        section.append(form);
+      }else{const note=document.createElement("p");note.className="review-eligibility-note";note.textContent="يمكنك تقييم هذا المنتج بعد تسليم طلبك.";section.append(note);}
+    }
+  }catch(error){console.error("Product reviews load failed:",error);heading.querySelector(".reviews-loading")?.remove();const problem=document.createElement("p");problem.className="reviews-empty";problem.textContent="تعذر تحميل التقييمات حالياً.";section.append(problem);}
+}
+
 function renderProducts() {
   const grid = $("#product-grid"); grid.replaceChildren();
   const items = visibleProducts();
@@ -229,7 +299,7 @@ function renderProducts() {
     actions.append(detailButton, addButton); bottom.append(price, actions);
     const stock = document.createElement("div"); stock.className = "stock-label" + (Number(product.stock_quantity) <= 0 ? " out" : "");
     stock.textContent = Number(product.stock_quantity) > 0 ? "متوفر · " + product.stock_quantity + " قطعة" : "نفدت الكمية";
-    body.append(category, title, store, bottom, stock); card.append(image, body); grid.append(card);
+    body.append(category, title, store, ratingSummary(product), bottom, stock); card.append(image, body); grid.append(card);
   });
 }
 let activeChatConversationId = null;
@@ -446,7 +516,8 @@ function showProductDetails(product) {
     $("#product-dialog").close();
     openChatForProduct(product);
   });
-  info.append(category, title, price, description, store, stock, add, chatButton); layout.append(image, info); host.append(layout);
+  info.append(category, title, price, ratingSummary(product), description, store, stock, add, chatButton); layout.append(image, info); host.append(layout);
+  loadProductReviews(product, host);
   $("#product-dialog").showModal();
 }
 async function ensureCustomer() {
@@ -922,6 +993,11 @@ async function initMarket() {
     if (productQuery.error) throw productQuery.error;
     allCategories = categoryResult.data || [];
     allProducts = (productQuery.data || []).filter((p) => p.stores?.status === "active");
+    const reviewResult = await db.from("product_reviews").select("product_id,rating");
+    if (reviewResult.error) throw reviewResult.error;
+    const ratingMap = new Map();
+    (reviewResult.data || []).forEach((review) => { const entry = ratingMap.get(review.product_id) || { count: 0, sum: 0 }; entry.count++; entry.sum += Number(review.rating); ratingMap.set(review.product_id, entry); });
+    allProducts.forEach((product) => { const entry = ratingMap.get(product.id); product.review_count = entry?.count || 0; product.review_average = entry ? entry.sum / entry.count : 0; });
     renderStores();
     if (isStorePage) $("#public-store-products-count").textContent = allProducts.length + " منتج متاح";
     renderCategories(); renderCities(); renderProducts(); await loadCart();
