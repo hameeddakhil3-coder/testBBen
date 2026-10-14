@@ -1207,3 +1207,22 @@ body{background:#faf8f5;color:var(--text)}
 .store-rating-panel .product-review-form{max-width:680px;margin:20px auto 0;padding:20px;background:#faf6f1}
 .store-rating-panel .review-eligibility-note{margin:14px 0 0;padding:12px 14px;border-radius:10px;background:#faf6f1}
 @media(max-width:600px){.store-rating-panel{margin-bottom:22px;padding:15px;border-radius:15px}.store-rating-panel .reviews-heading{align-items:flex-start;flex-direction:column;gap:8px}.store-rating-panel .product-review-form{padding:13px;margin-top:15px}.store-rating-panel .product-review-list{grid-template-columns:1fr}}
+
+/* Final balance pass for the public store review section */
+.store-rating-panel{padding:clamp(18px,2.4vw,30px)}
+.store-rating-panel .product-review-form{width:100%;max-width:none;box-sizing:border-box;margin:22px 0 0;padding:clamp(16px,2vw,24px)}
+.store-rating-panel .product-review-form select,.store-rating-panel .product-review-form textarea{box-sizing:border-box}
+.store-rating-panel .product-review-form textarea{min-height:96px}
+.store-rating-panel .product-review-list{grid-template-columns:1fr}
+.store-rating-panel .product-review{height:auto}
+.store-rating-panel .reviews-heading{margin-bottom:18px}
+@media(min-width:1000px){
+ .store-rating-panel{padding:28px 32px}
+ .store-rating-panel .product-review-form{display:grid;grid-template-columns:minmax(0,1fr);gap:11px}
+ .store-rating-panel .product-review-form h4{font-size:17px}
+}
+@media(max-width:700px){
+ .store-rating-panel{padding:14px;margin-bottom:18px}
+ .store-rating-panel .product-review-form{margin-top:15px;padding:13px}
+ .store-rating-panel .product-review-form textarea{min-height:82px}
+}
