@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#563b2c">
   <title>BBen | السوق</title>
-  <link rel="stylesheet" href="market.css?rev=20261014-2">
+  <link rel="stylesheet" href="market.css?rev=20261014-3">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase-client.js"></script>
   <script src="market.js" defer></script>
@@ -40,12 +40,17 @@
       <div class="hero-copy"><p class="hero-eyebrow">أهلاً بك في BBen</p><h1>اكتشف منتجات<br><span>تستحقها</span></h1><p>تسوّق من متاجر متنوعة، وقارن المنتجات والأسعار بسهولة.</p><button id="browse-button" class="hero-button" type="button">اكتشف المنتجات <span aria-hidden="true">←</span></button></div>
       <div class="hero-art" aria-hidden="true"><div class="hero-orbit orbit-one"></div><div class="hero-orbit orbit-two"></div><div class="hero-bag">🛍️</div><div class="hero-floating float-one">✨</div><div class="hero-floating float-two">📦</div><div class="hero-caption">اختياراتك تبدأ من هنا</div></div>
     </section>
+    <aside class="market-promo-strip" id="market-promo-strip" aria-label="اكتشف السوق">
+      <span class="promo-strip-icon" aria-hidden="true">✦</span>
+      <div><strong>تسوّق من متاجر قريبة منك</strong><small>تصفّح المنتجات المتاحة والأسعار والكميات مباشرة من السوق.</small></div>
+      <button id="promo-browse-button" type="button">تصفّح الآن <span aria-hidden="true">←</span></button>
+    </aside>
     <section class="market-categories">
       <div class="section-heading"><div><p class="section-eyebrow">تسوّق حسب ما تحب</p><h2>التصنيفات</h2></div><button class="text-action" id="show-all-categories" type="button">عرض الكل ←</button></div>
       <div id="category-list" class="category-list"><button class="category-chip active" data-category="">الكل</button></div>
     </section>
     <section class="market-products" id="products-section">
-      <div class="section-heading product-heading"><div><p class="section-eyebrow">اختيرت لك</p><h2>منتجات المتاجر</h2><p class="section-description" id="results-summary">جارٍ تحميل المنتجات...</p></div><label class="sort-control">ترتيب حسب <select id="sort-select"><option value="newest">الأحدث</option><option value="price-asc">السعر: الأقل أولاً</option><option value="price-desc">السعر: الأعلى أولاً</option><option value="name">الاسم</option></select></label></div>
+      <div class="section-heading product-heading"><div><p class="section-eyebrow">اختيرت لك</p><h2>منتجات المتاجر</h2><p class="section-description" id="results-summary">جارٍ تحميل المنتجات...</p></div><div class="product-tools"><button id="favorite-filter-button" class="favorite-filter-button" type="button" aria-pressed="false">♡ المفضلة</button><label class="sort-control">ترتيب حسب <select id="sort-select"><option value="newest">الأحدث</option><option value="price-asc">السعر: الأقل أولاً</option><option value="price-desc">السعر: الأعلى أولاً</option><option value="name">الاسم</option></select></label></div></div>
       <div id="market-message" class="market-message" role="status" aria-live="polite">جارٍ تحميل المنتجات...</div>
       <div id="product-grid" class="market-product-grid"></div>
     </section>
