@@ -645,7 +645,6 @@ $("#favorite-filter-button").addEventListener("click", () => {
   renderProducts();
   if (showFavoritesOnly) $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" });
 });
-$("#promo-browse-button").addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" }));
 $("#promo-strip-browse-button")?.addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" }));
 $("#dismiss-promo")?.addEventListener("click", () => { $("#market-promo").hidden = true; });
 $("#mobile-nav-browse")?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
