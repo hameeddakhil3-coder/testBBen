@@ -1,10 +1,10 @@
-const db = window.bbenSupabase;
+const db = globalThis.bbenSupabase;
 const $ = (selector) => document.querySelector(selector);
 let currentProfile = null;
-const pageParams = new URLSearchParams(window.location.search);
-const requestedStoreId = pageParams.get("store_id") || (window.location.pathname.endsWith("/store.html") || window.location.pathname === "store.html" ? pageParams.get("id") : null);
+const pageParams = new URLSearchParams(globalThis.location.search);
+const requestedStoreId = pageParams.get("store_id") || (globalThis.location.pathname.endsWith("/store.html") || globalThis.location.pathname === "store.html" ? pageParams.get("id") : null);
 const isStorePage = Boolean(requestedStoreId);
-const isFavoritesPage = /(?:^|\/)favorites\.html$/.test(window.location.pathname) || pageParams.get("view") === "favorites";
+const isFavoritesPage = /(?:^|\/)favorites\.html$/.test(globalThis.location.pathname) || pageParams.get("view") === "favorites";
 let publicStore = null;
 const storeHref = (store) => store?.id ? "market.html?store_id=" + encodeURIComponent(store.id) : "market.html";
 let allProducts = [];
@@ -19,7 +19,7 @@ let showFavoritesOnly = isFavoritesPage;
 let favoriteIds = new Set();
 let appliedCoupon = null;
 try {
-  const savedFavorites = JSON.parse(window.localStorage.getItem("bben_favorite_products") || "[]");
+  const savedFavorites = JSON.parse(globalThis.localStorage.getItem("bben_favorite_products") || "[]");
   if (Array.isArray(savedFavorites)) favoriteIds = new Set(savedFavorites.map(String));
 } catch (error) {
   console.warn("Could not read saved favorites:", error);
@@ -140,10 +140,10 @@ async function loadFavoriteIds() {
     const result = await db.from("product_favorites").select("product_id").eq("customer_id", currentUser.id);
     if (result.error) throw result.error;
     favoriteIds = new Set((result.data || []).map((row) => String(row.product_id)));
-    try { window.localStorage.setItem("bben_favorite_products", JSON.stringify([...favoriteIds])); } catch {}
+    try { globalThis.localStorage.setItem("bben_favorite_products", JSON.stringify([...favoriteIds])); } catch {}
   } else {
     try {
-      const saved = JSON.parse(window.localStorage.getItem("bben_favorite_products") || "[]");
+      const saved = JSON.parse(globalThis.localStorage.getItem("bben_favorite_products") || "[]");
       favoriteIds = new Set(Array.isArray(saved) ? saved.map(String) : []);
     } catch { favoriteIds = new Set(); }
   }
@@ -161,7 +161,7 @@ async function toggleFavorite(product) {
     return;
   }
   if (removing) favoriteIds.delete(id); else favoriteIds.add(id);
-  try { window.localStorage.setItem("bben_favorite_products", JSON.stringify([...favoriteIds])); } catch {}
+  try { globalThis.localStorage.setItem("bben_favorite_products", JSON.stringify([...favoriteIds])); } catch {}
   renderProducts();
   toast(removing ? "أُزيل المنتج من المفضلة." : "أُضيف المنتج إلى المفضلة.");
 }
@@ -337,7 +337,7 @@ async function loadStoreReviews(store, host) {
       if(review.review_text){const body=document.createElement("p");body.textContent=review.review_text;item.append(body);}
       if(currentUser&&review.customer_id===currentUser.id){
         const del=document.createElement("button");del.type="button";del.className="delete-product-review";del.textContent="حذف تقييمي";
-        del.addEventListener("click",async()=>{if(!window.confirm("هل تريد حذف تقييم المتجر؟"))return;del.disabled=true;try{const d=await db.from("store_reviews").delete().eq("id",review.id).eq("customer_id",currentUser.id);if(d.error)throw d.error;toast("تم حذف تقييم المتجر.");section.remove();loadStoreReviews(store,host);}catch(e){toast("تعذر حذف التقييم: "+(e.message||"حاول مجدداً."));del.disabled=false;}});
+        del.addEventListener("click",async()=>{if(!globalThis.confirm("هل تريد حذف تقييم المتجر؟"))return;del.disabled=true;try{const d=await db.from("store_reviews").delete().eq("id",review.id).eq("customer_id",currentUser.id);if(d.error)throw d.error;toast("تم حذف تقييم المتجر.");section.remove();loadStoreReviews(store,host);}catch(e){toast("تعذر حذف التقييم: "+(e.message||"حاول مجدداً."));del.disabled=false;}});
         item.append(del);
       }
       listHost.append(item);
@@ -410,7 +410,7 @@ async function loadProductReviews(product, host) {
       if(currentUser&&review.customer_id===currentUser.id){
         const remove=document.createElement("button");remove.type="button";remove.className="delete-product-review";remove.textContent="حذف تقييمي";
         remove.addEventListener("click",async()=>{
-          if(!window.confirm("هل تريد حذف تقييمك لهذا المنتج؟"))return;
+          if(!globalThis.confirm("هل تريد حذف تقييمك لهذا المنتج؟"))return;
           remove.disabled=true;
           try{
             const deleted=await db.from("product_reviews").delete().eq("id",review.id).eq("customer_id",currentUser.id);
@@ -568,7 +568,7 @@ function subscribeBuyerChatMessages() {
 
 function startChatAutoRefresh() {
   stopChatAutoRefresh();
-  chatRefreshTimer = window.setInterval(async () => {
+  chatRefreshTimer = globalThis.setInterval(async () => {
     if (!activeChatConversationId || !$("#chat-dialog").open || chatMessagesLoading) return;
     try { await loadChatMessages(); }
     catch (error) { console.warn("Chat auto-refresh failed:", error); }
@@ -576,7 +576,7 @@ function startChatAutoRefresh() {
 }
 
 function stopChatAutoRefresh() {
-  if (chatRefreshTimer !== null) window.clearInterval(chatRefreshTimer);
+  if (chatRefreshTimer !== null) globalThis.clearInterval(chatRefreshTimer);
   chatRefreshTimer = null;
   if (buyerChatRealtimeChannel && db) {
     db.removeChannel(buyerChatRealtimeChannel);
@@ -587,7 +587,7 @@ function stopChatAutoRefresh() {
 async function openChatForProduct(product) {
   if (!currentUser || currentRole !== "customer") {
     toast("سجّل الدخول بحساب مشتري لمراسلة التاجر.");
-    window.location.href = "index.html";
+    globalThis.location.href = "index.html";
     return;
   }
   const storeId = product?.store_id || product?.stores?.id;
@@ -756,12 +756,12 @@ function showProductDetails(product) {
 async function ensureCustomer() {
   if (!db || !currentUser) {
     toast("سجّل الدخول بحساب مشتري أولاً لإضافة المنتجات إلى السلة.");
-    window.location.href = "index.html";
+    globalThis.location.href = "index.html";
     return false;
   }
   if (currentRole !== "customer") {
     toast("السلة متاحة لحساب المشتري. سنعيدك إلى لوحة التاجر.");
-    if (currentRole === "merchant") window.location.href = "seller.html";
+    if (currentRole === "merchant") globalThis.location.href = "seller.html";
     return false;
   }
   return true;
@@ -1053,7 +1053,7 @@ async function loadOrderHistory() {
               toast("تعذر فتح صفحة المتجر حالياً. افتح المتجر من السوق ثم انتقل إلى تقييماته.");
               return;
             }
-            window.location.href = storeHref(storeProduct.stores);
+            globalThis.location.href = storeHref(storeProduct.stores);
           });
           details.append(storeRateButton);
         }
@@ -1101,7 +1101,7 @@ async function cancelCustomerOrder(order, button) {
     return;
   }
   const orderLabel = "#BB-" + order.order_number;
-  if (!window.confirm("هل تريد إلغاء الطلب " + orderLabel + "؟ ستُعاد الكميات إلى مخزون المتجر.")) return;
+  if (!globalThis.confirm("هل تريد إلغاء الطلب " + orderLabel + "؟ ستُعاد الكميات إلى مخزون المتجر.")) return;
   button.disabled = true;
   button.textContent = "جارٍ الإلغاء...";
   try {
@@ -1120,17 +1120,17 @@ async function cancelCustomerOrder(order, button) {
 async function openOrderHistory() {
   if (!currentUser) {
     toast("سجّل الدخول أولاً لعرض الطلبات.");
-    window.location.href = "index.html";
+    globalThis.location.href = "index.html";
     return;
   }
   if (currentRole === "merchant") {
     toast("جارٍ فتح طلبات متجرك.");
-    window.location.href = "seller.html?view=orders";
+    globalThis.location.href = "seller.html?view=orders";
     return;
   }
   if (currentRole !== "customer") {
     toast("تعذر تحديد نوع الحساب. سجّل الدخول مجدداً.");
-    window.location.href = "index.html";
+    globalThis.location.href = "index.html";
     return;
   }
   await loadOrderHistory();
@@ -1274,7 +1274,7 @@ async function initMarket() {
       const profileResult = await db.from("profiles").select("role,full_name,phone,default_shipping_address").eq("id", currentUser.id).maybeSingle();
       currentRole = profileResult.data?.role || null;
       currentProfile = profileResult.data || null;
-      if (currentRole === "merchant" && !isStorePage) { window.location.href = "seller.html"; return; }
+      if (currentRole === "merchant" && !isStorePage) { globalThis.location.href = "seller.html"; return; }
       $("#account-label").textContent = profileResult.data?.full_name || "حسابي";
       $("#account-button").title = "الملف الشخصي";
     }
@@ -1370,7 +1370,7 @@ async function initMarket() {
     renderStores();
     if (isStorePage) { $("#public-store-products-count").textContent = allProducts.length + " منتج متاح"; if (publicStore && $("#public-store-rating")) { $("#public-store-rating").classList.remove("hidden"); $("#public-store-rating").replaceChildren(storeRatingSummary(publicStore)); loadStoreReviews(publicStore, $("#public-store-rating")); } }
     renderCategories(); renderCities(); renderProducts(); await loadCart();
-    if (window.location.hash === "#orders" && currentRole === "customer") await openOrderHistory();
+    if (globalThis.location.hash === "#orders" && currentRole === "customer") await openOrderHistory();
   } catch (error) {
     console.error("Market load failed:", error);
     $("#market-message").textContent = "تعذر تحميل المنتجات من قاعدة البيانات: " + (error.message || "خطأ غير معروف");
@@ -1386,22 +1386,22 @@ $("#campaign-prev")?.addEventListener("click", () => { if (marketCampaigns.lengt
 $("#campaign-next")?.addEventListener("click", () => { if (marketCampaigns.length > 1) { renderCampaign((activeCampaignIndex + 1) % marketCampaigns.length); restartCampaignTimer(); } });
 $("#show-all-categories").addEventListener("click", () => { activeCategory = ""; renderCategories(); renderProducts(); });
 $("#favorite-filter-button").addEventListener("click", () => {
-  if (isFavoritesPage) { window.location.href = "market.html"; return; }
+  if (isFavoritesPage) { globalThis.location.href = "market.html"; return; }
   showFavoritesOnly = !showFavoritesOnly;
   renderProducts();
   if (showFavoritesOnly) $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 $("#promo-strip-browse-button")?.addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" }));
 $("#dismiss-promo")?.addEventListener("click", () => { $("#market-promo").hidden = true; });
-$("#mobile-nav-browse")?.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+$("#mobile-nav-browse")?.addEventListener("click", () => globalThis.scrollTo({ top: 0, behavior: "smooth" }));
 $("#mobile-nav-categories")?.addEventListener("click", () => $("#market-categories").scrollIntoView({ behavior: "smooth", block: "start" }));
-$("#mobile-nav-favorites")?.addEventListener("click", () => { window.location.href = "market.html?view=favorites"; });
+$("#mobile-nav-favorites")?.addEventListener("click", () => { globalThis.location.href = "market.html?view=favorites"; });
 $("#mobile-nav-cart")?.addEventListener("click", openCart);
-$("#mobile-nav-account")?.addEventListener("click", () => { window.location.href = currentUser && currentRole === "customer" ? "customer-profile.html" : "index.html"; });
-$("#favorites-page-button")?.addEventListener("click", () => { window.location.href = "market.html?view=favorites"; });
+$("#mobile-nav-account")?.addEventListener("click", () => { globalThis.location.href = currentUser && currentRole === "customer" ? "customer-profile.html" : "index.html"; });
+$("#favorites-page-button")?.addEventListener("click", () => { globalThis.location.href = "market.html?view=favorites"; });
 $("#account-button").addEventListener("click", () => {
-  if (currentUser && currentRole === "customer") { window.location.href = "customer-profile.html"; return; }
-  window.location.href = "index.html";
+  if (currentUser && currentRole === "customer") { globalThis.location.href = "customer-profile.html"; return; }
+  globalThis.location.href = "index.html";
 });
 $("#cart-button").addEventListener("click", openCart);
 $("#orders-button").addEventListener("click", openOrderHistory);
