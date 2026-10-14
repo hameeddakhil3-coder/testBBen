@@ -770,7 +770,8 @@ async function openCheckout() {
   $("#checkout-form").hidden = false;
   $("#checkout-success").hidden = true;
   if (!$("#checkout-name").value.trim()) $("#checkout-name").value = currentProfile?.full_name || "";
-  if (!$("#checkout-phone").value.trim()) $("#checkout-phone").value = currentProfile?.phone || "";\n  if (!$("#checkout-address").value.trim()) $("#checkout-address").value = currentProfile?.default_shipping_address || "";
+  if (!$("#checkout-phone").value.trim()) $("#checkout-phone").value = currentProfile?.phone || "";
+  if (!$("#checkout-address").value.trim()) $("#checkout-address").value = currentProfile?.default_shipping_address || "";
   renderPricingBreakdown($("#checkout-cost-summary"), getCartPricing(), "الإجمالي المتوقع");
   $("#checkout-dialog").showModal();
 }
