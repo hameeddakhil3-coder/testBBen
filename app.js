@@ -99,7 +99,7 @@ form.addEventListener("submit", async (event) => {
     return;
   }
 
-  if (!window.bbenSupabase) {
+  if (!globalThis.bbenSupabase) {
     message.textContent = "تعذر الاتصال بخدمة الحسابات. أعد تحميل الصفحة وحاول مجدداً.";
     message.classList.add("error");
     return;
@@ -114,7 +114,7 @@ form.addEventListener("submit", async (event) => {
 
     if (mode === "register") {
       const selectedRole = form.querySelector('input[name="role"]:checked').value;
-      const { data, error } = await window.bbenSupabase.auth.signUp({
+      const { data, error } = await globalThis.bbenSupabase.auth.signUp({
         email,
         password,
         options: { data: { full_name: nameInput.value.trim(), role: selectedRole } }
@@ -122,33 +122,33 @@ form.addEventListener("submit", async (event) => {
       if (error) throw error;
 
       if (data.session && selectedRole === "merchant") {
-        window.location.href = "seller.html";
+        globalThis.location.href = "seller.html";
         return;
       }
       if (data.session && selectedRole === "customer") {
-        window.location.href = "market.html";
+        globalThis.location.href = "market.html";
         return;
       }
       message.textContent = "تم إنشاء طلب الحساب. افحص بريدك الإلكتروني لتأكيد الحساب، ثم سجّل الدخول.";
       message.classList.add("success");
     } else {
-      const { data, error } = await window.bbenSupabase.auth.signInWithPassword({ email, password });
+      const { data, error } = await globalThis.bbenSupabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
 
-      const { data: profile, error: profileError } = await window.bbenSupabase
+      const { data: profile, error: profileError } = await globalThis.bbenSupabase
         .from("profiles").select("role").eq("id", data.user.id).single();
       if (profileError) throw profileError;
 
       if (profile.role === "merchant") {
-        window.location.href = "seller.html";
+        globalThis.location.href = "seller.html";
         return;
       }
       if (profile.role === "customer") {
-        window.location.href = "market.html";
+        globalThis.location.href = "market.html";
         return;
       }
       if (profile.role === "admin") {
-        window.location.href = "platform/";
+        globalThis.location.href = "platform/";
         return;
       }
       message.textContent = "تم تسجيل الدخول، لكن نوع الحساب غير معروف. تواصل مع الدعم.";
