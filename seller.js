@@ -188,6 +188,52 @@ document.querySelector("#add-product-view").addEventListener("click", () => open
 document.querySelector("#close-dialog").addEventListener("click", () => dialog.close());
 document.querySelector("#cancel-dialog").addEventListener("click", () => dialog.close());
 
+async function handleDeleteProduct(product, button) {
+  if (!currentStore || !db) return;
+  const confirmed = window.confirm('هل تريد حذف المنتج «' + product.name + '»؟ إذا كان مرتبطاً بطلبات أو محادثات أو سلال شراء، فسيتم أرشفته بدلاً من حذفه للحفاظ على السجلات السابقة.');
+  if (!confirmed) return;
+  button.disabled = true;
+  try {
+    const checks = await Promise.all([
+      db.from("order_items").select("id", { count: "exact", head: true }).eq("product_id", product.id),
+      db.from("chat_conversations").select("id", { count: "exact", head: true }).eq("product_id", product.id),
+      db.from("cart_items").select("id", { count: "exact", head: true }).eq("product_id", product.id)
+    ]);
+    const failed = checks.find((result) => result.error);
+    if (failed) throw failed.error;
+    const hasHistory = checks.some((result) => (result.count || 0) > 0);
+    if (hasHistory) {
+      const { data, error } = await db.from("products")
+        .update({ status: "archived" })
+        .eq("id", product.id)
+        .eq("store_id", currentStore.id)
+        .select("id,status").maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("لم يتم العثور على المنتج أو لا تملك صلاحية تعديله.");
+      products = products.map((item) => item.id === product.id ? { ...item, status: "archived" } : item);
+      showToast("للمنتج سجلات مرتبطة؛ تمت أرشفته للحفاظ على الطلبات والمحادثات السابقة.");
+    } else {
+      const { data, error } = await db.from("products")
+        .delete()
+        .eq("id", product.id)
+        .eq("store_id", currentStore.id)
+        .select("id").maybeSingle();
+      if (error) throw error;
+      if (!data) throw new Error("لم يتم حذف المنتج. تحقق من صلاحيات المتجر ثم حاول مجدداً.");
+      products = products.filter((item) => item.id !== product.id);
+      showToast("تم حذف المنتج بنجاح.");
+    }
+    updateProductCounts();
+    renderProductList();
+    renderProductCards();
+  } catch (error) {
+    showToast("تعذر حذف المنتج: " + (error.message || "حاول مجدداً."));
+    console.error("Product delete/archive failed:", error);
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function renderProductList() {
   const list = document.querySelector("#product-list");
   list.replaceChildren();
@@ -218,10 +264,17 @@ function renderProductList() {
     const price = document.createElement("span");
     price.className = "list-price";
     price.textContent = new Intl.NumberFormat("ar-IQ").format(product.price) + " د.ع";
+    const actions = document.createElement("div");
+    actions.className = "product-row-actions";
     const edit = document.createElement("button");
     edit.type = "button"; edit.className = "edit-product-button"; edit.textContent = "تعديل";
     edit.addEventListener("click", () => openProductDialog(product));
-    row.append(icon,info,price,edit);
+    const remove = document.createElement("button");
+    remove.type = "button"; remove.className = "delete-product-button"; remove.textContent = "حذف";
+    remove.setAttribute("aria-label", "حذف المنتج " + product.name);
+    remove.addEventListener("click", () => handleDeleteProduct(product, remove));
+    actions.append(edit, remove);
+    row.append(icon,info,price,actions);
     list.append(row);
   });
 }
