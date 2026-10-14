@@ -382,7 +382,7 @@ function renderProducts() {
     actions.append(detailButton, addButton); bottom.append(price, actions);
     const stock = document.createElement("div"); stock.className = "stock-label" + (Number(product.stock_quantity) <= 0 ? " out" : "");
     stock.textContent = Number(product.stock_quantity) > 0 ? "متوفر · " + product.stock_quantity + " قطعة" : "نفدت الكمية";
-    body.append(category, title, store, ratingSummary(product), bottom, stock); card.append(image, body); grid.append(card);
+    body.append(category, title, store, storeRatingSummary(product.stores), ratingSummary(product), bottom, stock); card.append(image, body); grid.append(card);
   });
 }
 let activeChatConversationId = null;
@@ -599,7 +599,7 @@ function showProductDetails(product) {
     $("#product-dialog").close();
     openChatForProduct(product);
   });
-  info.append(category, title, price, ratingSummary(product), description, store, stock, add, chatButton); layout.append(image, info); host.append(layout);
+  info.append(category, title, price, storeRatingSummary(product.stores), ratingSummary(product), description, store, stock, add, chatButton); layout.append(image, info); host.append(layout);
   loadProductReviews(product, host);
   loadStoreReviews(product.stores, host);
   $("#product-dialog").showModal();
