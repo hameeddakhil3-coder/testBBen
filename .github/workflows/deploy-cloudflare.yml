@@ -31,8 +31,8 @@ jobs:
           test -f store.html
           test -f merchant-profile.html
           test -f merchant-profile.js
-      test -f customer-profile.html
-      test -f customer-profile.js
+          test -f customer-profile.html
+          test -f customer-profile.js
           test -f platform.html
           test -f platform.css
           test -f platform.js
