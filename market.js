@@ -138,6 +138,12 @@ function renderProducts() {
     body.append(category, title, store, bottom, stock); card.append(image, body); grid.append(card);
   });
 }
+function openChatForProduct(product) {
+  const storeName = product?.stores?.name || "متجر BBen";
+  $("#chat-context").textContent = "المتجر: " + storeName + " · المنتج: " + (product?.name || "استفسار عام");
+  $("#chat-message-input").value = "";
+  $("#chat-dialog").showModal();
+}
 function showProductDetails(product) {
   const host = $("#dialog-product-content"); host.replaceChildren();
   const layout = document.createElement("div"); layout.className = "dialog-product-layout";
@@ -152,7 +158,15 @@ function showProductDetails(product) {
   const storeName = document.createElement("span"); storeName.textContent = "زيارة المتجر: " + (product.stores?.name || "متجر BBen") + (product.stores?.city ? " · " + product.stores.city : ""); store.append(storeName);
   const stock = document.createElement("p"); stock.textContent = Number(product.stock_quantity) > 0 ? "الكمية المتاحة: " + product.stock_quantity : "نفدت الكمية حالياً.";
   const add = document.createElement("button"); add.type = "button"; add.className = "primary-market-button dialog-add"; add.textContent = Number(product.stock_quantity) > 0 ? "إضافة إلى السلة" : "غير متوفر"; add.disabled = Number(product.stock_quantity) <= 0; add.addEventListener("click", () => addToCart(product));
-  info.append(category, title, price, description, store, stock, add); layout.append(image, info); host.append(layout);
+  const chatButton = document.createElement("button");
+  chatButton.type = "button";
+  chatButton.className = "secondary-market-button dialog-chat-button";
+  chatButton.textContent = "💬 مراسلة التاجر";
+  chatButton.addEventListener("click", () => {
+    $("#product-dialog").close();
+    openChatForProduct(product);
+  });
+  info.append(category, title, price, description, store, stock, add, chatButton); layout.append(image, info); host.append(layout);
   $("#product-dialog").showModal();
 }
 async function ensureCustomer() {
@@ -665,10 +679,15 @@ $("#checkout-form").addEventListener("submit", submitCheckout);
 $("#close-checkout-dialog").addEventListener("click", () => $("#checkout-dialog").close());
 $("#finish-checkout").addEventListener("click", () => $("#checkout-dialog").close());
 $("#close-product-dialog").addEventListener("click", () => $("#product-dialog").close());
+$("#close-chat-dialog").addEventListener("click", () => $("#chat-dialog").close());
+$("#chat-form").addEventListener("submit", (event) => {
+  event.preventDefault();
+  toast("واجهة الدردشة تجريبية حالياً؛ لم تُرسل الرسالة أو تُحفظ.");
+});
 $("#close-cart-dialog").addEventListener("click", () => $("#cart-dialog").close());
 $("#continue-shopping").addEventListener("click", () => $("#cart-dialog").close());
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") { if ($("#product-dialog").open) $("#product-dialog").close(); if ($("#cart-dialog").open) $("#cart-dialog").close(); if ($("#checkout-dialog").open) $("#checkout-dialog").close(); if ($("#order-history-dialog").open) $("#order-history-dialog").close(); }
+  if (event.key === "Escape") { if ($("#product-dialog").open) $("#product-dialog").close(); if ($("#cart-dialog").open) $("#cart-dialog").close(); if ($("#checkout-dialog").open) $("#checkout-dialog").close(); if ($("#order-history-dialog").open) $("#order-history-dialog").close(); if ($("#chat-dialog").open) $("#chat-dialog").close(); }
 });
 
 
