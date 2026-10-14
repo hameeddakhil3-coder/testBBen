@@ -189,14 +189,33 @@ function makePlaceholder() {
   const label = document.createElement("span"); label.textContent = "لا توجد صورة";
   box.append(emoji, label); return box;
 }
+function categoryIcon(name) {
+  const value = String(name || "").toLocaleLowerCase("ar");
+  if (value === "الكل") return "▦";
+  if (/هاتف|موبايل|جوال|phone/.test(value)) return "📱";
+  if (/إلكترون|الكترون|حاسوب|كمبيوتر|computer/.test(value)) return "💻";
+  if (/أزياء|ازياء|ملابس|موضة|fashion/.test(value)) return "👕";
+  if (/منزل|أثاث|اثاث|مطبخ|home/.test(value)) return "🛋️";
+  if (/جمال|عناية|مكياج|beauty/.test(value)) return "🧴";
+  if (/رياضة|fitness|sport/.test(value)) return "🏋️";
+  if (/ألعاب|العاب|أطفال|اطفال|toy/.test(value)) return "🧸";
+  if (/سيار|مركب|car/.test(value)) return "🚗";
+  if (/بقال|غذاء|طعام|food/.test(value)) return "🛒";
+  return "✦";
+}
 function renderCategories() {
   const host = $("#category-list"); host.replaceChildren();
   const availableCategoryIds = new Set(allProducts.map((product) => product.category_id).filter(Boolean));
   const categories = [{ id: "", name: "الكل" }, ...allCategories.filter((category) => availableCategoryIds.has(category.id))];
-  categories.forEach((category) => {
+  categories.forEach((category, index) => {
     const button = document.createElement("button");
-    button.type = "button"; button.className = "category-chip" + (activeCategory === category.id ? " active" : "");
-    button.dataset.category = category.id; button.textContent = category.name;
+    button.type = "button";
+    button.className = "category-chip tone-" + (index % 5) + (activeCategory === category.id ? " active" : "");
+    button.dataset.category = category.id;
+    button.setAttribute("aria-pressed", String(activeCategory === category.id));
+    const icon = document.createElement("span"); icon.className = "category-icon"; icon.setAttribute("aria-hidden", "true"); icon.textContent = categoryIcon(category.name);
+    const label = document.createElement("span"); label.className = "category-label"; label.textContent = category.name;
+    button.append(icon, label);
     button.addEventListener("click", () => { activeCategory = category.id; renderCategories(); renderProducts(); });
     host.append(button);
   });
