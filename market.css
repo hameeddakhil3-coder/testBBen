@@ -1232,3 +1232,15 @@ body{background:#faf8f5;color:var(--text)}
 
 .market-card-body>.store-rating-summary{margin:0 0 4px;gap:5px}.market-card-body>.store-rating-summary .rating-stars{font-size:12px}.market-card-body>.store-rating-summary small{font-size:10px}
 .dialog-product-info>.store-rating-summary{margin:0 0 7px}
+
+/* Dedicated buyer favorites page */
+.favorites-page .market-main{padding-top:30px}
+.favorites-page .market-products{min-height:55vh}
+.favorites-page .product-heading{align-items:center;margin-bottom:26px}
+.favorites-page .product-heading h2{font-size:clamp(26px,3vw,36px)}
+.favorites-page .product-heading .section-eyebrow{color:#a17a50}
+.favorites-page .favorite-filter-button.favorites-back-button{background:#fff;border-color:#e7d9cb;color:#563b2c}
+.favorites-page .favorite-filter-button.favorites-back-button:hover{background:#f8f1e9}
+.favorites-page .market-message:not(.hidden){padding:35px 20px;border:1px dashed #e1d4c7;border-radius:18px;background:#fffdf9;color:#7e6c5d}
+.favorites-page-link{color:#9b4a53}
+@media(max-width:700px){.favorites-page .market-main{padding-top:18px}.favorites-page .product-heading{align-items:flex-start;gap:14px}.favorites-page .product-heading .product-tools{width:100%}.favorites-page .favorite-filter-button.favorites-back-button{width:100%}}
