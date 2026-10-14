@@ -173,7 +173,11 @@ function renderProducts() {
   message.textContent = ""; message.classList.add("hidden"); message.classList.remove("error");
   items.forEach((product) => {
     const card = document.createElement("article"); card.className = "market-card";
-    const image = document.createElement("button"); image.type = "button"; image.className = "market-card-image"; image.setAttribute("aria-label", "عرض تفاصيل " + product.name);
+    const image = document.createElement("div");
+    image.className = "market-card-image";
+    image.setAttribute("role", "button");
+    image.tabIndex = 0;
+    image.setAttribute("aria-label", "عرض تفاصيل " + product.name);
     image.append(imageOrPlaceholder(product.image_url, product.name));
     const storeBadge = document.createElement("span"); storeBadge.className = "store-badge";
     if (product.stores?.logo_url) {
@@ -181,6 +185,12 @@ function renderProducts() {
     }
     const storeName = document.createElement("span"); storeName.textContent = product.stores?.name || "متجر BBen"; storeBadge.append(storeName); image.append(storeBadge);
     image.addEventListener("click", () => showProductDetails(product));
+    image.addEventListener("keydown", (event) => {
+      if (event.target === image && (event.key === "Enter" || event.key === " ")) {
+        event.preventDefault();
+        showProductDetails(product);
+      }
+    });
     const body = document.createElement("div"); body.className = "market-card-body";
     const category = document.createElement("span"); category.className = "market-card-category"; category.textContent = product.categories?.name || "أخرى";
     const title = document.createElement("strong"); title.className = "market-card-title"; title.textContent = product.name;
@@ -195,7 +205,8 @@ function renderProducts() {
     favoriteButton.textContent = favoriteIds.has(String(product.id)) ? "♥" : "♡";
     favoriteButton.setAttribute("aria-label", favoriteIds.has(String(product.id)) ? "إزالة من المفضلة" : "حفظ في المفضلة");
     favoriteButton.setAttribute("aria-pressed", String(favoriteIds.has(String(product.id))));
-    favoriteButton.addEventListener("click", () => {
+    favoriteButton.addEventListener("click", (event) => {
+      event.stopPropagation();
       const id = String(product.id);
       if (favoriteIds.has(id)) favoriteIds.delete(id);
       else favoriteIds.add(id);
@@ -204,10 +215,11 @@ function renderProducts() {
       renderProducts();
       toast(favoriteIds.has(id) ? "أُضيف المنتج إلى المفضلة." : "أُزيل المنتج من المفضلة.");
     });
+    image.append(favoriteButton);
     const addButton = document.createElement("button"); addButton.type = "button"; addButton.className = "card-add-button"; addButton.textContent = "+"; addButton.setAttribute("aria-label", "أضف إلى السلة");
     addButton.disabled = Number(product.stock_quantity) <= 0; addButton.title = addButton.disabled ? "نفدت الكمية" : "أضف إلى السلة";
     addButton.addEventListener("click", () => addToCart(product));
-    actions.append(detailButton, favoriteButton, addButton); bottom.append(price, actions);
+    actions.append(detailButton, addButton); bottom.append(price, actions);
     const stock = document.createElement("div"); stock.className = "stock-label" + (Number(product.stock_quantity) <= 0 ? " out" : "");
     stock.textContent = Number(product.stock_quantity) > 0 ? "متوفر · " + product.stock_quantity + " قطعة" : "نفدت الكمية";
     body.append(category, title, store, bottom, stock); card.append(image, body); grid.append(card);
