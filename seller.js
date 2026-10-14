@@ -108,17 +108,42 @@ const productStatus = document.querySelector("#product-status");
 const productCategory = document.querySelector("#product-category");
 const dialogError = document.querySelector("#dialog-error");
 const productImage = document.querySelector("#product-image");
-const productImagePreview = document.querySelector("#product-image-preview");
+const productImagesPreview = document.querySelector("#product-images-preview");
 let editingProductId = null;
+let existingProductImages = [];
+let removedProductImageIds = new Set();
+let selectedProductFiles = [];
+function renderProductImagePreviews() {
+  productImagesPreview.replaceChildren();
+  const keptImages = existingProductImages.filter((image) => !removedProductImageIds.has(image.id));
+  keptImages.forEach((image, index) => {
+    const item = document.createElement("div"); item.className = "product-image-preview-item";
+    const img = document.createElement("img"); img.src = image.image_url; img.alt = "صورة محفوظة للمنتج " + (index + 1);
+    const remove = document.createElement("button"); remove.type = "button"; remove.className = "remove-product-image";
+    remove.textContent = "×"; remove.setAttribute("aria-label", "إزالة الصورة");
+    remove.addEventListener("click", () => { removedProductImageIds.add(image.id); renderProductImagePreviews(); });
+    item.append(img, remove); productImagesPreview.append(item);
+  });
+  selectedProductFiles.forEach((file, index) => {
+    const item = document.createElement("div"); item.className = "product-image-preview-item is-new";
+    const img = document.createElement("img"); img.src = URL.createObjectURL(file); img.alt = "صورة جديدة " + (index + 1);
+    const label = document.createElement("small"); label.textContent = "جديدة";
+    item.append(img, label); productImagesPreview.append(item);
+  });
+  productImagesPreview.classList.toggle("hidden", !keptImages.length && !selectedProductFiles.length);
+}
 productImage.addEventListener("change", () => {
-  const file = productImage.files?.[0];
-  if (!file) { productImagePreview.classList.add("hidden"); productImagePreview.removeAttribute("src"); return; }
-  if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) {
-    productImage.value = ""; productImagePreview.classList.add("hidden");
-    showToast("اختر صورة صالحة لا يتجاوز حجمها 5 ميغابايت."); return;
+  const files = [...(productImage.files || [])];
+  if (files.some((file) => !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024)) {
+    productImage.value = ""; selectedProductFiles = []; renderProductImagePreviews();
+    showToast("يجب أن تكون كل صورة صالحة وألا يتجاوز حجمها 5 ميغابايت."); return;
   }
-  productImagePreview.src = URL.createObjectURL(file);
-  productImagePreview.classList.remove("hidden");
+  const keptCount = existingProductImages.filter((image) => !removedProductImageIds.has(image.id)).length;
+  if (keptCount + files.length > 8) {
+    productImage.value = ""; selectedProductFiles = []; renderProductImagePreviews();
+    showToast("يمكن للمنتج أن يحتوي على 8 صور كحد أقصى."); return;
+  }
+  selectedProductFiles = files; renderProductImagePreviews();
 });
 async function uploadImage(file, folder) {
   if (!file) return null;
@@ -130,22 +155,25 @@ async function uploadImage(file, folder) {
   return db.storage.from("bben-images").getPublicUrl(path).data.publicUrl;
 }
 
-function openProductDialog(product = null) {
-  editingProductId = product?.id || null;
-  dialogError.textContent = "";
-  productForm.reset();
-  productStatus.value = product?.status || "active";
-  productImagePreview.classList.add("hidden");
-  productImagePreview.removeAttribute("src");
+async function openProductDialog(product = null) {
+  editingProductId = product?.id || null; dialogError.textContent = ""; productForm.reset();
+  productStatus.value = product?.status || "active"; existingProductImages = [];
+  removedProductImageIds = new Set(); selectedProductFiles = [];
+  productImagesPreview.replaceChildren(); productImagesPreview.classList.add("hidden");
   document.querySelector("#product-dialog-title").textContent = product ? "تعديل المنتج" : "إضافة منتج";
   productForm.querySelector('button[type="submit"]').textContent = product ? "حفظ التعديلات" : "حفظ المنتج";
   if (product) {
-    productName.value = product.name || "";
-    productPrice.value = product.price ?? "";
-    productStock.value = product.stock_quantity ?? 0;
-    productStatus.value = product.status || "active";
+    productName.value = product.name || ""; productPrice.value = product.price ?? "";
+    productStock.value = product.stock_quantity ?? 0; productStatus.value = product.status || "active";
     productCategory.value = product.categories?.name || "أخرى";
-    if (product.image_url) { productImagePreview.src = product.image_url; productImagePreview.classList.remove("hidden"); }
+    try {
+      const { data, error } = await db.from("product_images").select("id,image_url,sort_order,created_at")
+        .eq("product_id", product.id).order("sort_order", { ascending: true }).order("created_at", { ascending: true });
+      if (error) throw error;
+      existingProductImages = data || [];
+      if (!existingProductImages.length && product.image_url) existingProductImages = [{ id: "legacy-" + product.id, image_url: product.image_url, sort_order: 0, legacy: true }];
+    } catch (error) { dialogError.textContent = "تعذر تحميل صور المنتج: " + error.message; showToast("تعذر تحميل صور المنتج."); return; }
+    renderProductImagePreviews();
   }
   if (typeof dialog.showModal === "function") dialog.showModal();
   else showToast("المتصفح لا يدعم نافذة الإضافة؛ جرّب متصفحاً أحدث.");
@@ -209,10 +237,11 @@ productForm.addEventListener("submit", async (event) => {
   submit.disabled = true; dialogError.textContent = "";
   try {
     const { data: category } = await db.from("categories").select("id").eq("name", productCategory.value).maybeSingle();
-    const imageFile = productImage.files?.[0];
-    const existing = editingProductId ? products.find((item) => item.id === editingProductId) : null;
-    let imageUrl = existing?.image_url || null;
-    if (imageFile) imageUrl = await uploadImage(imageFile, "products");
+    const keptImages = existingProductImages.filter((image) => !removedProductImageIds.has(image.id));
+    const uploadedUrls = [];
+    for (const file of selectedProductFiles) uploadedUrls.push(await uploadImage(file, "products"));
+    const finalImageUrls = [...keptImages.map((image) => image.image_url), ...uploadedUrls];
+    const imageUrl = finalImageUrls[0] || null;
     const selectedStatus = productStatus.value;
     if (!["active", "draft", "archived"].includes(selectedStatus)) throw new Error("اختر حالة صحيحة للمنتج.");
     const payload = { store_id: currentStore.id, category_id: category?.id || null, name, price, currency: "IQD", stock_quantity: stock, image_url: imageUrl, status: selectedStatus };
@@ -222,17 +251,38 @@ productForm.addEventListener("submit", async (event) => {
         .select("id,name,price,stock_quantity,status,category_id,image_url").single();
       if (result.error) throw result.error;
       saved = result.data;
-      products = products.map((item) => item.id === saved.id ? { ...saved, categories: { name: productCategory.value } } : item);
+      const removedIds = [...removedProductImageIds].filter((id) => !String(id).startsWith("legacy-"));
+      if (removedIds.length) {
+        const { error: deleteError } = await db.from("product_images").delete().in("id", removedIds).eq("product_id", editingProductId);
+        if (deleteError) throw deleteError;
+      }
     } else {
       const result = await db.from("products").insert(payload).select("id,name,price,stock_quantity,status,category_id,image_url").single();
       if (result.error) throw result.error;
       saved = result.data;
-      products.unshift({ ...saved, categories: { name: productCategory.value } });
     }
-    updateProductCounts(); productForm.reset();
-    productImagePreview.classList.add("hidden"); productImagePreview.removeAttribute("src");
+    const galleryRows = finalImageUrls.map((url, index) => ({ product_id: saved.id, image_url: url, sort_order: index }));
+    if (galleryRows.length) {
+      const { data: existingRows, error: galleryReadError } = await db.from("product_images").select("image_url").eq("product_id", saved.id);
+      if (galleryReadError) throw galleryReadError;
+      const existingUrls = new Set((existingRows || []).map((row) => row.image_url));
+      const newRows = galleryRows.filter((row) => !existingUrls.has(row.image_url));
+      if (newRows.length) {
+        const { error: galleryInsertError } = await db.from("product_images").insert(newRows);
+        if (galleryInsertError) throw galleryInsertError;
+      }
+      for (let index = 0; index < finalImageUrls.length; index++) {
+        const { error: orderError } = await db.from("product_images").update({ sort_order: index }).eq("product_id", saved.id).eq("image_url", finalImageUrls[index]);
+        if (orderError) throw orderError;
+      }
+    }
+    const updatedProduct = { ...saved, categories: { name: productCategory.value } };
+    if (editingProductId) products = products.map((item) => item.id === saved.id ? updatedProduct : item);
+    else products.unshift(updatedProduct);
+    updateProductCounts(); productForm.reset(); productImagesPreview.replaceChildren(); productImagesPreview.classList.add("hidden");
+    existingProductImages = []; removedProductImageIds = new Set(); selectedProductFiles = [];
     editingProductId = null; dialog.close(); renderProductList(); renderProductCards(); showView("products");
-    showToast("تم حفظ بيانات المنتج بنجاح.");
+    showToast("تم حفظ بيانات المنتج وصوره بنجاح.");
   } catch (error) { dialogError.textContent = "تعذر حفظ المنتج: " + error.message; }
   finally { submit.disabled = false; }
 });
