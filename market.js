@@ -531,7 +531,7 @@ function renderProducts() {
     actions.append(addButton); bottom.append(price, actions);
     const stock = document.createElement("div"); stock.className = "stock-label" + (Number(product.stock_quantity) <= 0 ? " out" : "");
     stock.textContent = Number(product.stock_quantity) > 0 ? "متوفر · " + product.stock_quantity + " قطعة" : "نفدت الكمية";
-    body.append(category, title, store, storeRatingSummary(product.stores), ratingSummary(product), bottom, stock); card.append(image, body); grid.append(card);
+    const delivery = document.createElement("div"); delivery.className = "market-card-delivery"; delivery.textContent = "التوصيل من " + money(product.stores?.delivery_fee || 0); body.append(category, title, store, ratingSummary(product), bottom, delivery, stock); card.append(image, body); grid.append(card);
   });
 }
 let activeChatConversationId = null;
@@ -733,12 +733,17 @@ function showProductDetails(product) {
   const info = document.createElement("div"); info.className = "dialog-product-info";
   const category = document.createElement("span"); category.className = "market-card-category"; category.textContent = product.categories?.name || "أخرى";
   const title = document.createElement("h2"); title.textContent = product.name;
-  const price = document.createElement("div"); price.className = "dialog-product-price"; price.textContent = money(product.price);
-  const description = document.createElement("p"); description.textContent = product.description || "لا يوجد وصف إضافي لهذا المنتج حالياً.";
+  const pricePanel = document.createElement("div"); pricePanel.className = "dialog-price-panel";
+  const priceLabel = document.createElement("span"); priceLabel.className = "dialog-price-label"; priceLabel.textContent = "سعر المنتج";
+  const price = document.createElement("div"); price.className = "dialog-product-price"; price.textContent = money(product.price); pricePanel.append(priceLabel, price);
+  const description = document.createElement("p"); description.className = "dialog-product-description"; description.textContent = product.description || "لا يوجد وصف إضافي لهذا المنتج حالياً.";
   const store = document.createElement("a"); store.className = "dialog-store store-link"; store.href = storeHref(product.stores);
   if (product.stores?.logo_url) { const logo = document.createElement("img"); logo.src = product.stores.logo_url; logo.alt = ""; store.append(logo); }
   const storeName = document.createElement("span"); storeName.textContent = "زيارة المتجر: " + (product.stores?.name || "متجر BBen") + (product.stores?.city ? " · " + product.stores.city : ""); store.append(storeName);
-  const stock = document.createElement("p"); stock.textContent = Number(product.stock_quantity) > 0 ? "الكمية المتاحة: " + product.stock_quantity : "نفدت الكمية حالياً.";
+  const facts = document.createElement("div"); facts.className = "dialog-product-facts";
+  const stock = document.createElement("p"); stock.className = "dialog-stock-fact"; stock.textContent = Number(product.stock_quantity) > 0 ? "✓ متوفر حالياً · " + product.stock_quantity + " قطعة" : "نفدت الكمية حالياً.";
+  const delivery = document.createElement("p"); delivery.className = "dialog-delivery-fact"; delivery.textContent = "🚚 أجرة التوصيل من هذا المتجر: " + money(product.stores?.delivery_fee || 0);
+  const location = document.createElement("p"); location.className = "dialog-location-fact"; location.textContent = product.stores?.city ? "📍 " + product.stores.city : "📍 موقع المتجر متاح عبر صفحة المتجر"; facts.append(stock, delivery, location);
   const add = document.createElement("button"); add.type = "button"; add.className = "primary-market-button dialog-add"; add.textContent = Number(product.stock_quantity) > 0 ? "إضافة إلى السلة" : "غير متوفر"; add.disabled = Number(product.stock_quantity) <= 0; add.addEventListener("click", () => addToCart(product));
   const chatButton = document.createElement("button");
   chatButton.type = "button";
@@ -748,7 +753,7 @@ function showProductDetails(product) {
     $("#product-dialog").close();
     openChatForProduct(product);
   });
-  info.append(category, title, price, storeRatingSummary(product.stores), ratingSummary(product), description, store, stock, add, chatButton); layout.append(image, info); host.append(layout);
+  info.append(category, title, pricePanel, storeRatingSummary(product.stores), ratingSummary(product), description, store, facts, add, chatButton); layout.append(image, info); host.append(layout);
   loadProductReviews(product, host);
   loadStoreReviews(product.stores, host);
   $("#product-dialog").showModal();
