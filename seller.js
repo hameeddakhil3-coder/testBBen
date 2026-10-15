@@ -976,7 +976,16 @@ async function initSeller() {
   if (!globalThis.__bbenMerchantNotificationPoll) globalThis.__bbenMerchantNotificationPoll = setInterval(refreshMerchantNotificationBadge, 30000);
   document.querySelector(".profile-name strong").textContent = profile.full_name || "التاجر";
   document.querySelector(".store-chip strong").textContent = store.name;
-  document.querySelector(".store-avatar").innerHTML = store.logo_url ? '<img src="' + store.logo_url + '" alt="">' : "ت";
+  const storeAvatar = document.querySelector(".store-avatar");
+  storeAvatar.replaceChildren();
+  if (store.logo_url) {
+    const storeLogo = document.createElement("img");
+    storeLogo.src = store.logo_url;
+    storeLogo.alt = "شعار المتجر";
+    storeAvatar.append(storeLogo);
+  } else {
+    storeAvatar.textContent = "ت";
+  }
   const profileAvatar = document.querySelector(".profile-avatar");
   if (store.logo_url) {
     profileAvatar.replaceChildren();
