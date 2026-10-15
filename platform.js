@@ -93,8 +93,28 @@ function campaignDateLabel(value){
  if(!value)return "بدون تحديد";
  const d=new Date(value);return Number.isNaN(d.getTime())?"—":d.toLocaleString("ar-IQ",{dateStyle:"short",timeStyle:"short"});
 }
+let campaignImageObjectUrl = null;
+function clearCampaignImagePreview(){
+ const fileInput=$("#campaign-image-file");
+ if(fileInput)fileInput.value="";
+ if(campaignImageObjectUrl){URL.revokeObjectURL(campaignImageObjectUrl);campaignImageObjectUrl=null;}
+ const wrap=$("#campaign-image-preview-wrap");
+ if(wrap)wrap.hidden=true;
+ const preview=$("#campaign-image-preview");
+ if(preview)preview.removeAttribute("src");
+}
+function showCampaignImagePreview(file){
+ const wrap=$("#campaign-image-preview-wrap"),preview=$("#campaign-image-preview");
+ if(!wrap||!preview)return;
+ if(campaignImageObjectUrl){URL.revokeObjectURL(campaignImageObjectUrl);campaignImageObjectUrl=null;}
+ if(!file){clearCampaignImagePreview();return;}
+ campaignImageObjectUrl=URL.createObjectURL(file);
+ preview.src=campaignImageObjectUrl;
+ wrap.hidden=false;
+}
 function resetCampaignForm(){
  $("#campaign-form").reset();
+ clearCampaignImagePreview();
  $("#campaign-id").value="";
  $("#campaign-button-input").value="تسوّق الآن";
  $("#campaign-target-input").value="market.html";
@@ -143,6 +163,11 @@ function renderCampaigns(){
    $("#campaign-title-input").value=c.title||"";
    $("#campaign-subtitle-input").value=c.subtitle||"";
    $("#campaign-image-input").value=c.image_url||"";
+   clearCampaignImagePreview();
+   if(c.image_url){
+    const wrap=$("#campaign-image-preview-wrap"),preview=$("#campaign-image-preview");
+    preview.src=c.image_url;wrap.hidden=false;
+   }
    $("#campaign-button-input").value=c.button_label||"تسوّق الآن";
    $("#campaign-target-input").value=c.target_url||"market.html";
    $("#campaign-order-input").value=String(c.sort_order??0);
@@ -177,7 +202,8 @@ async function saveCampaign(event){
  event.preventDefault();
  const message=$("#campaign-form-message"),button=$("#campaign-save-button");
  const title=$("#campaign-title-input").value.trim();
- const imageUrl=$("#campaign-image-input").value.trim();
+ let imageUrl=$("#campaign-image-input").value.trim();
+ const imageFile=$("#campaign-image-file").files?.[0]||null;
  const target=safeCampaignTargetAdmin($("#campaign-target-input").value);
  if(!title){message.textContent="أدخل عنوان الحملة.";return;}
  if(imageUrl){try{const url=new URL(imageUrl);if(!["https:","http:"].includes(url.protocol))throw new Error();}catch{message.textContent="رابط الصورة يجب أن يبدأ بـ https:// أو http://";return;}}
@@ -195,6 +221,17 @@ async function saveCampaign(event){
  if(!id)payload.created_by=currentAdminId;
  button.disabled=true;button.textContent="جارٍ الحفظ...";
  try{
+  if(imageFile){
+   if(!imageFile.type.startsWith("image/"))throw new Error("اختر ملف صورة صالحاً.");
+   if(imageFile.size>5*1024*1024)throw new Error("حجم صورة الحملة يجب ألا يتجاوز 5 ميغابايت.");
+   if(!currentAdminId)throw new Error("تعذر التحقق من حساب مسؤول المنصة.");
+   const extension=(imageFile.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
+   const path=currentAdminId+"/campaigns/"+crypto.randomUUID()+"."+extension;
+   const {error:uploadError}=await db.storage.from("bben-images").upload(path,imageFile,{upsert:false,contentType:imageFile.type});
+   if(uploadError)throw uploadError;
+   imageUrl=db.storage.from("bben-images").getPublicUrl(path).data.publicUrl;
+   payload.image_url=imageUrl;
+  }
   const result=id?await db.from("marketing_campaigns").update(payload).eq("id",id):await db.from("marketing_campaigns").insert(payload);
   if(result.error)throw result.error;
   const successMessage=id?"تم تحديث الحملة.":"تم إنشاء الحملة.";
@@ -275,4 +312,20 @@ function renderLedger(){
 }
 $("#coupon-form").addEventListener("submit",saveCoupon);$("#notification-form").addEventListener("submit",sendPlatformNotification);
 $("#campaign-form").addEventListener("submit",saveCampaign);$("#campaign-cancel-edit").addEventListener("click",resetCampaignForm);
+$("#campaign-image-file").addEventListener("change",event=>{
+ const file=event.target.files?.[0]||null;
+ if(file&&(!file.type.startsWith("image/")||file.size>5*1024*1024)){
+  event.target.value="";
+  $("#campaign-form-message").textContent="اختر صورة لا يتجاوز حجمها 5 ميغابايت.";
+  clearCampaignImagePreview();
+  return;
+ }
+ if(file){$("#campaign-image-input").value="";$("#campaign-form-message").textContent="معاينة الصورة جاهزة؛ ستُرفع عند حفظ الحملة.";}
+ showCampaignImagePreview(file);
+});
+$("#campaign-image-clear").addEventListener("click",()=>{
+ clearCampaignImagePreview();
+ $("#campaign-image-input").value="";
+ $("#campaign-form-message").textContent="أزيلت الصورة المختارة. احفظ التعديل لإزالة الصورة من الحملة.";
+});
 $("#refresh").addEventListener("click",load);$("#store-search").addEventListener("input",()=>renderStores(storeRows));$("#store-status-filter").addEventListener("change",()=>renderStores(storeRows));$("#ledger-filter").addEventListener("change",renderLedger);$("#logout").addEventListener("click",async()=>{await db.auth.signOut();location.href="index.html"});start();
