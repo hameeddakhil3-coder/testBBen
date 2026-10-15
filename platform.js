@@ -222,15 +222,28 @@ async function saveCampaign(event){
  button.disabled=true;button.textContent="جارٍ الحفظ...";
  try{
   if(imageFile){
-   if(!imageFile.type.startsWith("image/"))throw new Error("اختر ملف صورة صالحاً.");
+   const supportedTypes=["image/jpeg","image/png","image/webp"];
+   if(!supportedTypes.includes(imageFile.type))throw new Error("صيغة الصورة غير مدعومة. اختر JPG أو PNG أو WebP؛ صور HEIC/HEIF من بعض الهواتف يجب تحويلها أولاً.");
    if(imageFile.size>5*1024*1024)throw new Error("حجم صورة الحملة يجب ألا يتجاوز 5 ميغابايت.");
    if(!currentAdminId)throw new Error("تعذر التحقق من حساب مسؤول المنصة.");
-   const extension=(imageFile.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg";
+   const extensionByType={"image/jpeg":"jpg","image/png":"png","image/webp":"webp"};
+   const extension=extensionByType[imageFile.type];
    const path=currentAdminId+"/campaigns/"+crypto.randomUUID()+"."+extension;
-   const {error:uploadError}=await db.storage.from("bben-images").upload(path,imageFile,{upsert:false,contentType:imageFile.type});
-   if(uploadError)throw uploadError;
-   imageUrl=db.storage.from("bben-images").getPublicUrl(path).data.publicUrl;
+   const {data:uploaded,error:uploadError}=await db.storage.from("bben-images").upload(path,imageFile,{upsert:false,contentType:imageFile.type,cacheControl:"3600"});
+   if(uploadError)throw new Error("فشل رفع الصورة إلى التخزين: "+(uploadError.message||uploadError.error||"تحقق من صلاحيات التخزين وصيغة الصورة."));
+   if(!uploaded?.path)throw new Error("لم يؤكد التخزين حفظ الصورة؛ لم يتم حفظ الحملة.");
+   imageUrl=db.storage.from("bben-images").getPublicUrl(uploaded.path).data.publicUrl;
+   if(!imageUrl)throw new Error("تم رفع الصورة لكن تعذر إنشاء رابط عرضها.");
    payload.image_url=imageUrl;
+  }else if(imageUrl){
+   const reachable=await new Promise(resolve=>{
+    const testImage=new Image();
+    const timeout=setTimeout(()=>{testImage.onload=null;testImage.onerror=null;resolve(false);},10000);
+    testImage.onload=()=>{clearTimeout(timeout);resolve(true);};
+    testImage.onerror=()=>{clearTimeout(timeout);resolve(false);};
+    testImage.src=imageUrl;
+   });
+   if(!reachable)throw new Error("رابط الصورة لا يفتح ملف صورة مباشرة. استخدم رابطاً ينتهي بملف صورة أو ارفع الصورة من جهازك.");
   }
   const result=id?await db.from("marketing_campaigns").update(payload).eq("id",id):await db.from("marketing_campaigns").insert(payload);
   if(result.error)throw result.error;
