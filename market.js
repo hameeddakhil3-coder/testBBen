@@ -791,15 +791,17 @@ async function addToCart(product) {
   }
 }
 async function loadCart() {
-  if (!db || !currentUser || currentRole !== "customer") { cartItems = []; $("#cart-count").textContent = "0"; if ($("#mobile-cart-count")) $("#mobile-cart-count").textContent = "0"; return; }
+  if (!db || !currentUser || currentRole !== "customer") { cartItems = []; const desktopCount = $("#cart-count"); if (desktopCount) desktopCount.textContent = "0"; const mobileCount = $("#mobile-cart-count"); if (mobileCount) mobileCount.textContent = "0"; return; }
   const { data, error } = await db.from("cart_items")
     .select("id,customer_id,product_id,quantity,products(id,name,price,currency,stock_quantity,image_url,store_id,stores(name,delivery_fee))")
     .eq("customer_id", currentUser.id).order("created_at", { ascending: false });
   if (error) { console.warn("Cart load failed:", error.message); return; }
   cartItems = (data || []).filter((item) => item.products);
   const cartCount = String(cartItems.reduce((sum,item) => sum + Number(item.quantity || 0),0));
-  $("#cart-count").textContent = cartCount;
-  if ($("#mobile-cart-count")) $("#mobile-cart-count").textContent = cartCount;
+  const desktopCount = $("#cart-count");
+  if (desktopCount) desktopCount.textContent = cartCount;
+  const mobileCount = $("#mobile-cart-count");
+  if (mobileCount) mobileCount.textContent = cartCount;
 }
 function getCartPricing() {
   let subtotal = 0;
