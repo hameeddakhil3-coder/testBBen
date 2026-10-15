@@ -136,7 +136,7 @@ jobs:
           # is deployed together instead of relying on a potentially stale CSS asset.
           worker = worker.replace(
               "  return env.ASSETS.fetch(request);",
-              "  if (url.pathname === '/customer-profile.html') return new Response(CUSTOMER_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\\n"
+              "  if (url.pathname === '/customer-profile.html') return new Response(CUSTOMER_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\n"
               "  return env.ASSETS.fetch(request);",
               1,
           )
