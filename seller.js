@@ -40,10 +40,24 @@ async function loadMerchantNotifications(){
   const body=document.createElement("p");body.textContent=n.body||"";
   const time=document.createElement("small");time.textContent=new Date(n.created_at).toLocaleString("ar-IQ",{dateStyle:"medium",timeStyle:"short"});
   card.append(title,body,time);
-  if(!n.read_at){const button=document.createElement("button");button.type="button";button.className="secondary-button";button.textContent="تحديد كمقروء";button.addEventListener("click",async()=>{button.disabled=true;const {error:updateError}=await db.from("notifications").update({read_at:new Date().toISOString()}).eq("id",n.id);if(updateError){showToast("تعذر تحديث الإشعار.");button.disabled=false;return;}button.remove();card.classList.remove("notification-unread");});card.append(button);}
+  if(!n.read_at){const button=document.createElement("button");button.type="button";button.className="secondary-button";button.textContent="تحديد كمقروء";button.addEventListener("click",async()=>{button.disabled=true;const {error:updateError}=await db.from("notifications").update({read_at:new Date().toISOString()}).eq("id",n.id);if(updateError){showToast("تعذر تحديث الإشعار.");button.disabled=false;return;}button.remove();card.classList.remove("notification-unread");await refreshMerchantNotificationBadge();});card.append(button);}
   if(n.target_url&&!/^(?:https?:)?\/\//i.test(n.target_url)&&!n.target_url.startsWith("..")&&!/^javascript:/i.test(n.target_url)){const link=document.createElement("a");link.href=n.target_url;link.textContent="فتح";card.append(link);}
   host.append(card);
  });
+}
+
+async function refreshMerchantNotificationBadge(){
+ const badge=document.querySelector("#notification-button i");
+ if(!badge||!currentUser||!db)return;
+ try{
+  const {count,error}=await db.from("notifications").select("id",{count:"exact",head:true})
+   .or("user_id.eq."+currentUser.id+",and(user_id.is.null,target_role.eq.merchant)")
+   .is("read_at",null);
+  if(error)throw error;
+  badge.hidden=!count;
+  document.querySelector("#notification-button").setAttribute("aria-label",count?("الإشعارات، "+count+" غير مقروء"):"الإشعارات");
+  document.querySelector("#notification-button").title=count?("إشعارات غير مقروءة: "+count):"الإشعارات";
+ }catch(error){console.warn("Notification count failed:",error);}
 }
 
 function showToast(text) {
@@ -112,7 +126,7 @@ document.querySelectorAll("[data-stat-target]").forEach((card) => {
 document.querySelector("#clear-order-filter-button").addEventListener("click", () => showView("orders", { pendingOnly: false }));
 document.querySelector("#clear-product-filter-button").addEventListener("click", () => showView("products", { activeOnly: false }));
 menuToggle.addEventListener("click", () => sidebar.classList.toggle("open"));
-document.querySelector("#notification-button").addEventListener("click", async () => { await loadMerchantNotifications(); document.querySelector("#merchant-notifications-dialog").showModal(); });
+document.querySelector("#notification-button").addEventListener("click", async () => { await loadMerchantNotifications(); document.querySelector("#merchant-notifications-dialog").showModal(); await refreshMerchantNotificationBadge(); });
 document.querySelector("#close-merchant-notifications").addEventListener("click", () => document.querySelector("#merchant-notifications-dialog").close());
 document.querySelector("#refresh-orders-button").addEventListener("click", loadMerchantOrders);
 document.querySelector("#profile-button").addEventListener("click", () => { globalThis.location.href = "merchant-profile.html"; });
@@ -958,6 +972,8 @@ async function initSeller() {
     return;
   }
   currentStore = store;
+  await refreshMerchantNotificationBadge();
+  if (!globalThis.__bbenMerchantNotificationPoll) globalThis.__bbenMerchantNotificationPoll = setInterval(refreshMerchantNotificationBadge, 30000);
   document.querySelector(".profile-name strong").textContent = profile.full_name || "التاجر";
   document.querySelector(".store-chip strong").textContent = store.name;
   document.querySelector(".store-avatar").innerHTML = store.logo_url ? '<img src="' + store.logo_url + '" alt="">' : "ت";
