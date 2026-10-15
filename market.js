@@ -853,13 +853,16 @@ function renderCart() {
     row.append(imageOrPlaceholder(product.image_url, product.name));
     const info = document.createElement("div");
     const name = document.createElement("strong"); name.textContent = product.name;
-    const price = document.createElement("small"); price.textContent = money(product.price);
+    const store = Array.isArray(product.stores) ? product.stores[0] : product.stores;
+    const storeLabel = document.createElement("small"); storeLabel.className = "cart-row-store"; storeLabel.textContent = "المتجر: " + (store?.name || "متجر BBen");
+    const price = document.createElement("small"); price.className = "cart-row-unit-price"; price.textContent = money(product.price) + " للقطعة";
+    const stock = document.createElement("small"); stock.className = "cart-row-stock"; stock.textContent = Number(product.stock_quantity) > 0 ? "متوفر: " + Number(product.stock_quantity) + " قطعة" : "غير متوفر حالياً";
     const controls = document.createElement("div"); controls.className = "cart-row-controls";
     const minus = document.createElement("button"); minus.type = "button"; minus.textContent = "−"; minus.setAttribute("aria-label", "تقليل الكمية"); minus.addEventListener("click", () => changeCartQuantity(item, quantity - 1));
     const count = document.createElement("span"); count.textContent = String(quantity); count.style.fontSize = "11px";
     const plus = document.createElement("button"); plus.type = "button"; plus.textContent = "+"; plus.setAttribute("aria-label", "زيادة الكمية"); plus.disabled = quantity >= Number(product.stock_quantity); plus.addEventListener("click", () => changeCartQuantity(item, quantity + 1));
     const remove = document.createElement("button"); remove.type = "button"; remove.className = "remove-cart"; remove.textContent = "حذف"; remove.addEventListener("click", () => changeCartQuantity(item, 0));
-    controls.append(minus, count, plus, remove); info.append(name, price, controls);
+    controls.append(minus, count, plus, remove); info.append(name, storeLabel, price, stock, controls);
     const lineTotal = document.createElement("span"); lineTotal.className = "cart-row-price"; lineTotal.textContent = money(Number(product.price) * quantity);
     row.append(info, lineTotal); host.append(row);
   });
@@ -1146,6 +1149,7 @@ async function openOrderHistory() {
  
 function renderCheckoutPricing() {
   const pricing = getCartPricing();
+  renderCheckoutItems();
   const host = $("#checkout-cost-summary");
   const rows = [];
   const add = (label, amount, total=false) => rows.push({label, amount, total});
@@ -1217,6 +1221,27 @@ async function loadNotifications() {
 }
 function safeNotificationTarget(value){const target=String(value||"").trim();return target&&!/^(?:https?:)?\/\//i.test(target)&&!target.startsWith("..")&&!/^javascript:/i.test(target)&&!/[\r\n]/.test(target)?target:"market.html";}
 
+function renderCheckoutItems() {
+  const host = $("#checkout-items-summary");
+  if (!host) return;
+  host.replaceChildren();
+  const heading = document.createElement("div"); heading.className = "checkout-items-heading";
+  const title = document.createElement("strong"); title.textContent = "مراجعة المنتجات";
+  const count = document.createElement("span"); count.textContent = cartItems.reduce((sum, item) => sum + Number(item.quantity || 0), 0) + " قطعة";
+  heading.append(title, count); host.append(heading);
+  cartItems.forEach((item) => {
+    const product = item.products;
+    const row = document.createElement("div"); row.className = "checkout-item-row";
+    row.append(imageOrPlaceholder(primaryProductImage(product), product.name));
+    const copy = document.createElement("div"); copy.className = "checkout-item-copy";
+    const name = document.createElement("strong"); name.textContent = product.name;
+    const store = Array.isArray(product.stores) ? product.stores[0] : product.stores;
+    const meta = document.createElement("small"); meta.textContent = (store?.name || "متجر BBen") + " · الكمية " + Number(item.quantity);
+    copy.append(name, meta);
+    const amount = document.createElement("strong"); amount.className = "checkout-item-total"; amount.textContent = money(Number(product.price || 0) * Number(item.quantity || 0));
+    row.append(copy, amount); host.append(row);
+  });
+}
 async function openCheckout() {
   if (!(await ensureCustomer())) return;
   await loadCart();
@@ -1224,6 +1249,7 @@ async function openCheckout() {
   if (!cartItems.length) { toast("أضف منتجاً واحداً على الأقل قبل إتمام الطلب."); return; }
   $("#cart-dialog").close();
   $("#checkout-form").reset();
+  renderCheckoutItems();
   $("#checkout-error").textContent = "";
   $("#checkout-form").hidden = false;
   $("#checkout-success").hidden = true;
