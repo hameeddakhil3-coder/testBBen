@@ -942,6 +942,7 @@ async function loadOrderHistory() {
     orders.forEach((order) => {
       const card = document.createElement("article");
       card.className = "order-history-card";
+      card.id = "customer-order-" + order.id;
       const head = document.createElement("div");
       head.className = "order-history-card-head";
       const identity = document.createElement("div");
@@ -1129,7 +1130,7 @@ async function cancelCustomerOrder(order, button) {
     button.textContent = "إلغاء الطلب";
   }
 }
-async function openOrderHistory() {
+async function openOrderHistory(orderId = null) {
   if (!currentUser) {
     toast("سجّل الدخول أولاً لعرض الطلبات.");
     globalThis.location.href = "index.html";
@@ -1147,6 +1148,7 @@ async function openOrderHistory() {
   }
   await loadOrderHistory();
   $("#order-history-dialog").showModal();
+  if(orderId){const card=document.getElementById("customer-order-"+orderId);if(card){card.scrollIntoView({behavior:"smooth",block:"start"});card.classList.add("notification-order-focus");setTimeout(()=>card.classList.remove("notification-order-focus"),2200);}}
 }
  
 function renderCheckoutPricing() {
@@ -1214,6 +1216,7 @@ async function loadNotifications() {
       const body=document.createElement("p");body.textContent=n.body||"";
       const time=document.createElement("small");time.textContent=new Date(n.created_at).toLocaleString("ar-IQ",{dateStyle:"medium",timeStyle:"short"});
       card.append(title,body,time);
+      if(n.notification_type==="order_status"||n.target_url){const open=document.createElement("button");open.type="button";open.className="secondary-market-button notification-open-button";open.textContent="فتح التفاصيل";open.addEventListener("click",async()=>{if(!n.read_at){const {error:updateError}=await db.from("notifications").update({read_at:new Date().toISOString()}).eq("id",n.id);if(updateError){toast("تعذر تحديث الإشعار.");return;}n.read_at=new Date().toISOString();card.classList.remove("notification-unread");await refreshNotificationBadge();}$("#notifications-dialog").close();const orderId=n.target_url&&new URL(n.target_url,globalThis.location.href).searchParams.get("order_id");await openOrderHistory(orderId);});card.append(open);}
       if(!n.read_at){const read=document.createElement("button");read.type="button";read.className="secondary-market-button";read.textContent="تحديد كمقروء";
         read.addEventListener("click",async()=>{read.disabled=true;const {error:updateError}=await db.from("notifications").update({read_at:new Date().toISOString()}).eq("id",n.id);if(updateError){toast("تعذر تحديث الإشعار.");read.disabled=false;return;}n.read_at=new Date().toISOString();card.classList.remove("notification-unread");read.remove();await refreshNotificationBadge();});card.append(read);}
       if(n.target_url){const link=document.createElement("a");link.href=safeNotificationTarget(n.target_url);link.textContent="فتح";card.append(link);}
