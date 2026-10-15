@@ -1390,3 +1390,116 @@ body{background:#faf8f5;color:var(--text)}
  .market-card-title{min-height:2.7em}
  .mobile-bottom-nav button{min-height:47px}
 }
+
+
+/* BBen mobile polish: prevent clipped brand, compact header actions, and balance campaign/nav */
+.market-header,
+.market-header * { min-width: 0; }
+.market-brand { flex-shrink: 0; white-space: nowrap; overflow: visible; }
+.market-header-actions { min-width: 0; max-width: 100%; }
+.campaign-content { padding-bottom: 18px; }
+.campaign-pagination { bottom: 10px; }
+.mobile-bottom-nav { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.mobile-bottom-nav button {
+  min-width: 0;
+  min-height: 52px;
+  gap: 4px;
+  padding: 5px 2px;
+  border-radius: 12px;
+}
+.mobile-bottom-nav button > span {
+  display: grid;
+  place-items: center;
+  min-width: 24px;
+  min-height: 23px;
+  line-height: 1;
+}
+.mobile-bottom-nav button small {
+  display: block;
+  max-width: 100%;
+  font-size: 10px;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+@media (max-width: 1050px) {
+  .market-header {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    gap: 10px 14px;
+    height: auto;
+    min-height: 0;
+    padding: 12px 18px;
+  }
+  .market-brand { grid-column: 1; grid-row: 1; align-self: center; font-size: 30px; }
+  .market-header-actions {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 5px;
+    margin: 0;
+    overflow: visible;
+  }
+  .header-action {
+    min-width: 0;
+    min-height: 38px;
+    justify-content: center;
+    gap: 4px;
+    padding: 7px 8px;
+    font-size: 10px;
+  }
+  .market-search {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    max-width: none;
+    height: 43px;
+  }
+}
+@media (max-width: 760px) {
+  html { scroll-padding-top: 112px; }
+  .market-header { padding: 10px 12px; gap: 9px 10px; }
+  .market-brand { font-size: 27px; letter-spacing: -1.5px; }
+  .market-header-actions { gap: 4px; }
+  .header-action {
+    flex: 0 1 auto;
+    min-width: 32px;
+    min-height: 37px;
+    padding: 6px 7px;
+    border-radius: 10px;
+  }
+  .header-action > span:first-child { font-size: 14px; }
+  .header-action > span:not(:first-child),
+  #account-label { display: none; }
+  .header-action b { min-width: 17px; height: 17px; font-size: 9px; }
+  .account-action { max-width: none; }
+  .campaign-carousel {
+    padding-bottom: 28px !important;
+  }
+  .campaign-content { padding-bottom: 5px; }
+  .campaign-pagination { bottom: 9px; }
+  .mobile-bottom-nav {
+    padding: 6px 7px calc(6px + env(safe-area-inset-bottom));
+    border-top-color: #dce8df;
+    background: rgba(255,255,255,.97);
+  }
+  .mobile-bottom-nav button { min-height: 48px; gap: 3px; }
+  .mobile-bottom-nav button > span { font-size: 19px; }
+  .mobile-bottom-nav button small { font-size: 9px; }
+}
+@media (max-width: 420px) {
+  .market-header { grid-template-columns: max-content minmax(0, 1fr); padding-inline: 10px; }
+  .market-brand { font-size: 25px; }
+  .market-header-actions { gap: 3px; }
+  .header-action { min-width: 29px; padding: 5px 5px; }
+  .header-action > span:first-child { font-size: 13px; }
+  .market-search { padding-inline: 12px; }
+  .campaign-carousel { grid-template-columns: minmax(0, 1fr) 82px !important; padding-inline: 23px !important; }
+  .campaign-visual { height: 82px; }
+  .campaign-content h1 { font-size: 16px; }
+  .campaign-content > p:not(.hero-eyebrow) { font-size: 9px; }
+  .campaign-cta { padding-inline: 8px; font-size: 9px; }
+  .mobile-bottom-nav button small { font-size: 8.5px; }
+}
