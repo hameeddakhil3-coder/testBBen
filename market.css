@@ -2124,3 +2124,79 @@ body{background:#faf8f5;color:var(--text)}
  .campaign-prev{right:5px}.campaign-next{left:5px}
  .campaign-pagination{bottom:7px}
 }
+
+
+/* Compact marketplace layout: remove reserved hero space and bring shopping content up */
+.market-main{padding-top:8px!important}
+.market-categories{
+  display:block!important;
+  height:auto!important;
+  min-height:0!important;
+  margin:8px 0 22px!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  overflow:visible!important;
+}
+.market-categories::before,.market-categories::after{content:none!important;display:none!important}
+.market-categories .section-heading{margin:0 0 9px!important;gap:10px!important;align-items:center!important}
+.market-categories .section-heading h2{font-size:20px!important;line-height:1.35!important}
+.market-categories .section-eyebrow{margin:0 0 3px!important;font-size:10px!important}
+.market-categories .category-list{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  justify-content:flex-start!important;
+  align-items:flex-start!important;
+  gap:8px!important;
+  margin:0!important;
+  padding:2px 0 6px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  scrollbar-width:none!important;
+}
+.market-categories .category-list::-webkit-scrollbar{display:none!important}
+.market-categories .category-chip{
+  display:flex!important;
+  flex:0 0 68px!important;
+  min-width:68px!important;
+  width:68px!important;
+  min-height:0!important;
+  height:auto!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:5px!important;
+  margin:0!important;
+  padding:0 2px 4px!important;
+  border:0!important;
+  border-radius:10px!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#334b3c!important;
+}
+.market-categories .category-chip.active,.market-categories .category-chip:hover{background:transparent!important;color:#047857!important}
+.market-categories .category-icon{width:42px!important;height:42px!important;min-width:42px!important;border-width:1px!important;font-size:20px!important}
+.market-categories .category-label{font-size:10px!important;line-height:1.3!important}
+.market-stores-section{margin:0 0 24px!important;padding:0!important}
+.market-stores-section .section-heading{margin-bottom:10px!important}
+.market-stores-section .section-heading h2,.market-products .section-heading h2{font-size:20px!important}
+.market-stores-section .section-description{margin-top:3px!important;font-size:11px!important}
+.market-products{margin-top:0!important;margin-bottom:26px!important}
+.market-products .section-heading{margin-bottom:10px!important}
+@media(max-width:700px){
+  .market-main{padding-top:5px!important;padding-inline:12px!important}
+  .market-categories{margin:5px 0 17px!important}
+  .market-categories .section-heading{margin-bottom:7px!important}
+  .market-categories .section-heading h2,.market-stores-section .section-heading h2,.market-products .section-heading h2{font-size:18px!important}
+  .market-categories .category-list{gap:6px!important;padding-bottom:4px!important}
+  .market-categories .category-chip{flex-basis:62px!important;min-width:62px!important;width:62px!important}
+  .market-categories .category-icon{width:38px!important;height:38px!important;min-width:38px!important;font-size:18px!important}
+  .market-categories .category-label{font-size:9px!important}
+  .market-stores-section{margin-bottom:19px!important}
+  .market-stores-section .section-heading{margin-bottom:8px!important}
+  .market-stores-section .section-description{font-size:10px!important}
+  .market-products{margin-bottom:20px!important}
+  .market-products .section-heading{margin-bottom:8px!important}
+}
