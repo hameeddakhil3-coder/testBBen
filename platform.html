@@ -45,7 +45,12 @@
 <input id="campaign-id" type="hidden">
 <label for="campaign-title-input">عنوان الحملة <input id="campaign-title-input" required minlength="2" maxlength="100" placeholder="مثال: تخفيضات الصيف"></label>
 <label for="campaign-subtitle-input">وصف مختصر <input id="campaign-subtitle-input" maxlength="240" placeholder="أفضل المنتجات بأسعار مميزة"></label>
-<label for="campaign-image-input">رابط صورة الحملة (اختياري) <input id="campaign-image-input" type="url" placeholder="https://..."></label>
+<label for="campaign-image-file">صورة الحملة من جهازك (اختياري)
+<input id="campaign-image-file" type="file" accept="image/*">
+<small class="campaign-upload-hint">ارفع صورة واضحة بصيغة JPG أو PNG أو WebP، بحد أقصى 5 ميغابايت. عند رفع صورة جديدة ستُستخدم بدل الرابط.</small>
+</label>
+<div id="campaign-image-preview-wrap" class="campaign-image-preview-wrap" hidden><img id="campaign-image-preview" alt="معاينة صورة الحملة"><button id="campaign-image-clear" class="store-action details" type="button">إزالة الصورة المختارة</button></div>
+<label for="campaign-image-input">أو رابط صورة مباشر (اختياري) <input id="campaign-image-input" type="url" placeholder="https://..."></label>
 <div class="campaign-form-row">
 <label for="campaign-button-input">نص الزر <input id="campaign-button-input" maxlength="32" value="تسوّق الآن" required></label>
 <label for="campaign-target-input">وجهة الزر <input id="campaign-target-input" value="market.html" required placeholder="market.html أو #products-section"></label>
