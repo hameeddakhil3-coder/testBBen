@@ -1380,6 +1380,11 @@ async function initMarket() {
   }
 }
 $("#search-input").addEventListener("input", renderProducts);
+$("#search-filter-button")?.addEventListener("click", () => {
+  $("#products-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const filters = $("#city-filter");
+  if (filters) globalThis.setTimeout(() => filters.focus({ preventScroll: true }), 350);
+});
 $("#clear-search").addEventListener("click", () => { $("#search-input").value = ""; renderProducts(); $("#search-input").focus(); });
 $("#sort-select").addEventListener("change", renderProducts);
 $("#city-filter")?.addEventListener("change", () => { activeCity = $("#city-filter").value; renderProducts(); });
