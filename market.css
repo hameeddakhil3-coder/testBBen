@@ -1884,3 +1884,87 @@ body{background:#faf8f5;color:var(--text)}
  .market-search{height:44px}
  .market-nav{gap:19px!important}
 }
+
+/* Product discovery refresh: clear imagery, legible pricing, helpful delivery info */
+.market-product-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
+.market-card{display:flex;flex-direction:column;border:1px solid #e1ece4;border-radius:17px;box-shadow:0 3px 14px rgba(6,78,59,.035);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.market-card:hover{transform:translateY(-4px);border-color:#b9dfc8;box-shadow:0 13px 30px rgba(6,78,59,.10)}
+.market-card-image{height:auto;aspect-ratio:4/3;min-height:150px;background:#f7fbf8}
+.market-card-image>img,.market-card-image>picture,.market-card-image img{object-fit:contain!important}
+.market-card-image .store-badge{top:10px;right:10px;max-width:calc(100% - 64px);border-color:#e2eee5;color:#355746;box-shadow:0 2px 7px rgba(6,78,59,.05)}
+.market-card-body{display:flex;flex:1;flex-direction:column;gap:0;padding:14px}
+.market-card-category{color:#07805a;font-weight:700;margin-bottom:5px}
+.market-card-title{min-height:2.9em;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.45;margin-bottom:7px}
+.market-card-store{display:block;width:100%;margin-bottom:8px;color:#64756b}
+.market-card .product-rating-summary{display:flex;align-items:center;gap:6px;min-height:20px;margin:0 0 10px}
+.market-card .rating-stars{color:#d99a22;letter-spacing:1px;font-size:12px}
+.market-card .product-rating-summary small{font-size:10px;color:#64756b}
+.market-card-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:10px;border-top:1px solid #edf3ee}
+.market-price{font-size:16px;font-weight:800;color:#047857;white-space:nowrap}
+.market-card-actions{display:flex;flex:1;justify-content:flex-end;gap:6px}
+.market-card .card-add-button{display:flex;align-items:center;justify-content:center;width:auto;min-width:40px;height:36px;padding:0 11px;border-radius:10px;background:#059669;color:white;font-size:12px;font-weight:700;white-space:nowrap}
+.market-card .card-add-button:hover{background:#047857}
+.market-card .card-add-button:disabled{opacity:.45}
+.market-card .card-favorite-button{top:auto;right:auto;left:11px;bottom:11px;display:grid;place-items:center;width:38px;height:38px;border:1px solid #e1ece4;border-radius:12px;background:#fff;color:#64756b;box-shadow:0 3px 12px rgba(6,78,59,.08);font-size:21px}
+.market-card .card-favorite-button.is-favorite{color:#e11d48;background:#fff1f2;border-color:#fecdd3}
+.market-card-delivery{margin-top:10px;padding:7px 9px;border-radius:9px;background:#f0fdf4;color:#47705a;font-size:10px;line-height:1.6}
+.market-card .stock-label{margin-top:7px;font-size:10px;color:#07805a}
+.product-dialog{width:min(960px,calc(100% - 24px));max-width:960px;max-height:min(90dvh,900px);padding:26px;border:1px solid #dce8df;border-radius:22px;background:#fff;color:#17231d;box-shadow:0 24px 90px rgba(6,78,59,.22);overflow:auto}
+.product-dialog::backdrop{background:rgba(12,35,25,.55);backdrop-filter:blur(4px)}
+.dialog-product-layout{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;align-items:start}
+.dialog-product-image{height:auto;display:flex;flex-direction:column;align-items:stretch;gap:10px;overflow:visible;background:transparent}
+.dialog-gallery-main{display:grid;place-items:center;aspect-ratio:1/1;width:100%;max-height:440px;overflow:hidden;border:1px solid #e4eee7;border-radius:17px;background:#f7fbf8}
+.dialog-gallery-main>img,.dialog-gallery-main>picture,.dialog-gallery-main img{width:100%;height:100%;object-fit:contain!important}
+.dialog-gallery-thumbnails{display:flex;gap:8px;overflow-x:auto;padding:2px 1px 5px}
+.dialog-gallery-thumb{flex:0 0 66px;width:66px;height:66px;padding:3px;border:1px solid #dce8df;border-radius:11px;background:#fff;overflow:hidden}
+.dialog-gallery-thumb.active{border:2px solid #059669;background:#f0fdf4}
+.dialog-gallery-thumb img{width:100%;height:100%;object-fit:contain;border-radius:7px}
+.dialog-product-info{min-width:0}
+.dialog-product-info .market-card-category{display:inline-flex;padding:5px 10px;border-radius:999px;background:#f0fdf4;color:#047857}
+.dialog-product-info h2{margin:10px 0 13px;font-size:clamp(21px,3vw,29px);line-height:1.45;color:#064e3b;overflow-wrap:anywhere}
+.dialog-price-panel{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px;margin:0 0 14px;border:1px solid #d5efdf;border-radius:14px;background:linear-gradient(120deg,#f0fdf4,#fbfefb)}
+.dialog-price-label{font-size:12px;color:#64756b}
+.dialog-product-price{font-size:clamp(22px,3vw,29px);color:#047857;line-height:1.35;white-space:normal}
+.dialog-product-info .product-rating-summary{display:flex;align-items:center;gap:7px;margin:9px 0}
+.dialog-product-info .rating-stars{color:#d99a22;letter-spacing:1px}
+.dialog-product-description{padding:12px 0;border-bottom:1px solid #edf3ee;white-space:pre-line}
+.dialog-store{padding:11px 12px;margin:12px 0;border:1px solid #e1ece4;border-radius:12px;background:#fff;color:#065f46;line-height:1.7}
+.dialog-store img{flex-shrink:0;width:36px;height:36px;border:1px solid #e1ece4}
+.dialog-product-facts{display:grid;gap:8px;margin:13px 0}
+.dialog-product-facts p{margin:0;padding:10px 12px;border-radius:10px;background:#f7fbf8;color:#456553;font-size:12px;line-height:1.7}
+.dialog-product-facts .dialog-stock-fact{background:#f0fdf4;color:#047857;font-weight:700}
+.dialog-add{min-height:48px;border-radius:12px;font-size:14px;font-weight:800}
+.dialog-chat-button{width:100%;min-height:44px;margin-top:9px;border-radius:12px}
+.product-reviews-section{margin-top:24px;padding-top:18px;border-top:1px solid #e1ece4}
+@media(max-width:980px){.market-product-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}}
+@media(max-width:700px){
+ .market-main{padding-inline:14px}
+ .market-product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+ .market-card{border-radius:14px}
+ .market-card-image{aspect-ratio:1/1;min-height:0}
+ .market-card-body{padding:10px}
+ .market-card-title{font-size:12px;min-height:2.9em}
+ .market-card-store{font-size:9px}
+ .market-card .product-rating-summary{gap:4px;margin-bottom:7px}
+ .market-card .rating-stars{font-size:10px;letter-spacing:0}
+ .market-card .product-rating-summary small{font-size:9px}
+ .market-card-bottom{align-items:flex-start;flex-direction:column;gap:8px;padding-top:9px}
+ .market-price{font-size:15px}
+ .market-card-actions{width:100%;justify-content:stretch}
+ .market-card .card-add-button{width:100%;height:35px;padding:0 7px;font-size:11px}
+ .market-card-delivery{font-size:9px;padding:6px 7px}
+ .market-card .stock-label{font-size:9px}
+ .product-dialog{width:calc(100% - 16px);max-height:92dvh;padding:17px 14px;border-radius:18px}
+ .dialog-product-layout{grid-template-columns:minmax(0,1fr);gap:17px}
+ .dialog-product-image{gap:8px}
+ .dialog-gallery-main{max-height:none;aspect-ratio:1/0.82}
+ .dialog-gallery-thumb{flex-basis:58px;width:58px;height:58px}
+ .dialog-product-info h2{font-size:22px}
+ .dialog-price-panel{padding:12px}
+}
+@media(max-width:360px){
+ .market-main{padding-inline:10px}
+ .market-product-grid{gap:8px}
+ .market-card-body{padding:8px}
+ .market-card-delivery{font-size:8px}
+}
