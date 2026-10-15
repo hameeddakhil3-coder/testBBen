@@ -1314,14 +1314,11 @@ async function initMarket() {
       $("#account-button").title = "الملف الشخصي";
     }
     await loadFavoriteIds();
-    await loadCampaigns();
     if (isFavoritesPage) {
       document.body.classList.add("favorites-page");
       document.title = "BBen | منتجاتي المفضلة";
-      $(".market-hero").classList.add("hidden");
       $(".market-categories").classList.add("hidden");
       $("#market-stores-section").classList.add("hidden");
-      $("#market-promo-strip").classList.add("hidden");
       $(".market-benefits").classList.add("hidden");
       $("#products-section h2").textContent = "منتجاتي المفضلة";
       $(".product-heading .section-eyebrow").textContent = "محفوظة لك";
@@ -1421,9 +1418,6 @@ $("#search-filter-button")?.addEventListener("click", () => {
 $("#clear-search").addEventListener("click", () => { $("#search-input").value = ""; renderProducts(); $("#search-input").focus(); });
 $("#sort-select").addEventListener("change", renderProducts);
 $("#city-filter")?.addEventListener("change", () => { activeCity = $("#city-filter").value; renderProducts(); });
-$("#browse-button").addEventListener("click", openCampaignTarget);
-$("#campaign-prev")?.addEventListener("click", () => { if (marketCampaigns.length > 1) { renderCampaign((activeCampaignIndex - 1 + marketCampaigns.length) % marketCampaigns.length); restartCampaignTimer(); } });
-$("#campaign-next")?.addEventListener("click", () => { if (marketCampaigns.length > 1) { renderCampaign((activeCampaignIndex + 1) % marketCampaigns.length); restartCampaignTimer(); } });
 $("#show-all-categories").addEventListener("click", () => { activeCategory = ""; renderCategories(); renderProducts(); });
 $("#favorite-filter-button").addEventListener("click", () => {
   if (isFavoritesPage) { globalThis.location.href = "market.html"; return; }
