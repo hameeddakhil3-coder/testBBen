@@ -2282,3 +2282,17 @@ body{background:#faf8f5;color:var(--text)}
   .stores-toggle-button{min-height:28px;padding:5px 8px;font-size:10px}
   .market-products{margin-bottom:18px!important}
 }
+
+
+/* Hide the favorites filter from the regular product toolbar while keeping the favorites-page return action */
+body:not(.favorites-page) #favorite-filter-button{display:none!important}
+.product-heading .product-tools{gap:7px!important}
+.product-heading .sort-control{gap:5px!important;font-size:10px!important}
+.product-heading .sort-control select{min-height:34px!important;padding:6px 9px!important;font-size:10px!important}
+@media(max-width:700px){
+  .product-heading{gap:7px!important;margin-bottom:12px!important}
+  .product-heading .product-tools{display:flex!important;flex-wrap:wrap!important;align-items:center!important;justify-content:flex-start!important;gap:7px 10px!important;width:100%!important}
+  .product-heading .sort-control{display:flex!important;align-items:center!important;justify-content:flex-start!important;gap:5px!important;font-size:10px!important}
+  .product-heading .sort-control select{flex:0 1 auto!important;max-width:145px!important;min-height:32px!important;padding:5px 8px!important;font-size:10px!important}
+  .product-heading .city-filter-control select{max-width:125px!important}
+}
