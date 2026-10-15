@@ -41,7 +41,7 @@ async function loadMerchantNotifications(){
   const time=document.createElement("small");time.textContent=new Date(n.created_at).toLocaleString("ar-IQ",{dateStyle:"medium",timeStyle:"short"});
   card.append(title,body,time);
   if(!n.read_at){const button=document.createElement("button");button.type="button";button.className="secondary-button";button.textContent="تحديد كمقروء";button.addEventListener("click",async()=>{button.disabled=true;const {error:updateError}=await db.from("notifications").update({read_at:new Date().toISOString()}).eq("id",n.id);if(updateError){showToast("تعذر تحديث الإشعار.");button.disabled=false;return;}button.remove();card.classList.remove("notification-unread");await refreshMerchantNotificationBadge();});card.append(button);}
-  if(n.target_url&&!/^(?:https?:)?\/\//i.test(n.target_url)&&!n.target_url.startsWith("..")&&!/^javascript:/i.test(n.target_url)){const link=document.createElement("a");link.href=n.target_url;link.textContent="فتح";card.append(link);}
+  if(n.target_url&&!/^(?:https?:)?\/\//i.test(n.target_url)&&!n.target_url.startsWith("..")&&!/^javascript:/i.test(n.target_url)){const link=document.createElement("a");link.href=n.target_url;link.textContent="فتح الطلب";link.className="notification-open-link";link.addEventListener("click",async(event)=>{if(!n.read_at){event.preventDefault();const {error:updateError}=await db.from("notifications").update({read_at:new Date().toISOString()}).eq("id",n.id);if(errorUpdate){showToast("تعذر تحديث الإشعار.");return;}await refreshMerchantNotificationBadge();globalThis.location.href=link.href;}});card.append(link);}
   host.append(card);
  });
 }
@@ -500,7 +500,7 @@ function renderMerchantOrders() {
     renderRecentOrders(); updateOrderSummary(); return;
   }
   visibleOrders.forEach((order) => {
-    const card = document.createElement("article"); card.className = "merchant-order-card";
+    const card = document.createElement("article"); card.className = "merchant-order-card"; card.id = "merchant-order-" + order.id;
     const head = document.createElement("div"); head.className = "merchant-order-head";
     const heading = document.createElement("div");
     const number = document.createElement("strong"); number.textContent = "#BB-" + order.order_number;
@@ -1013,8 +1013,11 @@ async function initSeller() {
   renderProductCards();
   await loadMerchantOrders();
   // Deep-link from the public store's order button directly to merchant order management.
-  const requestedView = new URLSearchParams(globalThis.location.search).get("view");
+  const requestedParams = new URLSearchParams(globalThis.location.search);
+  const requestedView = requestedParams.get("view") || (requestedParams.has("order_id") ? "orders" : null);
   if (requestedView === "orders" || requestedView === "chat") showView(requestedView);
+  const requestedOrderId = requestedParams.get("order_id");
+  if (requestedOrderId) { const orderCard = document.getElementById("merchant-order-" + requestedOrderId); if (orderCard) { orderCard.scrollIntoView({behavior:"smooth",block:"center"}); orderCard.classList.add("notification-order-focus"); setTimeout(() => orderCard.classList.remove("notification-order-focus"), 2400); } }
 }
 
 initSeller();
