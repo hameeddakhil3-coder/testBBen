@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#059669">
   <title>BBen | السوق</title>
-  <link rel="stylesheet" href="market.css?rev=20261015-buyer-v3">
+  <link rel="stylesheet" href="market.css?rev=20261015-header-nav-v4">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase-client.js"></script>
   <script src="market.js?rev=20261015-coupons-1" defer></script>
@@ -15,11 +15,8 @@
     <a class="market-brand" href="market.html" aria-label="BBen السوق">B<span>Ben</span></a>
     <div class="market-search"><span aria-hidden="true">⌕</span><input id="search-input" type="search" placeholder="ابحث عن منتج أو متجر..." aria-label="ابحث عن منتج أو متجر"><button id="clear-search" type="button" aria-label="مسح البحث" hidden>×</button></div>
     <div class="market-header-actions">
-      <button class="header-action favorites-page-link" id="favorites-page-button" type="button"><span aria-hidden="true">♥</span><span>المفضلة</span></button>
       <button class="header-action" id="notifications-button" type="button"><span aria-hidden="true">🔔</span><span>الإشعارات</span></button>
-      <button class="header-action" id="orders-button" type="button"><span aria-hidden="true">📦</span><span>طلباتي</span></button>
-      <button class="header-action" id="cart-button" type="button"><span aria-hidden="true">🛒</span><span>السلة</span><b id="cart-count">0</b></button>
-      <button class="header-action account-action" id="account-button" type="button"><span aria-hidden="true">♙</span><span id="account-label">تسجيل الدخول</span></button>
+      <button class="header-action account-action" id="account-button" type="button"><span aria-hidden="true">♙</span><span id="account-label">حسابي</span></button>
     </div>
   </header>
   <nav class="market-nav" aria-label="روابط السوق الرئيسية">
@@ -152,8 +149,9 @@
   <nav class="mobile-bottom-nav" aria-label="التنقل السريع">
     <button type="button" id="mobile-nav-browse"><span aria-hidden="true">⌂</span><small>الرئيسية</small></button>
     <button type="button" id="mobile-nav-categories"><span aria-hidden="true">▦</span><small>التصنيفات</small></button>
-    <button type="button" id="mobile-nav-cart"><span aria-hidden="true">🛒</span><small>السلة</small></button>
+    <button type="button" id="mobile-nav-cart"><span class="mobile-cart-icon" aria-hidden="true">🛒</span><small>السلة <b id="mobile-cart-count">0</b></small></button>
     <button type="button" id="mobile-nav-favorites"><span aria-hidden="true">♡</span><small>المفضلة</small></button>
+    <button type="button" id="mobile-nav-orders"><span aria-hidden="true">▤</span><small>طلباتي</small></button>
     <button type="button" id="mobile-nav-account"><span aria-hidden="true">♙</span><small>حسابي</small></button>
   </nav>
   <div class="market-toast" id="market-toast" role="status" aria-live="polite"></div>
