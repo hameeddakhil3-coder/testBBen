@@ -1215,11 +1215,24 @@ async function loadNotifications() {
       const time=document.createElement("small");time.textContent=new Date(n.created_at).toLocaleString("ar-IQ",{dateStyle:"medium",timeStyle:"short"});
       card.append(title,body,time);
       if(!n.read_at){const read=document.createElement("button");read.type="button";read.className="secondary-market-button";read.textContent="تحديد كمقروء";
-        read.addEventListener("click",async()=>{read.disabled=true;const {error:updateError}=await db.from("notifications").update({read_at:new Date().toISOString()}).eq("id",n.id);if(updateError){toast("تعذر تحديث الإشعار.");read.disabled=false;return;}n.read_at=new Date().toISOString();card.classList.remove("notification-unread");read.remove();});card.append(read);}
+        read.addEventListener("click",async()=>{read.disabled=true;const {error:updateError}=await db.from("notifications").update({read_at:new Date().toISOString()}).eq("id",n.id);if(updateError){toast("تعذر تحديث الإشعار.");read.disabled=false;return;}n.read_at=new Date().toISOString();card.classList.remove("notification-unread");read.remove();await refreshNotificationBadge();});card.append(read);}
       if(n.target_url){const link=document.createElement("a");link.href=safeNotificationTarget(n.target_url);link.textContent="فتح";card.append(link);}
       host.append(card);
     });
   }catch(error){host.replaceChildren();const p=document.createElement("p");p.className="market-message error";p.textContent="تعذر تحميل الإشعارات.";host.append(p);console.warn("Notifications failed:",error);}
+}
+async function refreshNotificationBadge(){
+  const badge=$("#notifications-unread-dot");if(!badge||!db)return;
+  if(!currentUser||!currentRole){badge.hidden=true;return;}
+  try{
+    const {count,error}=await db.from("notifications").select("id",{count:"exact",head:true})
+      .or("user_id.eq."+currentUser.id+",and(user_id.is.null,target_role.eq."+currentRole+")")
+      .is("read_at",null);
+    if(error)throw error;
+    badge.hidden=!count;
+    $("#notifications-button").setAttribute("aria-label",count?("الإشعارات، "+count+" غير مقروء"):"الإشعارات");
+    $("#notifications-button").title=count?("إشعارات غير مقروءة: "+count):"الإشعارات";
+  }catch(error){console.warn("Notification count failed:",error);}
 }
 function safeNotificationTarget(value){const target=String(value||"").trim();return target&&!/^(?:https?:)?\/\//i.test(target)&&!target.startsWith("..")&&!/^javascript:/i.test(target)&&!/[\r\n]/.test(target)?target:"market.html";}
 
@@ -1313,6 +1326,8 @@ async function initMarket() {
       $("#account-label").textContent = profileResult.data?.full_name || "حسابي";
       $("#account-button").title = "الملف الشخصي";
     }
+    await refreshNotificationBadge();
+    if (!globalThis.__bbenNotificationPoll) globalThis.__bbenNotificationPoll = setInterval(refreshNotificationBadge, 30000);
     await loadFavoriteIds();
     if (isFavoritesPage) {
       document.body.classList.add("favorites-page");
@@ -1460,7 +1475,7 @@ $("#close-checkout-dialog").addEventListener("click", () => $("#checkout-dialog"
 $("#finish-checkout").addEventListener("click", () => $("#checkout-dialog").close());
 $("#apply-coupon-button").addEventListener("click", applyCheckoutCoupon);
 $("#checkout-coupon-code").addEventListener("keydown", event => { if(event.key==="Enter"){event.preventDefault();applyCheckoutCoupon();} });
-$("#notifications-button").addEventListener("click", async () => { await loadNotifications(); $("#notifications-dialog").showModal(); });
+$("#notifications-button").addEventListener("click", async () => { await loadNotifications(); $("#notifications-dialog").showModal(); await refreshNotificationBadge(); });
 $("#close-notifications-dialog").addEventListener("click", () => $("#notifications-dialog").close());
 $("#close-product-dialog").addEventListener("click", () => $("#product-dialog").close());
 $("#close-chat-dialog").addEventListener("click", () => { stopChatAutoRefresh(); $("#chat-dialog").close(); });
