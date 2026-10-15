@@ -1795,3 +1795,36 @@ body{background:#faf8f5;color:var(--text)}
   .mobile-bottom-nav button small { font-size:8px !important; }
   .mobile-bottom-nav button > span { font-size:18px !important; }
 }
+
+
+/* Refined buyer header actions: clean icons, clear hierarchy, BBen green */
+.market-header-actions .header-action {
+  position:relative;display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  min-height:42px;padding:8px 13px;border:1px solid #dce8df;border-radius:13px;
+  background:#fff;color:#047857;box-shadow:0 2px 7px rgba(6,78,59,.035);
+  font-weight:700;transition:background .18s ease,border-color .18s ease,transform .18s ease,box-shadow .18s ease;
+}
+.market-header-actions .header-action:hover,.market-header-actions .header-action:focus-visible {
+  background:#f0fdf4;border-color:#a7d9bd;box-shadow:0 4px 12px rgba(6,78,59,.08);outline:none;
+}
+.market-header-actions .header-action:active { transform:translateY(1px); }
+.header-action-icon { display:grid;place-items:center;flex:0 0 28px;width:28px;height:28px;border-radius:9px;background:#ecfdf5;color:#047857; }
+.header-action-icon svg { width:18px;height:18px;display:block; }
+.account-action { background:#f7fcf8 !important; }
+.account-action .account-icon { background:#d1fae5;color:#065f46; }
+.account-action .header-action-label { color:#065f46;font-weight:800; }
+.account-chevron { width:14px;height:14px;color:#7c9b89; }
+.notification-action { min-width:120px; }
+@media(max-width:760px) {
+ .market-header-actions .header-action { gap:7px !important;min-height:42px !important;padding:6px 9px !important;border-radius:12px !important; }
+ .header-action-icon { flex-basis:27px;width:27px;height:27px;border-radius:9px; }
+ .header-action-icon svg { width:17px;height:17px; }
+ .notification-action { min-width:0; }
+ .account-chevron { display:none; }
+ .market-header-actions .header-action-label,.market-header-actions #account-label { display:inline !important;font-size:11px !important;font-weight:700; }
+}
+@media(max-width:390px) {
+ .market-header-actions { gap:6px !important; }
+ .market-header-actions .header-action { padding:5px 7px !important;gap:5px !important; }
+ .market-header-actions .header-action-label,.market-header-actions #account-label { font-size:10px !important; }
+}
