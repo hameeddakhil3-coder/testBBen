@@ -786,13 +786,15 @@ async function addToCart(product) {
   }
 }
 async function loadCart() {
-  if (!db || !currentUser || currentRole !== "customer") { cartItems = []; $("#cart-count").textContent = "0"; return; }
+  if (!db || !currentUser || currentRole !== "customer") { cartItems = []; $("#cart-count").textContent = "0"; if ($("#mobile-cart-count")) $("#mobile-cart-count").textContent = "0"; return; }
   const { data, error } = await db.from("cart_items")
     .select("id,customer_id,product_id,quantity,products(id,name,price,currency,stock_quantity,image_url,store_id,stores(name,delivery_fee))")
     .eq("customer_id", currentUser.id).order("created_at", { ascending: false });
   if (error) { console.warn("Cart load failed:", error.message); return; }
   cartItems = (data || []).filter((item) => item.products);
-  $("#cart-count").textContent = String(cartItems.reduce((sum,item) => sum + Number(item.quantity || 0),0));
+  const cartCount = String(cartItems.reduce((sum,item) => sum + Number(item.quantity || 0),0));
+  $("#cart-count").textContent = cartCount;
+  if ($("#mobile-cart-count")) $("#mobile-cart-count").textContent = cartCount;
 }
 function getCartPricing() {
   let subtotal = 0;
@@ -1397,6 +1399,7 @@ $("#mobile-nav-browse")?.addEventListener("click", () => globalThis.scrollTo({ t
 $("#mobile-nav-categories")?.addEventListener("click", () => $("#market-categories").scrollIntoView({ behavior: "smooth", block: "start" }));
 $("#mobile-nav-favorites")?.addEventListener("click", () => { globalThis.location.href = "market.html?view=favorites"; });
 $("#mobile-nav-cart")?.addEventListener("click", openCart);
+$("#mobile-nav-orders")?.addEventListener("click", openOrderHistory);
 $("#mobile-nav-account")?.addEventListener("click", () => { globalThis.location.href = currentUser && currentRole === "customer" ? "customer-profile.html" : "index.html"; });
 $("#favorites-page-button")?.addEventListener("click", () => { globalThis.location.href = "market.html?view=favorites"; });
 $("#account-button").addEventListener("click", () => {
