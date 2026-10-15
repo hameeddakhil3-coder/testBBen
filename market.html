@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#059669">
   <title>BBen | السوق</title>
-  <link rel="stylesheet" href="market.css?rev=20261015-pro-header-1">
+  <link rel="stylesheet" href="market.css?rev=20261015-checkout-1">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="market.js?rev=20261015-pro-header-1" defer></script>
+  <script src="market.js?rev=20261015-checkout-1" defer></script>
 </head>
 <body>
   <header class="market-header">
@@ -104,6 +104,7 @@
   </dialog>
   <dialog id="checkout-dialog" class="cart-dialog checkout-dialog">
     <div class="cart-dialog-head"><div><p class="section-eyebrow">الخطوة الأخيرة</p><h2>بيانات التوصيل</h2></div><button id="close-checkout-dialog" class="dialog-close" type="button" aria-label="إغلاق">×</button></div>
+    <section id="checkout-items-summary" class="checkout-items-summary" aria-label="مراجعة المنتجات"></section>
     <form id="checkout-form" class="checkout-form">
       <label for="checkout-name">اسم المستلم</label>
       <input id="checkout-name" name="customerName" required minlength="2" autocomplete="name" placeholder="الاسم الكامل">
