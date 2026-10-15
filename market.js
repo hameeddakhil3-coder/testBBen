@@ -1424,6 +1424,19 @@ $("#favorite-filter-button").addEventListener("click", () => {
   if (showFavoritesOnly) $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" });
 });
 $("#promo-strip-browse-button")?.addEventListener("click", () => $("#products-section").scrollIntoView({ behavior: "smooth", block: "start" }));
+const storesToggleButton = $("#stores-toggle-button");
+const storesContent = $("#stores-content");
+storesToggleButton?.addEventListener("click", () => {
+  if (!storesContent) return;
+  const willCollapse = !storesContent.hidden;
+  storesContent.hidden = willCollapse;
+  storesToggleButton.setAttribute("aria-expanded", String(!willCollapse));
+  const label = storesToggleButton.querySelector("span");
+  const icon = storesToggleButton.querySelector(".stores-toggle-icon");
+  if (label) label.textContent = willCollapse ? "إظهار" : "إخفاء";
+  if (icon) icon.textContent = willCollapse ? "⌄" : "⌃";
+});
+
 $("#dismiss-promo")?.addEventListener("click", () => { $("#market-promo").hidden = true; });
 $("#mobile-nav-browse")?.addEventListener("click", () => globalThis.scrollTo({ top: 0, behavior: "smooth" }));
 $("#mobile-nav-categories")?.addEventListener("click", () => $("#market-categories").scrollIntoView({ behavior: "smooth", block: "start" }));
