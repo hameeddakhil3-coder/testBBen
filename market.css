@@ -1503,3 +1503,154 @@ body{background:#faf8f5;color:var(--text)}
   .campaign-cta { padding-inline: 8px; font-size: 9px; }
   .mobile-bottom-nav button small { font-size: 8.5px; }
 }
+
+
+/* BBen buyer mobile redesign v3 — clean labeled header and balanced campaign */
+@media (max-width: 760px) {
+  .market-header {
+    display: grid !important;
+    grid-template-columns: minmax(70px, .7fr) minmax(0, 2.3fr) !important;
+    grid-template-rows: auto auto !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 12px 12px 13px !important;
+    background: #ffffff !important;
+    border-bottom: 1px solid #e4eee7 !important;
+  }
+  .market-brand {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    justify-self: start !important;
+    font-size: 27px !important;
+    letter-spacing: -1.4px !important;
+    line-height: 1.1 !important;
+  }
+  .market-header-actions {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+    align-items: center !important;
+    gap: 5px !important;
+    min-width: 0 !important;
+    overflow: visible !important;
+  }
+  .header-action {
+    display: flex !important;
+    flex: 0 1 42px !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    min-width: 36px !important;
+    min-height: 48px !important;
+    padding: 4px 3px !important;
+    border: 1px solid #e1ebe4 !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+    color: #17634b !important;
+    font-size: 9px !important;
+    line-height: 1.2 !important;
+    white-space: normal !important;
+  }
+  .header-action > span:first-child {
+    display: block !important;
+    font-size: 15px !important;
+    line-height: 1.1 !important;
+  }
+  .header-action > span:not(:first-child),
+  #account-label {
+    display: block !important;
+    overflow: hidden !important;
+    max-width: 100% !important;
+    font-size: 8px !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+  .header-action b {
+    position: absolute !important;
+    transform: translate(8px,-8px) !important;
+    min-width: 15px !important;
+    height: 15px !important;
+    padding: 0 3px !important;
+    font-size: 8px !important;
+  }
+  .header-action { position: relative !important; }
+  .account-action { max-width: none !important; }
+  .market-search {
+    grid-column: 1 / -1 !important;
+    grid-row: 2 !important;
+    width: 100% !important;
+    height: 44px !important;
+    margin: 0 !important;
+    border-radius: 13px !important;
+    background: #f7faf7 !important;
+  }
+  .market-nav {
+    min-height: 43px !important;
+    justify-content: flex-start !important;
+    gap: 24px !important;
+    padding-inline: 14px !important;
+    background: #fff !important;
+  }
+  .market-nav a {
+    min-height: 43px !important;
+    font-size: 11px !important;
+  }
+  .campaign-carousel {
+    grid-template-columns: minmax(0, 1fr) minmax(90px, .72fr) !important;
+    min-height: 174px !important;
+    margin: 14px 0 24px !important;
+    padding: 18px 27px 27px !important;
+    gap: 10px !important;
+    border-radius: 17px !important;
+  }
+  .campaign-content { padding: 0 !important; align-self: center !important; }
+  .campaign-content .hero-eyebrow { font-size: 10px !important; margin-bottom: 5px !important; }
+  .campaign-content h1 { font-size: clamp(17px, 4.6vw, 23px) !important; line-height: 1.4 !important; }
+  .campaign-content > p:not(.hero-eyebrow) { font-size: 10px !important; line-height: 1.6 !important; margin: 4px 0 8px !important; }
+  .campaign-cta { min-height: 35px !important; padding: 0 10px !important; font-size: 10px !important; }
+  .campaign-visual { height: 100px !important; min-height: 0 !important; border-radius: 12px !important; }
+  .campaign-art-placeholder span { font-size: clamp(22px, 6vw, 30px) !important; }
+  .campaign-prev { right: 5px !important; }
+  .campaign-next { left: 5px !important; }
+  .campaign-pagination {
+    bottom: 9px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    display: flex !important;
+    justify-content: center !important;
+    width: max-content !important;
+  }
+  .campaign-dot { width: 6px !important; height: 6px !important; }
+  .campaign-dot.active { width: 17px !important; }
+  .section-heading { gap: 12px !important; }
+  .mobile-bottom-nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    padding: 7px 6px calc(7px + env(safe-area-inset-bottom)) !important;
+    background: rgba(255,255,255,.98) !important;
+    border-top: 1px solid #e1ebe4 !important;
+    box-shadow: 0 -5px 20px rgba(6,78,59,.06) !important;
+  }
+  .mobile-bottom-nav button {
+    min-height: 50px !important;
+    gap: 4px !important;
+    padding: 3px 1px !important;
+    color: #526b5c !important;
+  }
+  .mobile-bottom-nav button > span { font-size: 19px !important; }
+  .mobile-bottom-nav button small { font-size: 9px !important; line-height: 1.3 !important; }
+}
+@media (max-width: 420px) {
+  .market-header { grid-template-columns: minmax(64px, .65fr) minmax(0, 2.35fr) !important; padding-inline: 9px !important; }
+  .market-brand { font-size: 24px !important; }
+  .market-header-actions { gap: 3px !important; }
+  .header-action { flex-basis: 38px !important; min-width: 32px !important; min-height: 45px !important; padding-inline: 2px !important; }
+  .header-action > span:first-child { font-size: 14px !important; }
+  .header-action > span:not(:first-child), #account-label { font-size: 7.5px !important; }
+  .campaign-carousel { grid-template-columns: minmax(0, 1fr) 82px !important; min-height: 160px !important; padding: 15px 24px 25px !important; }
+  .campaign-visual { height: 82px !important; }
+  .campaign-content h1 { font-size: 16px !important; }
+  .campaign-content > p:not(.hero-eyebrow) { font-size: 9px !important; }
+  .campaign-cta { min-height: 32px !important; font-size: 9px !important; }
+}
