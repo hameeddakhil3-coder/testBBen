@@ -1406,8 +1406,8 @@ $("#account-button").addEventListener("click", () => {
   if (currentUser && currentRole === "customer") { globalThis.location.href = "customer-profile.html"; return; }
   globalThis.location.href = "index.html";
 });
-$("#cart-button").addEventListener("click", openCart);
-$("#orders-button").addEventListener("click", openOrderHistory);
+$("#cart-button")?.addEventListener("click", openCart);
+$("#orders-button")?.addEventListener("click", openOrderHistory);
 $("#refresh-orders-button").addEventListener("click", loadOrderHistory);
 $("#close-orders-dialog").addEventListener("click", () => $("#order-history-dialog").close());
 $("#view-orders-after-checkout").addEventListener("click", () => { $("#checkout-dialog").close(); openOrderHistory(); });
