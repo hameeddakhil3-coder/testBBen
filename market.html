@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#059669">
   <title>BBen | السوق</title>
-  <link rel="stylesheet" href="market.css?rev=20261015-compact-market-2">
+  <link rel="stylesheet" href="market.css?rev=20261015-compact-categories-stores-3">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="market.js?rev=20261015-compact-market-2" defer></script>
+  <script src="market.js?rev=20261015-compact-categories-stores-3" defer></script>
 </head>
 <body>
   <header class="market-header">
@@ -54,11 +54,14 @@
       <div id="category-list" class="category-list"><button class="category-chip active" data-category="">الكل</button></div>
     </section>
     <section class="market-stores-section" id="market-stores-section">
-      <div class="section-heading">
+      <div class="section-heading stores-section-heading">
         <div><p class="section-eyebrow">تسوّق من المصدر</p><h2>اكتشف المتاجر</h2><p class="section-description">تعرّف على المتاجر النشطة وتصفّح منتجات كل متجر.</p></div>
+        <button class="stores-toggle-button" id="stores-toggle-button" type="button" aria-expanded="true" aria-controls="stores-content"><span>إخفاء</span><span class="stores-toggle-icon" aria-hidden="true">⌃</span></button>
       </div>
-      <div id="store-grid" class="market-store-grid"></div>
-      <p id="stores-empty-message" class="market-message hidden">ستظهر المتاجر هنا عندما تتوفر منتجات منشورة للبيع.</p>
+      <div id="stores-content">
+        <div id="store-grid" class="market-store-grid"></div>
+        <p id="stores-empty-message" class="market-message hidden">ستظهر المتاجر هنا عندما تتوفر منتجات منشورة للبيع.</p>
+      </div>
     </section>
     <section class="market-products" id="products-section">
       <div class="section-heading product-heading"><div><p class="section-eyebrow">اختيرت لك</p><h2>منتجات المتاجر</h2><p class="section-description" id="results-summary">جارٍ تحميل المنتجات...</p></div><div class="product-tools"><button id="favorite-filter-button" class="favorite-filter-button" type="button" aria-pressed="false">♡ المفضلة</button><label class="sort-control city-filter-control">المدينة <select id="city-filter" aria-label="تصفية حسب المدينة"><option value="">كل المدن</option></select></label><label class="sort-control">ترتيب حسب <select id="sort-select"><option value="newest">الأحدث</option><option value="price-asc">السعر: الأقل أولاً</option><option value="price-desc">السعر: الأعلى أولاً</option><option value="name">الاسم</option></select></label></div></div>
