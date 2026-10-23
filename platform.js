@@ -321,7 +321,7 @@ async function changeStoreStatus(store,button){
 }
 function renderLedger(){
  const body=$("#ledger-table");body.replaceChildren();const filter=$("#ledger-filter").value;
- rows.filter(o=>filter==="all"||o.commission_state===filter).forEach(o=>{const tr=document.createElement("tr");["#BB-"+o.order_number,o.store_names,new Date(o.created_at).toLocaleDateString("ar-IQ"),money(o.subtotal),money(o.delivery_fee),Number(o.commission_rate)>0?money(o.commission_amount)+" (5%)":"—",({due:"عمولة مستحقة",pending:"بانتظار الاكتمال",legacy_exempt:"طلب سابق مسلّم معفى",no_commission_snapshot:"لا توجد عمولة مسجلة",cancelled:"ملغي"})[o.commission_state]||o.status].forEach(v=>{const td=document.createElement("td");td.textContent=v||"—";tr.append(td)});body.append(tr)});
+ rows.filter(o=>filter==="all"||o.commission_state===filter).forEach(o=>{const tr=document.createElement("tr");["#BB-"+o.order_number,o.store_names,new Date(o.created_at).toLocaleDateString("ar-IQ"),money(o.subtotal),money(o.delivery_fee),Number(o.commission_rate)>0?money(o.commission_amount)+" ("+Number(o.commission_rate).toLocaleString("en-US")+"%)":"—",({due:"عمولة مستحقة",pending:"بانتظار الاكتمال",legacy_exempt:"طلب سابق مسلّم معفى",no_commission_snapshot:"لا توجد عمولة مسجلة",cancelled:"ملغي"})[o.commission_state]||o.status].forEach(v=>{const td=document.createElement("td");td.textContent=v||"—";tr.append(td)});body.append(tr)});
 }
 $("#coupon-form").addEventListener("submit",saveCoupon);$("#notification-form").addEventListener("submit",sendPlatformNotification);
 $("#campaign-form").addEventListener("submit",saveCampaign);$("#campaign-cancel-edit").addEventListener("click",resetCampaignForm);
@@ -364,7 +364,7 @@ async function saveCommissionSettings(event){
  event.preventDefault();
  const input=$("#commission-rate-input"),message=$("#commission-settings-message"),button=$("#commission-save-button");
  const rate=Number(input.value);
- if(!Number.isFinite(rate)||rate<0||rate>20||Math.round(rate*100)!==rate*100){message.textContent="أدخل نسبة بين 0 و20 وبحد أقصى منزلتين عشريتين.";return;}
+ if(!Number.isFinite(rate)||rate<0||rate>20||Math.round(rate*100)/100!==rate){message.textContent="أدخل نسبة بين 0 و20 وبحد أقصى منزلتين عشريتين.";return;}
  if(!confirm("تأكيد تغيير عمولة المنصة من "+savedCommissionRate+"% إلى "+rate+"%؟ سيُطبق التغيير على الطلبات الجديدة فقط."))return;
  button.disabled=true;message.textContent="جارٍ حفظ الإعداد...";
  try{
