@@ -37,7 +37,7 @@ async function load(){
  document.querySelector("#eligible-count").textContent=d.eligible_completed_orders+" طلب مكتمل مؤهل";
  document.querySelector("#delivery-fees").textContent=money(d.completed_delivery_fees);
  document.querySelector("#delivered-count").textContent=d.delivered_order_count+" طلب مكتمل";
- storeRows=b.data||[];renderStores(storeRows);rows=c.data||[];renderLedger();await Promise.all([loadCampaigns(),loadCoupons()]);$("#connection-status").textContent="البيانات محدثة";
+ storeRows=b.data||[];renderStores(storeRows);rows=c.data||[];renderLedger();await Promise.all([loadCampaigns(),loadCoupons(),loadCommissionSettings()]);$("#connection-status").textContent="البيانات محدثة";
 }
 
 
@@ -341,4 +341,42 @@ $("#campaign-image-clear").addEventListener("click",()=>{
  $("#campaign-image-input").value="";
  $("#campaign-form-message").textContent="أزيلت الصورة المختارة. احفظ التعديل لإزالة الصورة من الحملة.";
 });
+
+let savedCommissionRate=5;
+async function loadCommissionSettings(){
+ const message=$("#commission-settings-message"),body=$("#commission-audit-table");
+ if(!body)return;
+ const {data,error}=await db.rpc("admin_get_platform_settings");
+ if(error){message.textContent="تعذر تحميل إعدادات العمولة: "+(error.message||"");body.innerHTML='<tr><td colspan="4">تعذر تحميل السجل.</td></tr>';return;}
+ savedCommissionRate=Number(data.commission_rate??5);
+ $("#commission-rate-input").value=savedCommissionRate;
+ body.replaceChildren();
+ const audit=data.audit||[];
+ if(!audit.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=4;td.textContent="لا توجد تغييرات مسجلة بعد.";tr.append(td);body.append(tr);return;}
+ audit.forEach(item=>{const tr=document.createElement("tr");[
+  Number(item.old_rate).toLocaleString("en-US")+"%",
+  Number(item.new_rate).toLocaleString("en-US")+"%",
+  new Date(item.changed_at).toLocaleString("ar-IQ"),
+  item.admin_id===currentAdminId?"أنت":String(item.admin_id||"مسؤول")
+ ].forEach(value=>{const td=document.createElement("td");td.textContent=value;tr.append(td)});body.append(tr);});
+}
+async function saveCommissionSettings(event){
+ event.preventDefault();
+ const input=$("#commission-rate-input"),message=$("#commission-settings-message"),button=$("#commission-save-button");
+ const rate=Number(input.value);
+ if(!Number.isFinite(rate)||rate<0||rate>20||Math.round(rate*100)!==rate*100){message.textContent="أدخل نسبة بين 0 و20 وبحد أقصى منزلتين عشريتين.";return;}
+ if(!confirm("تأكيد تغيير عمولة المنصة من "+savedCommissionRate+"% إلى "+rate+"%؟ سيُطبق التغيير على الطلبات الجديدة فقط."))return;
+ button.disabled=true;message.textContent="جارٍ حفظ الإعداد...";
+ try{
+  const {data,error}=await db.rpc("admin_update_platform_commission",{p_commission_rate:rate});
+  if(error)throw error;
+  savedCommissionRate=Number(data.commission_rate);
+  message.textContent="تم حفظ نسبة العمولة الجديدة. الطلبات السابقة لم تتغير.";
+  await loadCommissionSettings();
+ }catch(error){message.textContent="تعذر حفظ النسبة: "+(error.message||"تحقق من الاتصال والصلاحيات.");}
+ finally{button.disabled=false;}
+}
+
+$("#commission-settings-form")?.addEventListener("submit",saveCommissionSettings);
+$("#commission-reset-button")?.addEventListener("click",()=>{$("#commission-rate-input").value=savedCommissionRate;$("#commission-settings-message").textContent="تم إلغاء التعديلات غير المحفوظة.";});
 $("#refresh").addEventListener("click",load);$("#store-search").addEventListener("input",()=>renderStores(storeRows));$("#store-status-filter").addEventListener("change",()=>renderStores(storeRows));$("#ledger-filter").addEventListener("change",renderLedger);$("#logout").addEventListener("click",async()=>{await db.auth.signOut();location.href="index.html"});start();
