@@ -45,38 +45,40 @@ jobs:
           import struct, zlib
           from pathlib import Path
 
+          def chunk(kind, data):
+              return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
+
           def png_icon(size, path):
-              # Draw a simple, high-contrast BBen app icon using only Python's standard library.
-              scale = size / 32
+              # Opaque, standards-compliant RGBA PNG: green background with a white B.
+              glyph = ["11110", "10001", "10001", "11110", "10001", "10001", "11110"]
               rows = []
-              glyph = [
-                  "11110","10001","10001","11110","10001","10001","11110"
-              ]
               for y in range(size):
                   row = bytearray([0])
+                  gy = int(y * 32 / size) - 8
                   for x in range(size):
-                      nx, ny = int(x / scale), int(y / scale)
-                      r, g, b, a = (5, 150, 105, 255)
-                      # Rounded-corner green background.
-                      radius = 5
-                      if (nx < radius and ny < radius and (nx-radius)**2+(ny-radius)**2 > radius**2) or (nx >= 32-radius and ny < radius and (nx-(32-radius-1))**2+(ny-radius)**2 > radius**2) or (nx < radius and ny >= 32-radius and (nx-radius)**2+(ny-(32-radius-1))**2 > radius**2) or (nx >= 32-radius and ny >= 32-radius and (nx-(32-radius-1))**2+(ny-(32-radius-1))**2 > radius**2):
-                          r, g, b, a = (0, 0, 0, 0)
-                      # White block-letter B, centered.
-                      gx, gy = nx - 9, ny - 8
-                      if 0 <= gy < 7 and 0 <= gx < 5 and glyph[gy][gx] == "1":
-                          r, g, b, a = (255, 255, 255, 255)
-                      # Mint check mark in the lower-right corner.
-                      if (nx, ny) in [(23,22),(24,23),(25,24),(26,23),(27,22),(28,21),(27,24),(28,23),(29,20)]:
-                          r, g, b, a = (209, 250, 229, 255)
-                      row.extend((r,g,b,a))
+                      nx = int(x * 32 / size)
+                      gx = nx - 9
+                      pixel = (5, 150, 105, 255)
+                      if 0 <= gy < len(glyph) and 0 <= gx < 5 and glyph[gy][gx] == "1":
+                          pixel = (255, 255, 255, 255)
+                      row.extend(pixel)
                   rows.append(bytes(row))
-              def chunk(kind, data):
-                  return struct.pack(">I", len(data)) + kind + data + struct.pack(">I", zlib.crc32(kind + data) & 0xffffffff)
               raw = b"".join(rows)
-              data = b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", size, size, 8, 6, 0, 0, 0)) + chunk(b"IDAT", zlib.compress(raw)) + chunk(b"IEND", b"")
+              data = (
+                  b"\\x89PNG\\r\\n\\x1a\\n"
+                  + chunk(b"IHDR", struct.pack(">IIBBBBB", size, size, 8, 6, 0, 0, 0))
+                  + chunk(b"IDAT", zlib.compress(raw, 9))
+                  + chunk(b"IEND", b"")
+              )
               Path(path).write_bytes(data)
+
           png_icon(192, "public/icons/bben-192.png")
           png_icon(512, "public/icons/bben-512.png")
+          for name in ("bben-192.png", "bben-512.png"):
+              data = Path("public/icons", name).read_bytes()
+              if not data.startswith(b"\\x89PNG\\r\\n\\x1a\\n"):
+                  raise SystemExit(f"Invalid PNG signature: {name}")
+              print(f"Generated {name}: {len(data)} bytes")
           PY
           cp platform.html public/admin.html
           mkdir -p public/platform
