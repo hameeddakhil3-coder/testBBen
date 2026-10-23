@@ -138,6 +138,40 @@ const dialog = document.querySelector("#product-dialog");
 const productForm = document.querySelector("#product-form");
 const productName = document.querySelector("#product-name");
 const productPrice = document.querySelector("#product-price");
+const productCommissionRate = document.querySelector("#product-commission-rate");
+const productCommissionAmount = document.querySelector("#product-commission-amount");
+const productMerchantNet = document.querySelector("#product-merchant-net");
+let currentPlatformCommissionRate = null;
+const formatIQD = value => new Intl.NumberFormat("ar-IQ", {maximumFractionDigits:2}).format(value) + " د.ع";
+function renderProductCommissionPreview(){
+  const price = Number(productPrice.value);
+  if(productCommissionRate) productCommissionRate.textContent = currentPlatformCommissionRate === null ? "غير متاح" : new Intl.NumberFormat("ar-IQ",{maximumFractionDigits:2}).format(currentPlatformCommissionRate)+"%";
+  if(!Number.isFinite(price)||price<=0||currentPlatformCommissionRate===null){
+    if(productCommissionAmount) productCommissionAmount.textContent="—";
+    if(productMerchantNet) productMerchantNet.textContent="—";
+    return;
+  }
+  const commission = Math.round((price * currentPlatformCommissionRate / 100)*100)/100;
+  if(productCommissionAmount) productCommissionAmount.textContent=formatIQD(commission);
+  if(productMerchantNet) productMerchantNet.textContent=formatIQD(price-commission);
+}
+async function loadProductCommissionRate(){
+  if(productCommissionRate) productCommissionRate.textContent="جارٍ التحميل...";
+  try{
+    const {data,error}=await db.rpc("get_platform_commission_rate");
+    if(error) throw error;
+    const rate=Number(data);
+    if(!Number.isFinite(rate)||rate<0||rate>20) throw new Error("نسبة العمولة غير صالحة");
+    currentPlatformCommissionRate=rate;
+  }catch(error){
+    currentPlatformCommissionRate=null;
+    if(productCommissionRate) productCommissionRate.textContent="تعذر تحميل النسبة";
+    if(dialogError) dialogError.textContent="تعذر تحميل نسبة عمولة المنصة؛ لن يتم عرض تقدير حتى يتوفر الاتصال.";
+  }
+  renderProductCommissionPreview();
+}
+productPrice.addEventListener("input",renderProductCommissionPreview);
+
 const productStock = document.querySelector("#product-stock");
 const productStatus = document.querySelector("#product-status");
 const productCategory = document.querySelector("#product-category");
@@ -195,6 +229,7 @@ async function uploadImage(file, folder) {
 }
 
 async function openProductDialog(product = null) {
+  loadProductCommissionRate();
   editingProductId = product?.id || null; dialogError.textContent = ""; productForm.reset();
   productStatus.value = product?.status || "active"; existingProductImages = [];
   removedProductImageIds = new Set(); selectedProductFiles = [];
