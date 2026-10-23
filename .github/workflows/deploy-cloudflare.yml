@@ -40,7 +40,7 @@ jobs:
           mkdir -p public
           cp index.html favorites.html styles.css app.js supabase-client.js seller.html seller.css seller.js merchant-profile.html merchant-profile.js customer-profile.html customer-profile.js market.html market.css market.js store.html platform.html platform.css platform.js manifest.webmanifest pwa-register.js sw.js offline.html public/
           mkdir -p public/icons
-          cp icons/bben.svg public/icons/bben.svg
+          cp icons/bben.svg icons/bben-192.svg icons/bben-512.svg public/icons/
           cp platform.html public/admin.html
           mkdir -p public/platform
           cp platform/index.html public/platform/index.html
@@ -55,6 +55,8 @@ jobs:
           test -s public/sw.js
           test -s public/offline.html
           test -s public/icons/bben.svg
+          test -s public/icons/bben-192.svg
+          test -s public/icons/bben-512.svg
           test -s public/favorites.html
           test -s public/index.html
           test -s public/customer-profile.html
