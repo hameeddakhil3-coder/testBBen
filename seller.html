@@ -3,17 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#059669" />
-  <title>BBen | لوحة التاجر</title>
-  <link rel="stylesheet" href="seller.css?rev=20261015-notification-deeplink-3" />
+  <meta name="theme-color" content="#850D24" />
+  <title>AL Reem | لوحة التاجر</title>
+  <link rel="stylesheet" href="seller.css?rev=al-reem-brand-1" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="supabase-client.js"></script>
-  <script src="seller.js?rev=20261015-notification-deeplink-3" defer></script>
+  <script src="seller.js?rev=al-reem-brand-1" defer></script>
 </head>
 <body>
   <div class="seller-app">
     <aside class="sidebar" id="sidebar">
-      <a class="brand" href="seller.html" aria-label="BBen — العودة إلى لوحة التاجر">B<span>Ben</span></a>
+      <a class="brand" href="seller.html" aria-label="AL Reem — العودة إلى لوحة التاجر"><img class="brand-logo" src="assets/al-reem-mark.svg" alt=""> <span>AL Reem</span></a>
       <div class="store-chip"><span class="store-avatar">ت</span><span><strong>متجري</strong><small>لوحة التاجر</small></span><span class="online-dot"></span></div>
       <nav class="main-nav" aria-label="القائمة الرئيسية">
         <button class="nav-item active" data-view="overview"><span class="nav-icon">▦</span>نظرة عامة</button>
@@ -31,7 +31,7 @@
     <main class="main-content">
       <header class="topbar">
         <button class="icon-button menu-toggle" id="menu-toggle" aria-label="فتح القائمة">☰</button>
-        <div class="breadcrumb"><span>BBen</span><span class="crumb-sep">/</span><strong id="breadcrumb-title">نظرة عامة</strong></div>
+        <div class="breadcrumb"><span>AL Reem</span><span class="crumb-sep">/</span><strong id="breadcrumb-title">نظرة عامة</strong></div>
         <div class="top-actions">
           <button class="icon-button notification-button" id="notification-button" aria-label="الإشعارات" title="الإشعارات">♧<i id="merchant-notification-badge" hidden></i></button>
           <button class="profile-button" id="profile-button" type="button" aria-label="تعديل الملف الشخصي"><span class="profile-avatar">ت</span><span class="profile-name"><strong>التاجر</strong><small>تعديل الملف الشخصي</small></span><span class="chevron">⌄</span></button>
@@ -85,7 +85,7 @@
         <section class="panel view-panel hidden" id="products-view"><div class="panel-heading"><div><h2 id="products-view-title">إدارة المنتجات</h2><p id="products-view-description">أضف منتجاتك واحفظها في قاعدة البيانات.</p></div><div class="products-view-actions"><button class="text-button hidden" id="clear-product-filter-button" type="button">عرض كل المنتجات</button><button class="primary-button" id="add-product-view">＋ إضافة منتج</button></div></div><div class="notice-box">المنتجات التي تضيفها تُحفظ في قاعدة البيانات وتظهر هنا.</div><div id="product-list" class="product-list"></div></section>
         <section class="panel view-panel hidden" id="chat-view"><div class="panel-heading"><div><h2>رسائل الزبائن</h2><p>محادثات المشتري مع متجرك بخصوص المنتجات.</p></div><button class="text-button" id="refresh-merchant-chats" type="button">تحديث ↻</button></div><div class="merchant-chat-layout"><div id="merchant-chat-list" class="merchant-chat-list"><p class="notice-box">جارٍ تحميل المحادثات...</p></div><div class="merchant-chat-thread"><div id="merchant-chat-context" class="notice-box">اختر محادثة من القائمة لقراءة الرسائل والرد عليها.</div><div id="merchant-chat-messages" class="merchant-chat-messages" aria-live="polite"></div><form id="merchant-chat-form" class="merchant-chat-compose"><label class="sr-only" for="merchant-chat-input">اكتب ردك</label><textarea id="merchant-chat-input" rows="2" maxlength="1000" placeholder="اكتب ردك للزبون..." required disabled></textarea><button class="primary-button" type="submit" disabled>إرسال الرد</button></form></div></div></section>
         <section class="panel view-panel hidden" id="analytics-view"><div class="panel-heading"><div><h2>المبيعات والتقارير</h2><p>تُحتسب عمولة 5% على قيمة المنتجات في الطلبات الجديدة المكتملة فقط، دون أجرة التوصيل. لا تُطبق العمولة بأثر رجعي على الطلبات السابقة.</p></div></div><div class="analytics-summary"><div><span>مبيعات المنتجات المكتملة (قبل العمولة)</span><strong id="analytics-sales-total">0 د.ع</strong></div><div><span>عمولة المنصة المستحقة (5%)</span><strong id="analytics-commission-total">0 د.ع</strong></div><div><span>صافي مستحق التاجر (شامل التوصيل)</span><strong id="analytics-merchant-net">0 د.ع</strong></div><div><span>أجور التوصيل للطلبات المكتملة</span><strong id="analytics-delivery-total">0 د.ع</strong></div><div><span>عدد الطلبات المسجلة</span><strong id="analytics-orders-count">0</strong></div><div><span>متوسط قيمة المنتجات المكتملة</span><strong id="analytics-average-order">0 د.ع</strong></div></div><div class="notice-box" id="analytics-empty-note">لا توجد مبيعات مكتملة حالياً. ستظهر الأرقام بعد إكمال الطلبات.</div></section>
-        <footer class="page-footer"><span>© BBen 2026</span><span>لوحة التاجر · نسخة تجريبية للتصميم</span></footer>
+        <footer class="page-footer"><span>© AL Reem 2026</span><span>لوحة التاجر · نسخة تجريبية للتصميم</span></footer>
       </section>
     </main>
   </div>
