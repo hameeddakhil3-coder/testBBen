@@ -101,3 +101,11 @@
 @media(max-width:520px){.product-list-row{flex-wrap:wrap}.product-list-row .list-product-info{flex:1 1 calc(100% - 60px)}.product-row-actions{margin-right:auto}.product-row-actions button{padding:8px 12px}}
 
 .notification-order-focus{outline:3px solid #15966b;outline-offset:3px;transition:outline-color .25s}.notification-open-link{display:inline-flex;margin-top:10px;padding:8px 12px;border-radius:10px;border:1px solid #cfe7da;background:#effaf3;color:#087a58;font-weight:700;text-decoration:none}
+
+
+/* Live platform commission estimate in the product form */
+.commission-preview{margin:10px 0 16px;padding:14px 16px;border:1px solid #cfe8dc;border-radius:14px;background:#f1fbf5;display:grid;gap:10px}
+.commission-preview>div{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.commission-preview span{color:#52665d;font-size:.92rem}
+.commission-preview strong{color:#087f5b;font-weight:750}
+.commission-preview small{color:#65766d;line-height:1.7}
