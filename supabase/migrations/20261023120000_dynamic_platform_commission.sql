@@ -254,7 +254,7 @@ begin
     'total', v_subtotal - v_total_discount + v_delivery_total, 'status', 'pending'
   );
 end;
-$function$
+$function$;
 
 revoke all on function public.admin_get_platform_settings() from public, anon;
 revoke all on function public.admin_update_platform_commission(numeric) from public, anon;
