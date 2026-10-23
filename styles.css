@@ -2,15 +2,15 @@
 
 :root {
   color-scheme: light;
-  --brown: #059669;
-  --brown-dark: #064e3b;
-  --brown-soft: #d1fae5;
-  --cream: #f0fdf4;
+  --brown: #850D24;
+  --brown-dark: #480815;
+  --brown-soft: #f4dfe4;
+  --cream: #fffafb;
   --text: #17231d;
   --muted: #64756b;
   --border: #dce8df;
   --danger: #b42318;
-  --success: #047857;
+  --success: #850D24;
   font-family: "IBM Plex Sans Arabic", Tahoma, Arial, sans-serif;
 }
 * { box-sizing: border-box; }
@@ -18,15 +18,15 @@ body { margin: 0; min-height: 100vh; background: var(--cream); color: var(--text
 button, input { font: inherit; }
 button { cursor: pointer; }
 .page-shell { min-height: 100vh; display: grid; grid-template-columns: minmax(280px, .88fr) minmax(360px, 1.12fr); }
-.brand-panel { position: relative; overflow: hidden; min-height: 100vh; padding: 44px clamp(28px, 5vw, 76px); display: flex; flex-direction: column; justify-content: space-between; color: white; background: linear-gradient(145deg, #047857, var(--brown-dark)); }
+.brand-panel { position: relative; overflow: hidden; min-height: 100vh; padding: 44px clamp(28px, 5vw, 76px); display: flex; flex-direction: column; justify-content: space-between; color: white; background: linear-gradient(145deg, #850D24, var(--brown-dark)); }
 .brand-mark { display: inline-flex; align-items: center; gap: 3px; width: fit-content; direction: ltr; font-family: Arial, sans-serif; font-size: 29px; font-weight: 800; letter-spacing: -1.8px; }
 .brand-mark span { color: #a7f3d0; }
 .brand-copy { position: relative; z-index: 1; max-width: 430px; margin-block: auto; padding-block: 70px; }
-.eyebrow { margin: 0 0 12px; color: #047857; font-weight: 700; font-size: 13px; }
+.eyebrow { margin: 0 0 12px; color: #850D24; font-weight: 700; font-size: 13px; }
 .brand-panel .eyebrow { color: #a7f3d0; }
 .brand-copy h1 { margin: 0 0 18px; font-size: clamp(31px, 4vw, 49px); line-height: 1.35; }
 .brand-copy h1 span { color: #a7f3d0; direction: ltr; display: inline-block; }
-.brand-copy > p:last-child { max-width: 360px; margin: 0; color: #d1fae5; line-height: 2; font-size: 16px; }
+.brand-copy > p:last-child { max-width: 360px; margin: 0; color: #f4dfe4; line-height: 2; font-size: 16px; }
 .brand-footer { position: relative; z-index: 1; color: #a7f3d0; font-size: 12px; }
 .brand-decoration { position: absolute; border: 1px solid rgba(255,255,255,.09); border-radius: 50%; pointer-events: none; }
 .decoration-one { width: 440px; height: 440px; left: -180px; top: 14%; }
@@ -44,13 +44,13 @@ button { cursor: pointer; }
 .field label, .role-field legend { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; }
 .field input { width: 100%; min-height: 49px; padding: 12px 14px; border: 1px solid var(--border); border-radius: 10px; outline: none; background: white; color: var(--text); transition: border-color .15s, box-shadow .15s; }
 .field input::placeholder { color: #b1a8a0; }
-.field input:focus { border-color: #047857; box-shadow: 0 0 0 3px #0478571c; }
+.field input:focus { border-color: #850D24; box-shadow: 0 0 0 3px #850D241c; }
 .field input[aria-invalid="true"] { border-color: var(--danger); }
 .field-error { display: block; min-height: 0; color: var(--danger); font-size: 12px; margin-top: 5px; }
 .role-field { border: 0; padding: 0; margin: 5px 0 17px; min-width: 0; }
 .role-field legend { padding: 0; }
 .role-option { display: flex; align-items: center; gap: 11px; padding: 12px; margin-top: 8px; border: 1px solid var(--border); border-radius: 11px; background: white; cursor: pointer; }
-.role-option:has(input:checked) { border-color: #047857; background: #f7fdf8; box-shadow: 0 0 0 1px #047857 inset; }
+.role-option:has(input:checked) { border-color: #850D24; background: #f7fdf8; box-shadow: 0 0 0 1px #850D24 inset; }
 .role-option > input { accent-color: var(--brown); }
 .role-icon { display: grid; place-items: center; width: 39px; height: 39px; border-radius: 10px; background: var(--brown-soft); font-size: 19px; }
 .role-option strong, .role-option small { display: block; }
@@ -59,9 +59,9 @@ button { cursor: pointer; }
 .submit-button { width: 100%; min-height: 51px; display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 7px; border: 0; border-radius: 10px; color: white; background: var(--brown); font-weight: 700; transition: background .15s, transform .15s; }
 .submit-button:hover { background: #17231d; }
 .submit-button:active { transform: translateY(1px); }
-.submit-button:focus-visible, button:focus-visible { outline: 3px solid #047857; outline-offset: 3px; }
+.submit-button:focus-visible, button:focus-visible { outline: 3px solid #850D24; outline-offset: 3px; }
 .form-message { min-height: 0; margin: 0; font-size: 13px; line-height: 1.8; }
-.form-message:not(:empty) { margin: 8px 0; padding: 9px 11px; border-radius: 8px; background: #d1fae5; color: var(--brown); }
+.form-message:not(:empty) { margin: 8px 0; padding: 9px 11px; border-radius: 8px; background: #f4dfe4; color: var(--brown); }
 .form-message.error { color: var(--danger); background: #fff0ee; }
 .form-message.success { color: var(--success); background: #eaf7ef; }
 .switch-copy { text-align: center; margin: 22px 0; font-size: 13px; color: var(--muted); }
@@ -83,3 +83,5 @@ button { cursor: pointer; }
   .form-panel { padding-inline: 16px; }
   .form-heading h2 { font-size: 24px; }
 }
+/* AL Reem identity palette */
+.brand-logo{width:32px;height:32px;object-fit:contain;vertical-align:middle}.brand,.market-brand{color:#850D24!important}.brand span,.market-brand span{color:#480815!important}
