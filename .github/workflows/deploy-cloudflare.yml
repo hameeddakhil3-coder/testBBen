@@ -37,6 +37,7 @@ jobs:
           test -f platform.css
           test -f platform.js
           test -f platform/index.html
+          test -s supabase/migrations/20261023120000_dynamic_platform_commission.sql
           test -f al-reem-mark.svg
           mkdir -p public
           cp al-reem-mark.svg index.html styles.css app.js supabase-client.js seller.html seller.css seller.js merchant-profile.html merchant-profile.js customer-profile.html customer-profile.js market.html market.css market.js store.html platform.html platform.css platform.js public/
@@ -52,6 +53,9 @@ jobs:
           test -s public/index.html
           test -s public/customer-profile.html
           test -s public/customer-profile.js
+          node --check public/platform.js
+          grep -q 'commission-settings-form' public/platform.html
+          grep -q 'admin_update_platform_commission' public/platform.js
           test -s public/al-reem-mark.svg
           grep -q 'AL Reem' public/index.html
           grep -q 'al-reem-mark.svg' public/index.html
