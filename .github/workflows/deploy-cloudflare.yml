@@ -38,7 +38,7 @@ jobs:
           test -f platform.js
           test -f platform/index.html
           mkdir -p public
-          cp index.html styles.css app.js supabase-client.js seller.html seller.css seller.js merchant-profile.html merchant-profile.js customer-profile.html customer-profile.js market.html market.css market.js store.html platform.html platform.css platform.js public/
+          cp al-reem-mark.svg index.html styles.css app.js supabase-client.js seller.html seller.css seller.js merchant-profile.html merchant-profile.js customer-profile.html customer-profile.js market.html market.css market.js store.html platform.html platform.css platform.js public/
           cp platform.html public/admin.html
           mkdir -p public/platform
           cp platform/index.html public/platform/index.html
