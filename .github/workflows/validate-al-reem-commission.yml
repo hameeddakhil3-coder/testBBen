@@ -1,0 +1,49 @@
+name: Validate AL Reem commission settings
+
+on:
+  push:
+    branches:
+      - feature/al-reem-branding
+    paths:
+      - 'platform.html'
+      - 'platform.js'
+      - 'platform.css'
+      - 'supabase/migrations/**'
+      - '.github/workflows/validate-al-reem-commission.yml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'platform.html'
+      - 'platform.js'
+      - 'platform.css'
+      - 'supabase/migrations/**'
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Validate JavaScript syntax
+        run: |
+          node --check platform.js
+      - name: Validate commission UI and migration contract
+        run: |
+          set -e
+          test -s supabase/migrations/20261023120000_dynamic_platform_commission.sql
+          grep -q 'commission-settings-form' platform.html
+          grep -q 'commission-audit-table' platform.html
+          grep -q 'admin_get_platform_settings' platform.js
+          grep -q 'admin_update_platform_commission' platform.js
+          grep -q 'commission_rate <= 20' supabase/migrations/20261023120000_dynamic_platform_commission.sql
+          grep -q 'v_commission_basis \* v_commission_rate / 100' supabase/migrations/20261023120000_dynamic_platform_commission.sql
+          ! grep -q 'update public.orders' supabase/migrations/20261023120000_dynamic_platform_commission.sql
+          echo "Commission settings validation passed."
