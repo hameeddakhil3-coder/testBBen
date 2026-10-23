@@ -1,0 +1,18 @@
+{
+  "id": "/",
+  "name": "BBen | سوق العراق",
+  "short_name": "BBen",
+  "description": "منصة BBen للتسوق وإدارة المتاجر في العراق",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#f0fdf4",
+  "theme_color": "#059669",
+  "icons": [
+    { "src": "/icons/bben.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
