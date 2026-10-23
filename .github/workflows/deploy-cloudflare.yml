@@ -92,7 +92,8 @@ jobs:
               "const ADMIN_HTML = " + json.dumps(html, ensure_ascii=False) + ";\n"
               "export default { async fetch(request, env) {\n"
               "  const url = new URL(request.url);\n"
-              "  if (url.pathname === '/admin.html' || url.pathname === '/platform' || url.pathname === '/platform/') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\n"
+              "  if (url.pathname === '/platform' || url.pathname === '/platform/') return new Response(ADMIN_HTML, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });\n"
+              "  if (url.pathname === '/admin.html') { const response = await env.ASSETS.fetch(request); const headers = new Headers(response.headers); headers.set('cache-control', 'no-store'); return new Response(response.body, { status: response.status, statusText: response.statusText, headers }); }\n"
               "  return env.ASSETS.fetch(request);\n"
               "} };\n"
           )
