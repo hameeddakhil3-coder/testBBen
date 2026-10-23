@@ -65,7 +65,7 @@ jobs:
                   rows.append(bytes(row))
               raw = b"".join(rows)
               data = (
-                  b"\\x89PNG\\r\\n\\x1a\\n"
+                  b"\x89PNG\r\n\x1a\n"
                   + chunk(b"IHDR", struct.pack(">IIBBBBB", size, size, 8, 6, 0, 0, 0))
                   + chunk(b"IDAT", zlib.compress(raw, 9))
                   + chunk(b"IEND", b"")
@@ -76,7 +76,7 @@ jobs:
           png_icon(512, "public/icons/bben-512.png")
           for name in ("bben-192.png", "bben-512.png"):
               data = Path("public/icons", name).read_bytes()
-              if not data.startswith(b"\\x89PNG\\r\\n\\x1a\\n"):
+              if not data.startswith(b"\x89PNG\r\n\x1a\n"):
                   raise SystemExit(f"Invalid PNG signature: {name}")
               print(f"Generated {name}: {len(data)} bytes")
           PY
