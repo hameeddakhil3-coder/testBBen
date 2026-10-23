@@ -255,8 +255,4 @@ begin
   );
 end;
 $function$;
-
-revoke all on function public.admin_get_platform_settings() from public, anon;
-revoke all on function public.admin_update_platform_commission(numeric) from public, anon;
-grant execute on function public.admin_get_platform_settings() to authenticated;
-grant execute on function public.admin_update_platform_commission(numeric) to authenticated;
+;
