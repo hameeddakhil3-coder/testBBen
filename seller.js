@@ -163,7 +163,7 @@ async function loadProductCommissionRate(){
     const rate=Number(data);
     if(!Number.isFinite(rate)||rate<0||rate>20) throw new Error("نسبة العمولة غير صالحة");
     currentPlatformCommissionRate=rate;
-  }catch(error){
+  }catch{
     currentPlatformCommissionRate=null;
     if(productCommissionRate) productCommissionRate.textContent="تعذر تحميل النسبة";
     if(dialogError) dialogError.textContent="تعذر تحميل نسبة عمولة المنصة؛ لن يتم عرض تقدير حتى يتوفر الاتصال.";
