@@ -1,4 +1,4 @@
-name: Deploy BBen to Cloudflare Workers
+name: Deploy AL Reem to Cloudflare Workers
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: bben-cloudflare-deploy
+  group: al-reem-cloudflare-deploy
   cancel-in-progress: false
 
 jobs:
@@ -37,6 +37,7 @@ jobs:
           test -f platform.css
           test -f platform.js
           test -f platform/index.html
+          test -f al-reem-mark.svg
           mkdir -p public
           cp al-reem-mark.svg index.html styles.css app.js supabase-client.js seller.html seller.css seller.js merchant-profile.html merchant-profile.js customer-profile.html customer-profile.js market.html market.css market.js store.html platform.html platform.css platform.js public/
           cp platform.html public/admin.html
@@ -51,6 +52,16 @@ jobs:
           test -s public/index.html
           test -s public/customer-profile.html
           test -s public/customer-profile.js
+          test -s public/al-reem-mark.svg
+          grep -q 'AL Reem' public/index.html
+          grep -q 'al-reem-mark.svg' public/index.html
+          grep -q '#850D24' public/market.css
+          grep -q '#480815' public/seller.css
+          ! grep -qi 'BBen' public/index.html
+          ! grep -qi 'BBen' public/market.html
+          ! grep -qi 'BBen' public/seller.html
+          ! grep -qi 'BBen' public/platform.html
+          ! grep -qi 'BBen' public/customer-profile.html
           echo "Verified required deployed assets:"
           find public -maxdepth 1 -type f -printf '%f (%s bytes)\n' | sort
 
@@ -96,7 +107,7 @@ jobs:
               "  return env.ASSETS.fetch(request);\n"
               "} };\n"
           )
-          # Build the buyer account as a self-contained Worker response as well.
+          # Build the buyer account as a self-contained Worker response as well, preserving the AL Reem identity.
           customer_html = Path("customer-profile.html").read_text()
           seller_css = Path("seller.css").read_text()
           supabase_client = Path("supabase-client.js").read_text()
@@ -152,7 +163,7 @@ jobs:
           # Run the Worker before static asset lookup so explicit HTML routes cannot be shadowed by asset handling.
           config["assets"]["run_worker_first"] = True
           Path("wrangler.deploy.jsonc").write_text(json.dumps(config, indent=2))
-          print("Built self-contained /admin.html and /customer-profile.html entry points.")
+          print("Built self-contained AL Reem /admin.html and /customer-profile.html entry points.")
           PY
 
       - name: Verify Cloudflare deployment secret
