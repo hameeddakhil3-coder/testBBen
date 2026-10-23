@@ -30,10 +30,10 @@ function setMode(nextMode) {
   loginTab.setAttribute("aria-selected", String(!registering));
   registerTab.setAttribute("aria-selected", String(registering));
 
-  eyebrow.textContent = registering ? "انضم إلى BBen" : "مرحباً بعودتك";
+  eyebrow.textContent = registering ? "انضم إلى AL Reem" : "مرحباً بعودتك";
   title.textContent = registering ? "إنشاء حساب جديد" : "تسجيل الدخول";
   subtitle.textContent = registering
-    ? "أنشئ حسابك وحدد كيف تريد استخدام BBen."
+    ? "أنشئ حسابك وحدد كيف تريد استخدام AL Reem."
     : "أدخل بياناتك للمتابعة إلى حسابك.";
   submitButton.innerHTML = registering
     ? 'إنشاء الحساب <span aria-hidden="true">←</span>'
