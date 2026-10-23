@@ -43,9 +43,9 @@ function renderCampaign(index = activeCampaignIndex) {
   if (!section) return;
   const campaign = marketCampaigns[index] || null;
   activeCampaignIndex = campaign ? index : 0;
-  $("#campaign-eyebrow").textContent = campaign ? "حملة مميزة من BBen" : "مرحباً بك في BBen";
+  $("#campaign-eyebrow").textContent = campaign ? "حملة مميزة من AL Reem" : "مرحباً بك في AL Reem";
   $("#campaign-title").textContent = campaign?.title || "اكتشف منتجات المتاجر";
-  $("#campaign-subtitle").textContent = campaign?.subtitle || "تصفّح المنتجات المتاحة واختر ما يناسبك من متاجر BBen.";
+  $("#campaign-subtitle").textContent = campaign?.subtitle || "تصفّح المنتجات المتاحة واختر ما يناسبك من متاجر AL Reem.";
   $("#browse-button").textContent = (campaign?.button_label || "تصفّح المنتجات") + " ←";
   campaignTarget = safeCampaignTarget(campaign?.target_url);
   const image = $("#campaign-image");
@@ -259,7 +259,7 @@ function renderStores() {
     const link = document.createElement("a");
     link.className = "market-store-card";
     link.href = storeHref(store);
-    link.setAttribute("aria-label", "تصفح منتجات متجر " + (store.name || "BBen"));
+    link.setAttribute("aria-label", "تصفح منتجات متجر " + (store.name || "AL Reem"));
 
     const logo = document.createElement("div");
     logo.className = "market-store-logo";
@@ -280,7 +280,7 @@ function renderStores() {
     const copy = document.createElement("div");
     copy.className = "market-store-copy";
     const name = document.createElement("strong");
-    name.textContent = store.name || "متجر BBen";
+    name.textContent = store.name || "متجر AL Reem";
     const details = document.createElement("small");
     details.textContent = [store.city, store.productCount + " منتج متاح"].filter(Boolean).join(" · ");
     copy.append(name, details, storeRatingSummary(store));
@@ -496,7 +496,7 @@ function renderProducts() {
     if (product.stores?.logo_url) {
       const logo = document.createElement("img"); logo.src = product.stores.logo_url; logo.alt = ""; storeBadge.append(logo);
     }
-    const storeName = document.createElement("span"); storeName.textContent = product.stores?.name || "متجر BBen"; storeBadge.append(storeName); image.append(storeBadge);
+    const storeName = document.createElement("span"); storeName.textContent = product.stores?.name || "متجر AL Reem"; storeBadge.append(storeName); image.append(storeBadge);
     image.addEventListener("click", () => showProductDetails(product));
     image.addEventListener("keydown", (event) => {
       if (event.target === image && (event.key === "Enter" || event.key === " ")) {
@@ -507,7 +507,7 @@ function renderProducts() {
     const body = document.createElement("div"); body.className = "market-card-body";
     const category = document.createElement("span"); category.className = "market-card-category"; category.textContent = product.categories?.name || "أخرى";
     const title = document.createElement("strong"); title.className = "market-card-title"; title.textContent = product.name;
-    const store = document.createElement("a"); store.className = "market-card-store store-link"; store.href = storeHref(product.stores); store.textContent = product.stores?.city ? product.stores.name + " · " + product.stores.city : product.stores?.name || "متجر BBen"; store.setAttribute("aria-label", "زيارة متجر " + (product.stores?.name || "BBen"));
+    const store = document.createElement("a"); store.className = "market-card-store store-link"; store.href = storeHref(product.stores); store.textContent = product.stores?.city ? product.stores.name + " · " + product.stores.city : product.stores?.name || "متجر AL Reem"; store.setAttribute("aria-label", "زيارة متجر " + (product.stores?.name || "AL Reem"));
     const bottom = document.createElement("div"); bottom.className = "market-card-bottom";
     const price = document.createElement("span"); price.className = "market-price"; price.textContent = money(product.price);
     const actions = document.createElement("div"); actions.className = "market-card-actions";
@@ -595,7 +595,7 @@ async function openChatForProduct(product) {
   stopChatAutoRefresh();
   activeChatProduct = product;
   activeChatConversationId = null;
-  const storeName = product?.stores?.name || "متجر BBen";
+  const storeName = product?.stores?.name || "متجر AL Reem";
   $("#chat-context").textContent = "المتجر: " + storeName + " · المنتج: " + (product?.name || "استفسار عام");
   $("#chat-message-input").value = "";
   $("#chat-message-input").disabled = true;
@@ -739,7 +739,7 @@ function showProductDetails(product) {
   const description = document.createElement("p"); description.className = "dialog-product-description"; description.textContent = product.description || "لا يوجد وصف إضافي لهذا المنتج حالياً.";
   const store = document.createElement("a"); store.className = "dialog-store store-link"; store.href = storeHref(product.stores);
   if (product.stores?.logo_url) { const logo = document.createElement("img"); logo.src = product.stores.logo_url; logo.alt = ""; store.append(logo); }
-  const storeName = document.createElement("span"); storeName.textContent = "زيارة المتجر: " + (product.stores?.name || "متجر BBen") + (product.stores?.city ? " · " + product.stores.city : ""); store.append(storeName);
+  const storeName = document.createElement("span"); storeName.textContent = "زيارة المتجر: " + (product.stores?.name || "متجر AL Reem") + (product.stores?.city ? " · " + product.stores.city : ""); store.append(storeName);
   const facts = document.createElement("div"); facts.className = "dialog-product-facts";
   const stock = document.createElement("p"); stock.className = "dialog-stock-fact"; stock.textContent = Number(product.stock_quantity) > 0 ? "✓ متوفر حالياً · " + product.stock_quantity + " قطعة" : "نفدت الكمية حالياً.";
   const delivery = document.createElement("p"); delivery.className = "dialog-delivery-fact"; delivery.textContent = "🚚 أجرة التوصيل من هذا المتجر: " + money(product.stores?.delivery_fee || 0);
@@ -856,7 +856,7 @@ function renderCart() {
     const info = document.createElement("div");
     const name = document.createElement("strong"); name.textContent = product.name;
     const store = Array.isArray(product.stores) ? product.stores[0] : product.stores;
-    const storeLabel = document.createElement("small"); storeLabel.className = "cart-row-store"; storeLabel.textContent = "المتجر: " + (store?.name || "متجر BBen");
+    const storeLabel = document.createElement("small"); storeLabel.className = "cart-row-store"; storeLabel.textContent = "المتجر: " + (store?.name || "متجر AL Reem");
     const price = document.createElement("small"); price.className = "cart-row-unit-price"; price.textContent = money(product.price) + " للقطعة";
     const stock = document.createElement("small"); stock.className = "cart-row-stock"; stock.textContent = Number(product.stock_quantity) > 0 ? "متوفر: " + Number(product.stock_quantity) + " قطعة" : "غير متوفر حالياً";
     const controls = document.createElement("div"); controls.className = "cart-row-controls";
@@ -1195,7 +1195,7 @@ async function applyCheckoutCoupon() {
     if(data.max_discount!=null)discount=Math.min(discount,Number(data.max_discount));
     discount=Math.min(pricing.subtotal,Math.max(0,Math.round(discount*100)/100));
     appliedCoupon={id:data.id,code:data.code,discount,funding_source:data.funding_source};
-    message.textContent="تم التحقق من الكوبون. الخصم المتوقع "+money(discount)+" · "+(data.funding_source==="platform"?"بتمويل BBen":"بتمويل التاجر")+". سيُعاد التحقق عند تأكيد الطلب.";
+    message.textContent="تم التحقق من الكوبون. الخصم المتوقع "+money(discount)+" · "+(data.funding_source==="platform"?"بتمويل AL Reem":"بتمويل التاجر")+". سيُعاد التحقق عند تأكيد الطلب.";
   } catch(error) {
     message.textContent=error.message||"تعذر التحقق من الكوبون.";
   } finally {
@@ -1254,7 +1254,7 @@ function renderCheckoutItems() {
     const copy = document.createElement("div"); copy.className = "checkout-item-copy";
     const name = document.createElement("strong"); name.textContent = product.name;
     const store = Array.isArray(product.stores) ? product.stores[0] : product.stores;
-    const meta = document.createElement("small"); meta.textContent = (store?.name || "متجر BBen") + " · الكمية " + Number(item.quantity);
+    const meta = document.createElement("small"); meta.textContent = (store?.name || "متجر AL Reem") + " · الكمية " + Number(item.quantity);
     copy.append(name, meta);
     const amount = document.createElement("strong"); amount.className = "checkout-item-total"; amount.textContent = money(Number(product.price || 0) * Number(item.quantity || 0));
     row.append(copy, amount); host.append(row);
@@ -1334,7 +1334,7 @@ async function initMarket() {
     await loadFavoriteIds();
     if (isFavoritesPage) {
       document.body.classList.add("favorites-page");
-      document.title = "BBen | منتجاتي المفضلة";
+      document.title = "AL Reem | منتجاتي المفضلة";
       $(".market-categories").classList.add("hidden");
       $("#market-stores-section").classList.add("hidden");
       $(".market-benefits").classList.add("hidden");
@@ -1373,8 +1373,8 @@ async function initMarket() {
         $("#results-summary").textContent = "المتجر غير متاح";
         return;
       }
-      document.title = "BBen | " + publicStore.name;
-      $("#public-store-name").textContent = publicStore.name || "متجر BBen";
+      document.title = "AL Reem | " + publicStore.name;
+      $("#public-store-name").textContent = publicStore.name || "متجر AL Reem";
       $("#public-store-location").textContent = publicStore.city || "";
       $("#public-store-description").textContent = publicStore.description || "مرحباً بك في متجرنا. تصفح المنتجات المتاحة واختر ما يناسبك.";
       $("#public-store-delivery-fee").textContent = "أجرة التوصيل: " + money(publicStore.delivery_fee || 0);
