@@ -62,3 +62,18 @@ test("shared back navigation is included on inner pages and has safe fallbacks",
   assert.match(script, /previous\.origin === location\.origin/);
   assert.ok(script.includes("customer-profile"), "fallback should cover the customer profile route");
 });
+
+test("all inner pages include shared back navigation", async () => {
+  const pages = [
+    "../favorites.html",
+    "../store.html",
+    "../seller.html",
+    "../merchant-profile.html",
+    "../customer-profile.html",
+    "../platform.html",
+    "../platform/index.html",
+  ];
+  for (const page of pages) {
+    assert.match(await read(page), /navigation-back\\.js/, `missing shared back navigation in ${page}`);
+  }
+});
