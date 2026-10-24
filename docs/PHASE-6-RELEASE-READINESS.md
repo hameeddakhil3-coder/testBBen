@@ -28,7 +28,10 @@ Read-only catalog comparison identified 14 foreign-key constraints without a ful
 ### 6. Merchant image-upload validation
 The merchant product-image uploader now accepts only JPEG, PNG, and WebP, enforces the existing 5 MB per-image limit in both selection and upload paths, and derives the stored extension from the MIME type instead of trusting the filename. A static regression test covers these constraints. This reduces accidental acceptance of active/unsupported image formats, but does not replace server-side storage policy and content validation.
 
-### 7. PWA
+### 7. Merchant order-status controls
+A static regression test now verifies that the merchant UI offers cancellation only from `pending` and `processing`, permits `shipped` to advance to `delivered`, and keeps `delivered`/`cancelled` terminal in the displayed transition map. Status changes continue to go through the `update_merchant_order_status` RPC and the UI requires an explicit success response before updating local state. This does not prove server-side transition enforcement or exactly-once stock restoration; those remain blocked on isolated behavioral database tests. The multi-store ownership limitation described above also remains unresolved.
+
+### 8. PWA
 Static source confirms manifest entries, service-worker registration, offline fallback, and a deployment step that generates 192px/512px PNG icons. Live HTTP responses, icon appearance, installability, offline behavior, and cache behavior still require browser/device acceptance testing. The service worker was hardened on the test branch: version bumped to `bben-pwa-v2` to retire old caches, private seller/admin/profile navigation routes are excluded from the page cache, and navigations with query strings are not cached. Public same-origin HTML navigation can still be cached for offline fallback. This is a source-level mitigation; browser/device acceptance remains outstanding.
 
 ## Current phase status
