@@ -1,9 +1,14 @@
-const VERSION = "bben-pwa-v1";
+const VERSION = "bben-pwa-v2";
 const SHELL_CACHE = VERSION + "-shell";
 const PAGE_CACHE = VERSION + "-pages";
 const STATIC_CACHE = VERSION + "-static";
 const SHELL_URLS = ["/offline.html", "/manifest.webmanifest", "/icons/bben.svg"];
 const STATIC_EXTENSIONS = /\.(?:css|js|svg|png|webp|jpg|jpeg|woff2?)$/i;
+const PRIVATE_NAVIGATION_PATHS = ["/seller.html", "/merchant-profile.html", "/customer-profile.html", "/platform.html"];
+
+function isPrivateNavigation(pathname) {
+  return PRIVATE_NAVIGATION_PATHS.includes(pathname) || pathname === "/platform" || pathname.startsWith("/platform/");
+}
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.addAll(SHELL_URLS)).then(() => self.skipWaiting()));
@@ -26,7 +31,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith((async () => {
       try {
         const response = await fetch(request);
-        if (response.ok && response.headers.get("content-type")?.includes("text/html")) {
+        if (response.ok && response.headers.get("content-type")?.includes("text/html") && !url.search && !isPrivateNavigation(url.pathname)) {
           const cache = await caches.open(PAGE_CACHE);
           cache.put(request, response.clone()).catch(() => {});
         }
