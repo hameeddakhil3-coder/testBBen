@@ -204,3 +204,20 @@ test("commission ledger security migration checks the admin role inside the defi
   assert.match(sql, /revoke\s+all\s+on\s+function\s+public\.admin_list_commission_ledger\(\)\s+from\s+public,\s*anon/i);
   assert.match(sql, /grant\s+execute\s+on\s+function\s+public\.admin_list_commission_ledger\(\)\s+to\s+authenticated/i);
 });
+
+
+test("merchant store ownership is constrained to one store and order RPC enforces server-side guards", async () => {
+  const sql = await read("../database-migrations/20261024150000_enforce_single_store_and_fix_merchant_order_rpc.sql");
+  assert.match(sql, /create unique index if not exists stores_owner_id_unique_idx[\s\S]*?on public\.stores\s*\(owner_id\)/i);
+  assert.match(sql, /create or replace function public\.update_merchant_order_status\s*\(\s*p_order_id uuid,\s*p_next_status text/i);
+  assert.match(sql, /auth\.uid\(\)/);
+  assert.match(sql, /role = 'merchant'/i);
+  assert.match(sql, /where s\.owner_id = v_user_id/i);
+  assert.doesNotMatch(sql, /order by s\.created_at/i);
+  assert.match(sql, /v_order\.status = 'pending'[\s\S]*?p_next_status in \('processing', 'cancelled'\)/i);
+  assert.match(sql, /v_order\.status = 'processing'[\s\S]*?p_next_status in \('shipped', 'cancelled'\)/i);
+  assert.match(sql, /v_order\.status = 'shipped'[\s\S]*?p_next_status = 'delivered'/i);
+  assert.match(sql, /if p_next_status = 'cancelled'[\s\S]*?oi\.store_id = v_store_id/i);
+  assert.match(sql, /revoke all on function public\.update_merchant_order_status\(uuid, text\) from public, anon/i);
+  assert.match(sql, /grant execute on function public\.update_merchant_order_status\(uuid, text\) to authenticated/i);
+});
