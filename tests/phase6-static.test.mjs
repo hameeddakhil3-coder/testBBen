@@ -106,3 +106,39 @@ test("service worker does not cache private app pages or query-specific navigati
   assert.match(worker, /function isPrivateNavigation\(pathname\)/);
   assert.match(worker, /!url\.search && !isPrivateNavigation\(url\.pathname\)/);
 });
+
+
+test("checkout and customer cancellation delegate sensitive mutations to guarded database RPCs", async () => {
+  const market = await read("../market.js");
+  const checkoutStart = market.indexOf("async function submitCheckout");
+  const checkoutEnd = market.indexOf("async function initMarket", checkoutStart);
+  assert.ok(checkoutStart >= 0 && checkoutEnd > checkoutStart, "checkout handler should be present");
+  const checkout = market.slice(checkoutStart, checkoutEnd);
+  assert.match(checkout, /db\.rpc\("checkout_cart"/);
+  assert.doesNotMatch(checkout, /\.from\("orders"\)\s*\.insert/);
+  const cancelStart = market.indexOf("async function cancelCustomerOrder");
+  const cancelEnd = market.indexOf("async function openOrderHistory", cancelStart);
+  assert.ok(cancelStart >= 0 && cancelEnd > cancelStart, "customer cancellation handler should be present");
+  assert.match(market.slice(cancelStart, cancelEnd), /db\.rpc\("cancel_customer_order"/);
+});
+
+test("customer order history and merchant order lists include client-side ownership/store scoping", async () => {
+  const market = await read("../market.js");
+  const seller = await read("../seller.js");
+  const customerStart = market.indexOf("async function loadOrderHistory");
+  const customerEnd = market.indexOf("async function cancelCustomerOrder", customerStart);
+  assert.ok(customerStart >= 0 && customerEnd > customerStart);
+  assert.match(market.slice(customerStart, customerEnd), /\.eq\("customer_id",\s*currentUser\.id\)/);
+  const merchantStart = seller.indexOf("async function loadMerchantOrders");
+  const merchantEnd = seller.indexOf("async function updateMerchantOrderStatus", merchantStart);
+  assert.ok(merchantStart >= 0 && merchantEnd > merchantStart);
+  assert.match(seller.slice(merchantStart, merchantEnd), /\.eq\("order_items\.store_id",\s*currentStore\.id\)/);
+});
+
+test("campaign targets reject external and script URLs before navigation", async () => {
+  const market = await read("../market.js");
+  const platform = await read("../platform.js");
+  assert.match(market, /function safeCampaignTarget\(value\)[\s\S]*?\^\(\?:https\?:\)\?\\\/\\\//);
+  assert.match(market, /function safeCampaignTarget\(value\)[\s\S]*?javascript:/);
+  assert.match(platform, /function safeCampaignTargetAdmin\(value\)[\s\S]*?target\.includes\(":"\)/);
+});
