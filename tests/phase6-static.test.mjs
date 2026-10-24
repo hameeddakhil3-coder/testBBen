@@ -152,3 +152,15 @@ test("merchant product image uploads allow only JPEG, PNG, and WebP with a 5 MB 
   assert.match(seller, /if \(!ext \|\| file\.size > 5 \* 1024 \* 1024\)/);
   assert.doesNotMatch(seller, /file\.name\.split\("\."\)\.pop\(\)/);
 });
+
+
+test("merchant order status UI limits cancellation to pending or processing orders", async () => {
+  const seller = await read("../seller.js");
+  assert.match(seller, /pending:\s*\["pending",\s*"processing",\s*"cancelled"\]/);
+  assert.match(seller, /processing:\s*\["processing",\s*"shipped",\s*"cancelled"\]/);
+  assert.match(seller, /shipped:\s*\["shipped",\s*"delivered"\]/);
+  assert.match(seller, /delivered:\s*\["delivered"\]/);
+  assert.match(seller, /cancelled:\s*\["cancelled"\]/);
+  assert.match(seller, /db\.rpc\("update_merchant_order_status"/);
+  assert.match(seller, /if \(!data\?\.success \|\| !data\.status\) throw new Error/);
+});
