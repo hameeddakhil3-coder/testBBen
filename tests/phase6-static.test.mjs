@@ -97,3 +97,12 @@ test("notification links only allow the expected order routes", async () => {
   assert.match(market, /function safeNotificationTarget\(value\).*market\\\.html\\\?order_id=/);
   assert.match(seller, /seller\\\.html\\\?view=orders&order_id=/);
 });
+
+
+test("service worker does not cache private app pages or query-specific navigation URLs", async () => {
+  const worker = await read("../sw.js");
+  assert.match(worker, /const VERSION = "bben-pwa-v2"/);
+  assert.match(worker, /PRIVATE_NAVIGATION_PATHS = \["\\/seller\\.html", "\\/merchant-profile\\.html", "\\/customer-profile\\.html", "\\/platform\\.html"\]/);
+  assert.match(worker, /function isPrivateNavigation\(pathname\)/);
+  assert.match(worker, /!url\.search && !isPrivateNavigation\(url\.pathname\)/);
+});
