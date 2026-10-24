@@ -25,14 +25,17 @@ The current production settings row was observed read-only with commission rate 
 ### 5. Foreign-key index candidates
 Read-only catalog comparison identified 14 foreign-key constraints without a full valid index whose leading columns cover the FK columns. This is a candidate list, not proof that all 14 indexes should be added: inspect workload, existing partial/composite indexes, and the advisor's scope before preparing any migration. No indexes were created.
 
-### 6. PWA
+### 6. Merchant image-upload validation
+The merchant product-image uploader now accepts only JPEG, PNG, and WebP, enforces the existing 5 MB per-image limit in both selection and upload paths, and derives the stored extension from the MIME type instead of trusting the filename. A static regression test covers these constraints. This reduces accidental acceptance of active/unsupported image formats, but does not replace server-side storage policy and content validation.
+
+### 7. PWA
 Static source confirms manifest entries, service-worker registration, offline fallback, and a deployment step that generates 192px/512px PNG icons. Live HTTP responses, icon appearance, installability, offline behavior, and cache behavior still require browser/device acceptance testing. The service worker was hardened on the test branch: version bumped to `bben-pwa-v2` to retire old caches, private seller/admin/profile navigation routes are excluded from the page cache, and navigations with query strings are not cached. Public same-origin HTML navigation can still be cached for offline fallback. This is a source-level mitigation; browser/device acceptance remains outstanding.
 
 ## Current phase status
 
 | Area | Status | Evidence / remaining gate |
 |---|---|---|
-| Source syntax and static regressions | Passed on latest checked code commit | Documentation update triggers a fresh CI run |
+| Source syntax and static regressions | Latest verified run passed before the merchant-upload hardening; new upload regression test added | Check CI triggered by the latest branch commit |
 | Deployment isolation | Source-reviewed; test branch does not auto-deploy | Do not dispatch deployment |
 | Function ACL and role guards | Read-only catalog review completed for 10 SECURITY DEFINER functions | Role-specific behavioral tests remain |
 | Checkout, coupon, cancellation, stock concurrency | Not behaviorally tested | Requires isolated database and synthetic data |
