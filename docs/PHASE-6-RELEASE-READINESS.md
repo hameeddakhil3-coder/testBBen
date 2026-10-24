@@ -14,7 +14,7 @@ Two separate, read-only workflows run checks:
 - `BBen Static Validation` checks required files, JavaScript syntax, manifest/PWA references, and `tests/phase6-static.test.mjs`.
 - `BBen Build Input Validation` runs `node scripts/validate-build.mjs` to check deployment inputs and PWA metadata.
 
-The second workflow was renamed from the misleading `BBen Static Validation` display name; its path remains `.github/workflows/deno.yml` for now. This avoids duplicate workflow names without changing its triggers or validation behavior. Both workflows use read-only repository permissions and do not deploy or modify the database. The tested branch head passed `BBen Build Input Validation` run [40077956682](https://github.com/hameeddakhil3-coder/testBBen/actions/runs/40077956682) and `BBen Static Validation` run [40077956702](https://github.com/hameeddakhil3-coder/testBBen/actions/runs/40077956702). Subsequent documentation-only commits require their own CI results before this exact HEAD is considered verified.
+The second workflow was renamed from the misleading `BBen Static Validation` display name; its path remains `.github/workflows/deno.yml` for now. This avoids duplicate workflow names without changing its triggers or validation behavior. Both workflows use read-only repository permissions and do not deploy or modify the database. The latest checked code commit `cb4698179311e38f22c6c83ad27976ccdf70829c` passed `BBen Build Input Validation` run [40078298360](https://github.com/hameeddakhil3-coder/testBBen/actions/runs/40078298360) and `BBen Static Validation` run [40078298368](https://github.com/hameeddakhil3-coder/testBBen/actions/runs/40078298368), including all steps in both jobs. This documentation update will itself trigger CI on the test branch.
 
 ### 3. Merchant multi-store behavior
 The reviewed `update_merchant_order_status` function selects the earliest-created store owned by the authenticated merchant and limits order operations to that store. If the product permits multiple stores per merchant, valid orders from other owned stores may be rejected. This is a code-level limitation; the intended product rule still needs confirmation. No runtime fix was applied because order-status and stock-restoration behavior requires isolated regression tests.
@@ -32,7 +32,7 @@ Static source confirms manifest entries, service-worker registration, offline fa
 
 | Area | Status | Evidence / remaining gate |
 |---|---|---|
-| Source syntax and static regressions | CI has passed on previously checked commits | Re-check Actions for the newest commits |
+| Source syntax and static regressions | Passed on latest checked code commit | Documentation update triggers a fresh CI run |
 | Deployment isolation | Source-reviewed; test branch does not auto-deploy | Do not dispatch deployment |
 | Function ACL and role guards | Read-only catalog review completed for 10 SECURITY DEFINER functions | Role-specific behavioral tests remain |
 | Checkout, coupon, cancellation, stock concurrency | Not behaviorally tested | Requires isolated database and synthetic data |
@@ -44,11 +44,11 @@ Static source confirms manifest entries, service-worker registration, offline fa
 
 ## Remaining blockers (not safe to claim complete)
 
-1. No isolated Supabase development branch exists; recurring cost has not been approved.
-2. Database behavioral and concurrency tests have not been run.
+1. Database behavioral and concurrency tests have been deliberately deferred per the user's instruction to skip the Supabase test-database stage.
+2. Checkout, coupon, cancellation, stock concurrency, and role-specific behavior remain unverified at runtime.
 3. Mobile/browser PWA acceptance tests have not been run.
 4. The multi-store product rule is unresolved.
-5. The latest GitHub Actions runs must be checked after the latest test-branch commits.
+5. Check the CI runs triggered by this documentation update before considering the current branch snapshot statically verified.
 
 ## Safety record
 
