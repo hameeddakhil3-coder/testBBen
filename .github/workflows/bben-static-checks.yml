@@ -35,7 +35,7 @@ jobs:
             store.html merchant-profile.html merchant-profile.js
             customer-profile.html customer-profile.js
             platform.html platform.js platform.css
-            supabase-client.js manifest.webmanifest pwa-register.js sw.js offline.html
+            supabase-client.js manifest.webmanifest pwa-register.js navigation-back.js sw.js offline.html
             icons/bben.svg icons/bben-192.svg icons/bben-512.svg
           )
           for file in "${files[@]}"; do
@@ -47,7 +47,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for file in app.js seller.js market.js merchant-profile.js customer-profile.js platform.js supabase-client.js pwa-register.js sw.js; do
+          for file in app.js seller.js market.js merchant-profile.js customer-profile.js platform.js supabase-client.js pwa-register.js navigation-back.js sw.js; do
             node --check "$file"
           done
 
