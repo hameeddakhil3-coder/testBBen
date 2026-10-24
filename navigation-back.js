@@ -9,7 +9,7 @@
   const fallback = () => {
     if (/(^|\/)(store|favorites)\.html$/.test(path) || /(^|\/)customer-profile\.html$/.test(path)) return "/market.html";
     if (/(^|\/)merchant-profile\.html$/.test(path)) return "/seller.html";
-    if (path.includes("/platform") || /(^|\/)platform\.html$/.test(path)) return "/index.html";
+    if (path.includes("/platform") || /(^|\\/)(platform|admin)\\.html$/.test(path)) return "/index.html";
     if (/(^|\/)seller\.html$/.test(path)) return "/market.html";
     return "/market.html";
   };
