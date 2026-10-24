@@ -193,3 +193,14 @@ test("merchant product edits are store-scoped and keep the primary image aligned
   assert.match(handler, /\.update\(\{ sort_order: index \}\)\.eq\("product_id",\s*saved\.id\)\.eq\("image_url",\s*finalImageUrls\[index\]\)/);
   assert.match(handler, /Number\.isInteger\(stock\) \|\| stock < 0/);
 });
+
+test("commission ledger security migration checks the admin role inside the definer RPC", async () => {
+  const sql = await read("../database-migrations/20261024130000_restore_admin_check_commission_ledger.sql");
+  assert.match(sql, /create\s+or\s+replace\s+function\s+public\.admin_list_commission_ledger\s*\(\)/i);
+  assert.match(sql, /security\s+definer/i);
+  assert.match(sql, /set\s+search_path\s+to\s+'public',\s*'pg_temp'/i);
+  assert.match(sql, /auth\.uid\(\)[\s\S]*?role\s*=\s*'admin'/i);
+  assert.match(sql, /raise\s+exception/i);
+  assert.match(sql, /revoke\s+all\s+on\s+function\s+public\.admin_list_commission_ledger\(\)\s+from\s+public,\s*anon/i);
+  assert.match(sql, /grant\s+execute\s+on\s+function\s+public\.admin_list_commission_ledger\(\)\s+to\s+authenticated/i);
+});
