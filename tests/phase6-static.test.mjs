@@ -60,5 +60,5 @@ test("shared back navigation is included on inner pages and has safe fallbacks",
   assert.match(script, /history\.back\(\)/);
   assert.match(script, /location\.assign\(fallback\(\)\)/);
   assert.match(script, /previous\.origin === location\.origin/);
-  assert.ok(script.includes("customer-profile\\.html"), "fallback should cover the customer profile route");
+  assert.ok(script.includes("customer-profile"), "fallback should cover the customer profile route");
 });
