@@ -2,7 +2,7 @@
 Date: 2026-10-24
 Branch: `test/phase-3-isolated-validation`
 Purpose: Turn the reviewed safeguards into a repeatable acceptance checklist.
-Status: Test plan only. No test orders were created and no production writes/deployments were performed.
+Status: Static checks have been run by GitHub Actions; isolated database/browser acceptance tests remain blocked pending a separate test environment. No production writes or deployments were performed.
 
 ## Preconditions
 - Use an isolated Supabase development branch with synthetic accounts and products.
@@ -41,6 +41,26 @@ Status: Test plan only. No test orders were created and no production writes/dep
 | PWA-01 | Mobile browser | Load manifest and both PNG icons | Successful HTTP responses and valid image content |
 | PWA-02 | Mobile browser | Test service worker, offline fallback, install prompt | Expected behavior recorded on supported browsers |
 
+## Free validation actually completed on 2026-10-24
+
+1. GitHub Actions workflow `BBen Static Validation` completed successfully (run #11, commit `f979bfea60efcd766409819649396422ec7a8004`). This run checks required source files, JavaScript syntax, manifest fields, PWA source references, the static regression tests, and test-branch deployment safeguards. This is CI evidence, not a fresh local execution.
+   - Run: https://github.com/hameeddakhil3-coder/testBBen/actions/runs/40075784943
+2. Read-only Supabase project inspection returned `ACTIVE_HEALTHY`; no development branch exists.
+3. Read-only function ACL inspection covered the ten reviewed SECURITY DEFINER RPCs: all had `authenticated` EXECUTE, none had `anon` EXECUTE, and all had a fixed `search_path`. This does not replace role-specific behavioral tests.
+4. Read-only settings inspection found exactly one `platform_settings` row, current configured commission rate `1.50`, and three commission audit rows. No values were changed. Preserve this configured rate; do not substitute the 5.00 fallback used only when settings are missing.
+5. Read-only FK/index comparison found 14 FK constraints without a full, valid index whose leading columns cover the FK columns. This differs from the advisor's 13 warning count because the metadata query also identified `notifications.user_id`; compare partial/composite index semantics and the advisor scope before adding indexes. Candidate SQL remains unapplied.
+6. Source review reconfirmed that `update_merchant_order_status` selects the earliest-created store owned by a merchant, then limits the update to that store. If multiple stores per merchant are supported, this is a confirmed limitation requiring a scoped fix and regression tests. Do not change it until the intended multi-store behavior and isolated tests are established.
+7. Static PWA checks do not verify live PNG responses, browser installability, or private-page caching behavior. Those require a browser/preview environment.
+
+## Not yet executed
+
+- SEC-01 through SEC-08, ORD-01 through ORD-06, COUP-01 through COUP-02, COM-01 through COM-04, MER-01 through MER-03, and RLS-01 as behavioral database tests.
+- Concurrent checkout/coupon tests.
+- Mobile-browser PWA acceptance tests.
+- Local execution of the static suite within this session.
+
+Reason: no isolated Supabase branch exists, and its recurring cost has not been approved. No test orders were created in production.
+
 ## Pass criteria
 - No unauthorized read or mutation succeeds.
 - No failed checkout leaves partial orders, altered stock, or consumed coupon usage.
@@ -50,6 +70,6 @@ Status: Test plan only. No test orders were created and no production writes/dep
 - Every failure is captured with the actor, operation, expected result, actual result, and relevant logs.
 
 ## Approval gates
-1. Do not run these tests against production.
+1. Do not run behavioral database tests against production.
 2. A separate Supabase branch is required before database regression tests; its recurring cost has not been approved.
 3. Do not merge or deploy based solely on this checklist; attach actual test evidence first.
