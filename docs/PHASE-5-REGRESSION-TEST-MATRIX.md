@@ -2,10 +2,10 @@
 Date: 2026-10-24
 Branch: `test/phase-3-isolated-validation`
 Purpose: Turn the reviewed safeguards into a repeatable acceptance checklist.
-Status: GitHub Actions passed on 2026-10-24: `BBen Build Input Validation` run 40077956682 and `BBen Static Validation` run 40077956702. Creating an isolated Supabase branch was attempted but the platform rejected it because database branching requires Pro or above. No branch was created; database/browser acceptance tests remain blocked. No production writes or deployments were performed.
+Status: The user explicitly chose to skip creation of a Supabase test database and continue with checks that do not require it. No test database was created. Latest checked workflows passed on commit `cb4698179311e38f22c6c83ad27976ccdf70829c`: `BBen Build Input Validation` run 40078298360 and `BBen Static Validation` run 40078298368. Database behavior/concurrency tests remain unexecuted; browser/device acceptance also remains outstanding. No production writes or deployments were performed.
 
 ## Preconditions
-- Use an isolated Supabase development branch with synthetic accounts and products.
+- If database testing is resumed later, first provision an explicitly approved isolated environment with synthetic accounts and products. Per the user's current instruction, skip this setup and do not access production for behavioral tests.
 - Do not use production checkout or create real test orders.
 - Record initial stock, order counts, settings/commission rate, and audit count in the isolated environment only.
 - Use distinct customer, merchant, and admin test accounts.
@@ -59,7 +59,7 @@ Status: GitHub Actions passed on 2026-10-24: `BBen Build Input Validation` run 4
 - Mobile-browser PWA acceptance tests.
 - Local execution of the static suite within this session.
 
-Reason: no isolated Supabase branch exists, and its recurring cost has not been approved. No test orders were created in production.
+Reason: the user asked to skip the Supabase test-database stage. No test orders were created in production.
 
 ## Pass criteria
 - No unauthorized read or mutation succeeds.
@@ -71,5 +71,5 @@ Reason: no isolated Supabase branch exists, and its recurring cost has not been 
 
 ## Approval gates
 1. Do not run behavioral database tests against production.
-2. A separate Supabase branch is required before database regression tests; its recurring cost has not been approved.
+2. Database regression tests remain deferred until the user chooses to resume testing with an isolated environment; do not substitute production.
 3. Do not merge or deploy based solely on this checklist; attach actual test evidence first.
