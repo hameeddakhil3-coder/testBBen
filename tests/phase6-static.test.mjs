@@ -164,3 +164,32 @@ test("merchant order status UI limits cancellation to pending or processing orde
   assert.match(seller, /db\.rpc\("update_merchant_order_status"/);
   assert.match(seller, /if \(!data\?\.success \|\| !data\.status\) throw new Error/);
 });
+
+
+test("merchant product deletion checks linked records and archives products with history", async () => {
+  const seller = await read("../seller.js");
+  const start = seller.indexOf("async function handleDeleteProduct");
+  const end = seller.indexOf("\nfunction renderProductList", start);
+  assert.ok(start >= 0 && end > start, "product delete handler should be present");
+  const handler = seller.slice(start, end);
+  assert.match(handler, /from\("order_items"\)[\s\S]*?eq\("product_id",\s*product\.id\)/);
+  assert.match(handler, /from\("chat_conversations"\)[\s\S]*?eq\("product_id",\s*product\.id\)/);
+  assert.match(handler, /from\("cart_items"\)[\s\S]*?eq\("product_id",\s*product\.id\)/);
+  assert.match(handler, /const failed = checks\.find\(\(result\) => result\.error\)/);
+  assert.match(handler, /if \(hasHistory\)[\s\S]*?update\(\{ status: "archived" \}\)/);
+  assert.match(handler, /\.delete\(\)[\s\S]*?\.eq\("store_id",\s*currentStore\.id\)/);
+});
+
+test("merchant product edits are store-scoped and keep the primary image aligned with gallery order", async () => {
+  const seller = await read("../seller.js");
+  const start = seller.indexOf('productForm.addEventListener("submit"');
+  const end = seller.indexOf("function updateProductCounts", start);
+  assert.ok(start >= 0 && end > start, "product save handler should be present");
+  const handler = seller.slice(start, end);
+  assert.match(handler, /\.update\(payload\)\.eq\("id",\s*editingProductId\)\.eq\("store_id",\s*currentStore\.id\)/);
+  assert.match(handler, /\.insert\(payload\)/);
+  assert.match(handler, /const finalImageUrls = \[\.\.\.keptImages\.map\(\(image\) => image\.image_url\), \.\.\.uploadedUrls\]/);
+  assert.match(handler, /const imageUrl = finalImageUrls\[0\] \|\| null/);
+  assert.match(handler, /\.update\(\{ sort_order: index \}\)\.eq\("product_id",\s*saved\.id\)\.eq\("image_url",\s*finalImageUrls\[index\]\)/);
+  assert.match(handler, /Number\.isInteger\(stock\) \|\| stock < 0/);
+});
