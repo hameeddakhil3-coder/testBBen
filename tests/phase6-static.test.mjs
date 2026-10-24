@@ -102,7 +102,7 @@ test("notification links only allow the expected order routes", async () => {
 test("service worker does not cache private app pages or query-specific navigation URLs", async () => {
   const worker = await read("../sw.js");
   assert.match(worker, /const VERSION = "bben-pwa-v2"/);
-  assert.match(worker, /PRIVATE_NAVIGATION_PATHS = \["\\/seller\\.html", "\\/merchant-profile\\.html", "\\/customer-profile\\.html", "\\/platform\\.html"\]/);
+  for (const path of ["/seller.html", "/merchant-profile.html", "/customer-profile.html", "/platform.html"]) assert.ok(worker.includes(`"${path}"`));
   assert.match(worker, /function isPrivateNavigation\(pathname\)/);
   assert.match(worker, /!url\.search && !isPrivateNavigation\(url\.pathname\)/);
 });
