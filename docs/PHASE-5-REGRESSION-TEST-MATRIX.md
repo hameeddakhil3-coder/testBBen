@@ -2,7 +2,7 @@
 Date: 2026-10-24
 Branch: `test/phase-3-isolated-validation`
 Purpose: Turn the reviewed safeguards into a repeatable acceptance checklist.
-Status: Static checks have been run by GitHub Actions; isolated database/browser acceptance tests remain blocked pending a separate test environment. No production writes or deployments were performed.
+Status: GitHub Actions passed on 2026-10-24: `BBen Build Input Validation` run 40077956682 and `BBen Static Validation` run 40077956702. Creating an isolated Supabase branch was attempted but the platform rejected it because database branching requires Pro or above. No branch was created; database/browser acceptance tests remain blocked. No production writes or deployments were performed.
 
 ## Preconditions
 - Use an isolated Supabase development branch with synthetic accounts and products.
