@@ -35,7 +35,7 @@ const requiredSourceFiles = [
   "merchant-profile.js", "customer-profile.html", "customer-profile.js",
   "market.html", "market.css", "market.js", "store.html", "platform.html",
   "platform.css", "platform.js", "platform/index.html", "manifest.webmanifest",
-  "pwa-register.js", "sw.js", "offline.html", "icons/bben.svg",
+  "pwa-register.js", "navigation-back.js", "sw.js", "offline.html", "icons/bben.svg",
   "icons/bben-192.svg", "icons/bben-512.svg"
 ];
 
