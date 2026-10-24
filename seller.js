@@ -208,8 +208,9 @@ document.querySelector("#add-more-product-images").addEventListener("click", () 
 productImage.addEventListener("change", () => {
   const files = [...(productImage.files || [])];
   productImage.value = "";
-  if (files.some((file) => !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024)) {
-    showToast("يجب أن تكون كل صورة صالحة وألا يتجاوز حجمها 5 ميغابايت."); return;
+  const supportedImageTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (files.some((file) => !supportedImageTypes.includes(file.type) || file.size > 5 * 1024 * 1024)) {
+    showToast("استخدم صور JPG أو PNG أو WebP، على ألا يتجاوز حجم كل صورة 5 ميغابايت."); return;
   }
   const keptCount = existingProductImages.filter((image) => !removedProductImageIds.has(image.id)).length;
   if (keptCount + selectedProductFiles.length + files.length > 8) {
@@ -220,8 +221,9 @@ productImage.addEventListener("change", () => {
 });
 async function uploadImage(file, folder) {
   if (!file) return null;
-  if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) throw new Error("يجب أن تكون الصورة من نوع صورة وحجمها 5 ميغابايت أو أقل.");
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const extensionByType = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+  const ext = extensionByType[file.type];
+  if (!ext || file.size > 5 * 1024 * 1024) throw new Error("استخدم صورة JPG أو PNG أو WebP، بحجم 5 ميغابايت أو أقل.");
   const path = currentUser.id + "/" + folder + "/" + crypto.randomUUID() + "." + ext;
   const { error } = await db.storage.from("bben-images").upload(path, file, { upsert: false, contentType: file.type });
   if (error) throw error;
