@@ -142,3 +142,13 @@ test("campaign targets reject external and script URLs before navigation", async
   assert.match(market, /function safeCampaignTarget\(value\)[\s\S]*?javascript:/);
   assert.match(platform, /function safeCampaignTargetAdmin\(value\)[\s\S]*?target\.includes\(":"\)/);
 });
+
+
+test("merchant product image uploads allow only JPEG, PNG, and WebP with a 5 MB limit", async () => {
+  const seller = await read("../seller.js");
+  assert.match(seller, /const supportedImageTypes = \["image\/jpeg", "image\/png", "image\/webp"\]/);
+  assert.match(seller, /files\.some\(\(file\) => !supportedImageTypes\.includes\(file\.type\) \|\| file\.size > 5 \* 1024 \* 1024\)/);
+  assert.match(seller, /const extensionByType = \{ "image\/jpeg": "jpg", "image\/png": "png", "image\/webp": "webp" \}/);
+  assert.match(seller, /if \(!ext \|\| file\.size > 5 \* 1024 \* 1024\)/);
+  assert.doesNotMatch(seller, /file\.name\.split\("\."\)\.pop\(\)/);
+});
