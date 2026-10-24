@@ -63,5 +63,8 @@ jobs:
           grep -q 'sw.js' pwa-register.js
           echo "PWA source references are present."
 
+      - name: Run offline regression tests
+        run: node --test tests/phase6-static.test.mjs
+
       - name: Report scope
-        run: echo "Static checks only. This workflow does not deploy or modify any database."
+        run: echo "Static checks and offline regression tests only. This workflow does not deploy or modify any database."
