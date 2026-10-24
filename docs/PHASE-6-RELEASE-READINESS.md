@@ -26,7 +26,7 @@ The current production settings row was observed read-only with commission rate 
 Read-only catalog comparison identified 14 foreign-key constraints without a full valid index whose leading columns cover the FK columns. This is a candidate list, not proof that all 14 indexes should be added: inspect workload, existing partial/composite indexes, and the advisor's scope before preparing any migration. No indexes were created.
 
 ### 6. PWA
-Static source confirms manifest entries, service-worker registration, offline fallback, and a deployment step that generates 192px/512px PNG icons. Live HTTP responses, icon appearance, installability, offline behavior, and cache behavior still require browser/device acceptance testing. The service worker caches successful same-origin HTML navigations for offline fallback; verify on a real browser that no personalized HTML is ever embedded in those responses before considering private-page caching fully accepted.
+Static source confirms manifest entries, service-worker registration, offline fallback, and a deployment step that generates 192px/512px PNG icons. Live HTTP responses, icon appearance, installability, offline behavior, and cache behavior still require browser/device acceptance testing. The service worker was hardened on the test branch: version bumped to `bben-pwa-v2` to retire old caches, private seller/admin/profile navigation routes are excluded from the page cache, and navigations with query strings are not cached. Public same-origin HTML navigation can still be cached for offline fallback. This is a source-level mitigation; browser/device acceptance remains outstanding.
 
 ## Current phase status
 
@@ -39,7 +39,7 @@ Static source confirms manifest entries, service-worker registration, offline fa
 | Commission snapshot/history | Source-reviewed; current rate observed as 1.50 | Behavioral regression in isolation |
 | Multi-store merchant orders | Known conditional limitation | Confirm intended product behavior, then test |
 | FK indexes | 14 candidates identified | Workload/advisor review before proposing migration |
-| PWA | Static checks only | Browser/device acceptance still required |
+| PWA | Static tests include private-route/query cache exclusions | Browser/device acceptance still required |
 | Production deployment readiness | **Not approved** | Do not merge/deploy until blocked tests are evidenced |
 
 ## Remaining blockers (not safe to claim complete)
