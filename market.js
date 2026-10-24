@@ -1237,7 +1237,7 @@ async function refreshNotificationBadge(){
     $("#notifications-button").title=count?("إشعارات غير مقروءة: "+count):"الإشعارات";
   }catch(error){console.warn("Notification count failed:",error);}
 }
-function safeNotificationTarget(value){const target=String(value||"").trim();return target&&!/^(?:https?:)?\/\//i.test(target)&&!target.startsWith("..")&&!/^javascript:/i.test(target)&&!/[\r\n]/.test(target)?target:"market.html";}
+function safeNotificationTarget(value){const target=String(value||"").trim();return /^market\.html\?order_id=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(target)?target:"market.html";}
 
 function renderCheckoutItems() {
   const host = $("#checkout-items-summary");

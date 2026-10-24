@@ -38,7 +38,7 @@ jobs:
           test -f platform.js
           test -f platform/index.html
           mkdir -p public
-          cp index.html favorites.html styles.css app.js supabase-client.js seller.html seller.css seller.js merchant-profile.html merchant-profile.js customer-profile.html customer-profile.js market.html market.css market.js store.html platform.html platform.css platform.js manifest.webmanifest pwa-register.js sw.js offline.html public/
+          cp index.html favorites.html styles.css app.js supabase-client.js seller.html seller.css seller.js merchant-profile.html merchant-profile.js customer-profile.html customer-profile.js market.html market.css market.js store.html platform.html platform.css platform.js manifest.webmanifest pwa-register.js navigation-back.js sw.js offline.html public/
           mkdir -p public/icons
           cp icons/bben.svg icons/bben-192.svg icons/bben-512.svg public/icons/
           python3 - <<'PY'
@@ -91,6 +91,7 @@ jobs:
           test -s public/platform/index.html
           test -s public/manifest.webmanifest
           test -s public/pwa-register.js
+          test -s public/navigation-back.js
           test -s public/sw.js
           test -s public/offline.html
           test -s public/icons/bben.svg

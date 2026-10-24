@@ -1,0 +1,70 @@
+name: BBen Static Validation
+
+on:
+  push:
+    branches:
+      - "test/phase-3-isolated-validation"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate required source files
+        shell: bash
+        run: |
+          set -euo pipefail
+          files=(
+            index.html app.js styles.css
+            seller.html seller.js seller.css
+            market.html market.js market.css
+            store.html merchant-profile.html merchant-profile.js
+            customer-profile.html customer-profile.js
+            platform.html platform.js platform.css
+            supabase-client.js manifest.webmanifest pwa-register.js navigation-back.js sw.js offline.html
+            icons/bben.svg icons/bben-192.svg icons/bben-512.svg
+          )
+          for file in "${files[@]}"; do
+            test -s "$file" || { echo "Missing or empty required file: $file"; exit 1; }
+          done
+          echo "All required source files exist."
+
+      - name: Validate JavaScript syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          for file in app.js seller.js market.js merchant-profile.js customer-profile.js platform.js supabase-client.js pwa-register.js navigation-back.js sw.js; do
+            node --check "$file"
+          done
+
+      - name: Validate PWA manifest JSON
+        run: node -e "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8')); if (!m.name || !m.start_url || !m.scope || m.display !== 'standalone' || !Array.isArray(m.icons) || m.icons.length < 2) process.exit(1); for (const i of m.icons) if (!i.src || !i.sizes || i.type !== 'image/png') process.exit(1); console.log('Manifest JSON and required install fields are valid.')"
+
+      - name: Verify HTML references expected PWA assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q 'manifest.webmanifest' index.html
+          grep -q 'pwa-register.js' index.html
+          grep -q 'sw.js' pwa-register.js
+          echo "PWA source references are present."
+
+      - name: Run offline regression tests
+        run: node --test tests/phase6-static.test.mjs
+
+      - name: Report scope
+        run: echo "Static checks and offline regression tests only. This workflow does not deploy or modify any database."

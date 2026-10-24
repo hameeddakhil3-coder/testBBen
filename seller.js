@@ -41,7 +41,7 @@ async function loadMerchantNotifications(){
   const time=document.createElement("small");time.textContent=new Date(n.created_at).toLocaleString("ar-IQ",{dateStyle:"medium",timeStyle:"short"});
   card.append(title,body,time);
   if(!n.read_at){const button=document.createElement("button");button.type="button";button.className="secondary-button";button.textContent="تحديد كمقروء";button.addEventListener("click",async()=>{button.disabled=true;const {error:updateError}=await db.from("notifications").update({read_at:new Date().toISOString()}).eq("id",n.id);if(updateError){showToast("تعذر تحديث الإشعار.");button.disabled=false;return;}button.remove();card.classList.remove("notification-unread");await refreshMerchantNotificationBadge();});card.append(button);}
-  if(n.target_url&&!/^(?:https?:)?\/\//i.test(n.target_url)&&!n.target_url.startsWith("..")&&!/^javascript:/i.test(n.target_url)){const link=document.createElement("a");link.href=n.target_url;link.textContent="فتح الطلب";link.className="notification-open-link";link.addEventListener("click",async(event)=>{if(!n.read_at){event.preventDefault();const {error:updateError}=await db.from("notifications").update({read_at:new Date().toISOString()}).eq("id",n.id);if(updateError){showToast("تعذر تحديث الإشعار.");return;}await refreshMerchantNotificationBadge();globalThis.location.href=link.href;}});card.append(link);}
+  if(/^seller\.html\?view=orders&order_id=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(n.target_url||""))){const link=document.createElement("a");link.href=n.target_url;link.textContent="فتح الطلب";link.className="notification-open-link";link.addEventListener("click",async(event)=>{if(!n.read_at){event.preventDefault();const {error:updateError}=await db.from("notifications").update({read_at:new Date().toISOString()}).eq("id",n.id);if(updateError){showToast("تعذر تحديث الإشعار.");return;}await refreshMerchantNotificationBadge();globalThis.location.href=link.href;}});card.append(link);}
   host.append(card);
  });
 }
@@ -208,8 +208,9 @@ document.querySelector("#add-more-product-images").addEventListener("click", () 
 productImage.addEventListener("change", () => {
   const files = [...(productImage.files || [])];
   productImage.value = "";
-  if (files.some((file) => !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024)) {
-    showToast("يجب أن تكون كل صورة صالحة وألا يتجاوز حجمها 5 ميغابايت."); return;
+  const supportedImageTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (files.some((file) => !supportedImageTypes.includes(file.type) || file.size > 5 * 1024 * 1024)) {
+    showToast("استخدم صور JPG أو PNG أو WebP، على ألا يتجاوز حجم كل صورة 5 ميغابايت."); return;
   }
   const keptCount = existingProductImages.filter((image) => !removedProductImageIds.has(image.id)).length;
   if (keptCount + selectedProductFiles.length + files.length > 8) {
@@ -220,8 +221,9 @@ productImage.addEventListener("change", () => {
 });
 async function uploadImage(file, folder) {
   if (!file) return null;
-  if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) throw new Error("يجب أن تكون الصورة من نوع صورة وحجمها 5 ميغابايت أو أقل.");
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  const extensionByType = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp" };
+  const ext = extensionByType[file.type];
+  if (!ext || file.size > 5 * 1024 * 1024) throw new Error("استخدم صورة JPG أو PNG أو WebP، بحجم 5 ميغابايت أو أقل.");
   const path = currentUser.id + "/" + folder + "/" + crypto.randomUUID() + "." + ext;
   const { error } = await db.storage.from("bben-images").upload(path, file, { upsert: false, contentType: file.type });
   if (error) throw error;
