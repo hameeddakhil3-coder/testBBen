@@ -89,3 +89,11 @@ test("service worker keeps offline navigation fallback and bypasses non-GET, cro
   assert.match(worker, /caches\.match\("\/offline\.html"\)/);
   assert.match(worker, /status:\s*503/);
 });
+
+
+test("notification links only allow the expected order routes", async () => {
+  const market = await read("../market.js");
+  const seller = await read("../seller.js");
+  assert.match(market, /function safeNotificationTarget\(value\).*market\\\.html\\\?order_id=/);
+  assert.match(seller, /seller\\\.html\\\?view=orders&order_id=/);
+});
