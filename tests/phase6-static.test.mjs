@@ -74,6 +74,6 @@ test("all inner pages include shared back navigation", async () => {
     "../platform/index.html",
   ];
   for (const page of pages) {
-    assert.match(await read(page), /navigation-back\\.js/, `missing shared back navigation in ${page}`);
+    assert.match(await read(page), /navigation-back\.js/, `missing shared back navigation in ${page}`);
   }
 });
