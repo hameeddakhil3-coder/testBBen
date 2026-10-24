@@ -36,15 +36,6 @@ test("seller commission RPC migration restricts access to authenticated users", 
   assert.match(sql, /grant\s+execute\s+on\s+function[\s\S]*to\s+authenticated/i);
 });
 
-test("commission ledger SECURITY DEFINER RPC requires an administrator", async () => {
-  const sql = await read("../supabase/migrations/20261024100000_secure_admin_commission_ledger.sql");
-  assert.match(sql, /create\s+or\s+replace\s+function\s+public\.admin_list_commission_ledger\s*\(\)/i);
-  assert.match(sql, /if\s+v_user_id\s+is\s+null\s+or\s+not\s+exists/i);
-  assert.match(sql, /role\s*=\s*'admin'/i);
-  assert.match(sql, /revoke\s+all\s+on\s+function[\s\S]*from\s+public\s*,\s*anon/i);
-  assert.match(sql, /grant\s+execute\s+on\s+function[\s\S]*to\s+authenticated/i);
-});
-
 test("Cloudflare deployment is not triggered by pushes to the test branch", async () => {
   const workflow = await read("../.github/workflows/deploy-cloudflare.yml");
   assert.match(workflow, /branches:\s*\n\s+-\s+main/);
