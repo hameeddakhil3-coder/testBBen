@@ -31,14 +31,19 @@ The merchant product-image uploader now accepts only JPEG, PNG, and WebP, enforc
 ### 7. Merchant order-status controls
 A static regression test now verifies that the merchant UI offers cancellation only from `pending` and `processing`, permits `shipped` to advance to `delivered`, and keeps `delivered`/`cancelled` terminal in the displayed transition map. Status changes continue to go through the `update_merchant_order_status` RPC and the UI requires an explicit success response before updating local state. This does not prove server-side transition enforcement or exactly-once stock restoration; those remain blocked on isolated behavioral database tests. The multi-store ownership limitation described above also remains unresolved.
 
-### 8. PWA
+### 8. Merchant product, stock, and gallery review
+Static review confirms that product updates and deletes include both the product ID and `currentStore.id`; stock input is checked as a non-negative integer; and products referenced by order items, chat conversations, or cart items are archived rather than deleted. A failed reference check aborts deletion. Gallery ordering uses the first retained/uploaded image as `products.image_url` and writes matching `sort_order` values.
+
+**Remaining risk:** product-row changes, gallery-row deletion/insertion/reordering, and Storage uploads are separate client-side operations rather than one transaction. A failure midway can leave an orphaned uploaded file or a partially updated gallery even though the UI reports a save error. This should be addressed with a transactional server-side operation/compensating cleanup and verified in an isolated environment before production approval; no database migration or production change was made in this phase.
+
+### 9. PWA
 Static source confirms manifest entries, service-worker registration, offline fallback, and a deployment step that generates 192px/512px PNG icons. Live HTTP responses, icon appearance, installability, offline behavior, and cache behavior still require browser/device acceptance testing. The service worker was hardened on the test branch: version bumped to `bben-pwa-v2` to retire old caches, private seller/admin/profile navigation routes are excluded from the page cache, and navigations with query strings are not cached. Public same-origin HTML navigation can still be cached for offline fallback. This is a source-level mitigation; browser/device acceptance remains outstanding.
 
 ## Current phase status
 
 | Area | Status | Evidence / remaining gate |
 |---|---|---|
-| Source syntax and static regressions | Latest verified run passed before the merchant-upload hardening; new upload regression test added | Check CI triggered by the latest branch commit |
+| Source syntax and static regressions | New product deletion/gallery regressions added | Check CI triggered by the latest branch commit |
 | Deployment isolation | Source-reviewed; test branch does not auto-deploy | Do not dispatch deployment |
 | Function ACL and role guards | Read-only catalog review completed for 10 SECURITY DEFINER functions | Role-specific behavioral tests remain |
 | Checkout, coupon, cancellation, stock concurrency | Not behaviorally tested | Requires isolated database and synthetic data |
