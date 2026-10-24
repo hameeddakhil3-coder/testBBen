@@ -48,3 +48,17 @@ test("static checks workflow runs on the isolated test branch and never deploys"
   assert.match(workflow, /node --check/);
   assert.match(workflow, /does not deploy or modify any database/i);
 });
+
+test("shared back navigation is included on inner pages and has safe fallbacks", async () => {
+  const script = await read("../navigation-back.js");
+  const market = await read("../market.html");
+  const seller = await read("../seller.html");
+  const customerProfile = await read("../customer-profile.html");
+  assert.match(market, /navigation-back\.js/);
+  assert.match(seller, /navigation-back\.js/);
+  assert.match(customerProfile, /navigation-back\.js/);
+  assert.match(script, /history\.back\(\)/);
+  assert.match(script, /location\.assign\(fallback\(\)\)/);
+  assert.match(script, /previous\.origin === location\.origin/);
+  assert.match(script, /customer-profile\.html/);
+});
