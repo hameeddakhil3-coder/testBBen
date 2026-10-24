@@ -1,32 +1,55 @@
 # BBen — Phase 6 Release Readiness Review
+
 Date: 2026-10-24
 Branch: `test/phase-3-isolated-validation`
-Scope: Static review of deployment workflow and application source; no deployment or production changes.
+Scope: Final static/read-only release review. No production writes, migrations, account/order/stock/commission changes, or deployment.
 
-## Findings
+## Verified findings
 
-### 1. Deployment is gated to main
-The Cloudflare deploy workflow runs on pushes to `main` or manual dispatch. Commits made only to the test branch do not automatically deploy through this workflow. Keep production protected from test-only changes.
+### 1. Deployment boundary
+The Cloudflare deployment workflow triggers on pushes to `main` or manual dispatch; test-branch pushes do not deploy automatically. It builds static assets and generated PNG icons before invoking Wrangler. Do not manually dispatch the deploy workflow for this validation branch.
 
-### 2. Asset preparation is explicit
-The workflow copies a fixed list of storefront, merchant, customer, market, admin/platform, manifest, service-worker, and offline files into `public/`. It generates PNG PWA icons from a Python routine and copies the platform page to the deployed admin route. Any new runtime asset must be added to the explicit copy list or it may be absent from deployment.
+### 2. CI responsibilities clarified
+Two separate, read-only workflows run checks:
+- `BBen Static Validation` checks required files, JavaScript syntax, manifest/PWA references, and `tests/phase6-static.test.mjs`.
+- `BBen Build Input Validation` runs `node scripts/validate-build.mjs` to check deployment inputs and PWA metadata.
 
-### 3. CI checks are not aligned with browser code
-The Deno workflow runs `deno lint` and `deno test -A`, and its triggers target pushes/PRs on `main`. This does not provide useful feedback on commits confined to the test branch unless they are part of a PR into main. The repository is predominantly browser JavaScript/HTML and does not show an obvious Deno test suite in the reviewed tree. Before changing CI, inspect the full tree and current workflow run logs; avoid disabling tests merely because they fail.
+The second workflow was renamed from the misleading `BBen Static Validation` display name; its path remains `.github/workflows/deno.yml` for now. This avoids duplicate workflow names without changing its triggers or validation behavior. Both workflows use read-only repository permissions and do not deploy or modify the database. Confirm the new commit's Actions result before treating this naming-only change as CI-verified.
 
-### 4. Multi-store merchant behavior needs an explicit product decision
-The reviewed `update_merchant_order_status` function selects the earliest-created store owned by the merchant, then checks whether the order contains an item from that one store. If a merchant can own multiple stores, the function may reject valid orders from their other stores. Confirm whether the platform guarantees one store per merchant. If multiple stores are supported, a scoped store identifier or a query over all stores owned by the caller may be required, followed by tests for multi-store and multi-store orders.
+### 3. Merchant multi-store behavior
+The reviewed `update_merchant_order_status` function selects the earliest-created store owned by the authenticated merchant and limits order operations to that store. If the product permits multiple stores per merchant, valid orders from other owned stores may be rejected. This is a code-level limitation; the intended product rule still needs confirmation. No runtime fix was applied because order-status and stock-restoration behavior requires isolated regression tests.
 
-### 5. PWA remains unverified on a live browser
-The workflow generates PNG icons, but static inspection cannot prove that the deployed URLs return valid images or that installability/offline behavior works on a phone. Test the deployed manifest, icons, service worker, offline fallback, and install prompt in a real browser before marking PWA complete.
+### 4. Commission fallback
+The current production settings row was observed read-only with commission rate `1.50`; three audit rows were present. The read RPC and checkout path include a `5.00` fallback if settings are absent. The fallback is not active while the existing settings row is present. Do not change the configured rate or fallback without a tested migration and explicit approval.
 
-## Recommended next actions
-1. Decide whether one merchant can own multiple stores.
-2. Review actual CI run logs and identify whether the Deno job fails for real defects or because it is the wrong validation method.
-3. Add branch/PR-safe checks appropriate for this JavaScript project, then run them on the test branch.
-4. Run isolated database regression tests before any permission/schema changes.
-5. Run mobile-browser acceptance tests for PWA.
-6. Merge/deploy only after reviewing test evidence.
+### 5. Foreign-key index candidates
+Read-only catalog comparison identified 14 foreign-key constraints without a full valid index whose leading columns cover the FK columns. This is a candidate list, not proof that all 14 indexes should be added: inspect workload, existing partial/composite indexes, and the advisor's scope before preparing any migration. No indexes were created.
 
-## Safety status
-No production SQL writes, no account/order/stock/commission changes, no database branch creation, and no Cloudflare deployment occurred during this review.
+### 6. PWA
+Static source confirms manifest entries, service-worker registration, offline fallback, and a deployment step that generates 192px/512px PNG icons. Live HTTP responses, icon appearance, installability, offline behavior, and cache behavior still require browser/device acceptance testing. The service worker caches successful same-origin HTML navigations for offline fallback; verify on a real browser that no personalized HTML is ever embedded in those responses before considering private-page caching fully accepted.
+
+## Current phase status
+
+| Area | Status | Evidence / remaining gate |
+|---|---|---|
+| Source syntax and static regressions | CI has passed on previously checked commits | Re-check Actions for the newest commits |
+| Deployment isolation | Source-reviewed; test branch does not auto-deploy | Do not dispatch deployment |
+| Function ACL and role guards | Read-only catalog review completed for 10 SECURITY DEFINER functions | Role-specific behavioral tests remain |
+| Checkout, coupon, cancellation, stock concurrency | Not behaviorally tested | Requires isolated database and synthetic data |
+| Commission snapshot/history | Source-reviewed; current rate observed as 1.50 | Behavioral regression in isolation |
+| Multi-store merchant orders | Known conditional limitation | Confirm intended product behavior, then test |
+| FK indexes | 14 candidates identified | Workload/advisor review before proposing migration |
+| PWA | Static checks only | Browser/device acceptance still required |
+| Production deployment readiness | **Not approved** | Do not merge/deploy until blocked tests are evidenced |
+
+## Remaining blockers (not safe to claim complete)
+
+1. No isolated Supabase development branch exists; recurring cost has not been approved.
+2. Database behavioral and concurrency tests have not been run.
+3. Mobile/browser PWA acceptance tests have not been run.
+4. The multi-store product rule is unresolved.
+5. The latest GitHub Actions runs must be checked after the latest test-branch commits.
+
+## Safety record
+
+No production SQL writes or schema changes were performed. No users, orders, products, stock, commission settings, or audit records were changed. No test orders were created. No paid database branch/project was created. No Cloudflare deployment was performed.
