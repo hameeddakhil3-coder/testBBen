@@ -77,3 +77,15 @@ test("all inner pages include shared back navigation", async () => {
     assert.match(await read(page), /navigation-back\.js/, `missing shared back navigation in ${page}`);
   }
 });
+
+
+test("service worker keeps offline navigation fallback and bypasses non-GET, cross-origin, auth, and API requests", async () => {
+  const worker = await read("../sw.js");
+  assert.match(worker, /if\s*\(request\.method\s*!==\s*"GET"\)\s*return/);
+  assert.match(worker, /if\s*\(url\.origin\s*!==\s*self\.location\.origin\)\s*return/);
+  assert.match(worker, /url\.pathname\.startsWith\("\/auth\/"\)\s*\|\|\s*url\.pathname\.startsWith\("\/api\/"\)/);
+  assert.match(worker, /if\s*\(request\.mode\s*===\s*"navigate"\)/);
+  assert.match(worker, /caches\.match\(request\)/);
+  assert.match(worker, /caches\.match\("\/offline\.html"\)/);
+  assert.match(worker, /status:\s*503/);
+});
